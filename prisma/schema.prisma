@@ -1,0 +1,33 @@
+// Schema inicial — Fase 01.
+//
+// Nenhuma migração foi criada ou aplicada ainda. Este arquivo define apenas o
+// catálogo de produtos, que não contém dados pessoais. Entidades com dados
+// pessoais (pedidos, dados de nascimento, fotografias, relatórios) serão
+// modeladas nas próximas fases, junto da política de privacidade e retenção.
+// Veja docs/ARCHITECTURE.md.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProductKind {
+  MAIN
+  ORDER_BUMP
+}
+
+model Product {
+  id         String      @id @default(cuid())
+  slug       String      @unique
+  name       String
+  kind       ProductKind
+  priceCents Int
+  currency   String      @default("BRL")
+  active     Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}

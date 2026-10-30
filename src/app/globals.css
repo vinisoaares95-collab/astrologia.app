@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — identidade provisória.
+ *
+ * Os componentes usam apenas os nomes semânticos (bg, surface, fg, accent…).
+ * Para trocar a paleta, altere somente os valores abaixo.
+ */
+@theme {
+  /* Superfícies: céu noturno */
+  --color-bg: #080b16;
+  --color-bg-deep: #05070f;
+  --color-surface: #0f1427;
+  --color-surface-raised: #161d36;
+  --color-line: #262f52;
+  --color-line-soft: #1b2341;
+
+  /* Texto: tons de pergaminho */
+  --color-fg: #f2ebdc;
+  --color-fg-muted: #b3b6c8;
+  --color-fg-subtle: #828aa6;
+
+  /* Acentos */
+  --color-accent: #d6b77a;
+  --color-accent-strong: #e8d3a2;
+  --color-accent-soft: #d6b77a1f;
+  --color-celestial: #9aa8e6;
+  --color-celestial-soft: #9aa8e61f;
+
+  /* Feedback */
+  --color-danger: #ec9a92;
+  --color-danger-soft: #ec9a921a;
+  --color-success: #9fcfae;
+  --color-success-soft: #9fcfae1a;
+
+  /* Tipografia (variáveis definidas por next/font no layout) */
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+
+  /* Movimento */
+  --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --animate-fade-up: fade-up 0.7s var(--ease-soft) both;
+  --animate-spin-slow: spin 180s linear infinite;
+  --animate-draw: draw 2.4s var(--ease-soft) both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    /* Céu sutil: dois brilhos difusos, sem imagens externas */
+    background-image:
+      radial-gradient(
+        ellipse 80% 50% at 50% -10%,
+        color-mix(in oklab, var(--color-celestial) 14%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 60% 40% at 100% 40%,
+        color-mix(in oklab, var(--color-accent) 6%, transparent),
+        transparent 70%
+      );
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/* Contorno "desenhado" para SVGs com pathLength="1" */
+@utility draw-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: var(--animate-draw);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
