@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
 
+/** Rótulo técnico em mono com marcador cobre. */
 export function Eyebrow({
   children,
   className,
@@ -12,10 +13,11 @@ export function Eyebrow({
   return (
     <p
       className={cn(
-        "text-xs font-semibold tracking-[0.22em] text-accent uppercase",
+        "flex items-center gap-2 font-mono text-[0.7rem] font-medium tracking-[0.18em] text-fg-muted uppercase",
         className,
       )}
     >
+      <span aria-hidden className="h-px w-5 bg-accent" />
       {children}
     </p>
   );
@@ -40,23 +42,24 @@ export function SectionHeading({
     <div
       className={cn(
         "space-y-3",
-        align === "center" && "mx-auto max-w-2xl text-center",
+        align === "center" &&
+          "mx-auto max-w-2xl text-center [&>p]:justify-center",
         className,
       )}
     >
       {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
       <Heading
         className={cn(
-          "font-display font-light tracking-tight text-fg",
+          "font-semibold text-fg",
           Heading === "h1"
-            ? "text-4xl leading-[1.05] sm:text-6xl"
-            : "text-3xl leading-tight sm:text-4xl",
+            ? "text-[2rem] leading-[1.08] sm:text-5xl"
+            : "text-2xl leading-tight sm:text-4xl",
         )}
       >
         {title}
       </Heading>
       {description && (
-        <p className="text-base leading-relaxed text-fg-muted sm:text-lg">
+        <p className="text-[0.95rem] leading-relaxed text-fg-muted sm:text-lg">
           {description}
         </p>
       )}

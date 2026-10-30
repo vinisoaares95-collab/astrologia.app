@@ -5,7 +5,7 @@
 export const brand = {
   name: "Sidera",
   isProvisional: true,
-  tagline: "Céu e mãos, lidos com cuidado.",
+  tagline: "Seu céu e suas mãos, em uma leitura só sua.",
   description:
     "Experiência de autoconhecimento inspirada nas tradições da astrologia e da quiromancia, com leituras simbólicas personalizadas.",
   company: "Cation Digital",

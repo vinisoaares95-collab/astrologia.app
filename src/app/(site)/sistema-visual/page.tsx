@@ -9,6 +9,7 @@ import {
   Eyebrow,
   JourneySteps,
   SectionHeading,
+  Stat,
 } from "@/components/ui";
 import { Mandala } from "@/components/visuals/mandala";
 import { PalmIllustration } from "@/components/visuals/palm-illustration";
@@ -26,6 +27,7 @@ const colors = [
   ["fg-muted", "bg-fg-muted"],
   ["accent", "bg-accent"],
   ["accent-strong", "bg-accent-strong"],
+  ["accent-deep", "bg-accent-deep"],
   ["celestial", "bg-celestial"],
   ["success", "bg-success"],
   ["danger", "bg-danger"],
@@ -59,12 +61,17 @@ export default function DesignSystemPage() {
       <section className="space-y-4">
         <Eyebrow>Tipografia</Eyebrow>
         <Card className="space-y-4">
-          <p className="font-display text-5xl font-light">Fraunces — títulos</p>
-          <p className="font-display text-2xl text-accent italic">
-            Itálico editorial para ênfase
+          <p className="text-5xl font-semibold tracking-[-0.04em]">
+            Geist — títulos
+          </p>
+          <p className="text-copper text-2xl font-semibold">
+            Gradiente cobre para ênfase
+          </p>
+          <p className="font-mono text-sm tracking-[0.16em] text-fg-muted uppercase">
+            Geist Mono — rótulos e dados
           </p>
           <p className="max-w-prose text-fg-muted">
-            Manrope — texto corrido, interface e formulários. Legível em telas
+            Geist — texto corrido, interface e formulários. Legível em telas
             pequenas, com bom espaçamento entre linhas.
           </p>
         </Card>
@@ -78,6 +85,9 @@ export default function DesignSystemPage() {
           <Button variant="ghost">Discreto</Button>
           <Button disabled>Desabilitado</Button>
           <Button size="lg">Grande</Button>
+          <Button size="sm" variant="secondary">
+            Pequeno
+          </Button>
         </div>
       </section>
 
@@ -88,6 +98,9 @@ export default function DesignSystemPage() {
           <Badge tone="accent">Destaque</Badge>
           <Badge tone="celestial">Cálculo</Badge>
           <Badge tone="demo">Demonstração</Badge>
+          <Badge tone="success" dot>
+            Pronto
+          </Badge>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <Callout tone="info" title="Informação">
@@ -103,6 +116,20 @@ export default function DesignSystemPage() {
             Algo precisa de atenção.
           </Callout>
         </div>
+      </section>
+
+      <section className="space-y-4">
+        <Eyebrow>Cards</Eyebrow>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Card>Padrão</Card>
+          <Card variant="raised">Elevado</Card>
+          <Card variant="glow">Destaque</Card>
+        </div>
+        <Card className="grid max-w-md grid-cols-3 gap-3">
+          <Stat label="Rótulo" value="Valor" />
+          <Stat label="Partes" value="3" />
+          <Stat label="Capítulos" value="9" />
+        </Card>
       </section>
 
       <section className="space-y-4">

@@ -1,21 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
 import { brand } from "@/config/brand";
 
 import "./globals.css";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
-  axes: ["opsz"],
   display: "swap",
 });
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -34,15 +31,16 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#080b16",
+  themeColor: "#09090b",
   colorScheme: "dark",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
-      className={`${fraunces.variable} ${manrope.variable} h-full antialiased`}
+      className={`${geist.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <a
@@ -51,11 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Pular para o conteúdo
         </a>
-        <SiteHeader />
-        <main id="conteudo" className="flex-1">
-          {children}
-        </main>
-        <SiteFooter />
+        {children}
       </body>
     </html>
   );

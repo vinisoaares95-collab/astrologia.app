@@ -1,7 +1,11 @@
+export { ActionDock } from "./action-dock";
 export { Badge } from "./badge";
-export { Button, ButtonLink, buttonStyles } from "./button";
+export { Button, ButtonLink, buttonStyles, IconButtonLink } from "./button";
 export { Callout } from "./callout";
 export { Card } from "./card";
 export { Container } from "./container";
+export { FrameCorners } from "./frame-corners";
 export { JourneySteps } from "./journey-steps";
 export { Eyebrow, SectionHeading } from "./section-heading";
+export { Stat } from "./stat";
+export { Switch } from "./switch";

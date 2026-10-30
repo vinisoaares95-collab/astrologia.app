@@ -69,10 +69,12 @@ export default function HowItWorksPage() {
           <li key={layer.title}>
             <Card className="h-full space-y-4">
               <div className="flex items-center justify-between">
-                <layer.icon aria-hidden className="size-5 text-accent" />
+                <span className="flex size-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                  <layer.icon aria-hidden className="size-5" />
+                </span>
                 <Badge tone={layer.tone}>{layer.badge}</Badge>
               </div>
-              <h2 className="text-xl text-fg">{layer.title}</h2>
+              <h2 className="text-lg font-semibold text-fg">{layer.title}</h2>
               <p className="text-sm leading-relaxed text-fg-muted">
                 {layer.text}
               </p>
@@ -88,15 +90,15 @@ export default function HowItWorksPage() {
       </Callout>
 
       <section className="space-y-6">
-        <h2 className="text-3xl font-light">Perguntas frequentes</h2>
-        <div className="divide-y divide-line-soft border-y border-line-soft">
+        <h2 className="text-2xl font-semibold">Perguntas frequentes</h2>
+        <div className="divide-y divide-line-soft rounded-3xl bg-surface/80 px-5 edge-light">
           {faq.map((item) => (
             <details key={item.q} className="group py-5">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-fg">
                 {item.q}
                 <span
                   aria-hidden
-                  className="text-accent transition-transform duration-300 group-open:rotate-45"
+                  className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-bright text-accent transition-transform duration-300 group-open:rotate-45"
                 >
                   +
                 </span>

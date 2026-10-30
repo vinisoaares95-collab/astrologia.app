@@ -7,32 +7,29 @@ type Tone = "info" | "privacy" | "demo" | "danger";
 
 const config: Record<
   Tone,
-  { icon: typeof Info; className: string; role?: "alert" | "status" }
+  { icon: typeof Info; box: string; icon_: string; role?: "alert" }
 > = {
   info: {
     icon: Info,
-    className: "border-line bg-surface text-fg-muted",
+    box: "border-line bg-surface-raised/60",
+    icon_: "bg-surface-bright text-fg-muted",
   },
   privacy: {
     icon: ShieldCheck,
-    className: "border-success/30 bg-success-soft text-fg-muted",
+    box: "border-success/20 bg-success-soft",
+    icon_: "bg-success/15 text-success",
   },
   demo: {
     icon: FlaskConical,
-    className: "border-dashed border-celestial/60 bg-celestial-soft text-fg",
+    box: "border-dashed border-accent/45 bg-accent-soft",
+    icon_: "bg-accent/15 text-accent-strong",
   },
   danger: {
     icon: CircleAlert,
-    className: "border-danger/40 bg-danger-soft text-fg",
+    box: "border-danger/35 bg-danger-soft",
+    icon_: "bg-danger/15 text-danger",
     role: "alert",
   },
-};
-
-const iconColor: Record<Tone, string> = {
-  info: "text-fg-subtle",
-  privacy: "text-success",
-  demo: "text-celestial",
-  danger: "text-danger",
 };
 
 export function Callout({
@@ -46,22 +43,26 @@ export function Callout({
   children: ReactNode;
   className?: string;
 }) {
-  const { icon: Icon, className: toneClass, role } = config[tone];
+  const { icon: Icon, box, icon_, role } = config[tone];
   return (
     <div
       role={role}
       className={cn(
-        "flex gap-3 rounded-2xl border p-4 text-sm leading-relaxed",
-        toneClass,
+        "flex gap-3.5 rounded-2xl border p-4 text-sm leading-relaxed text-fg-muted",
+        box,
         className,
       )}
     >
-      <Icon
-        aria-hidden
-        className={cn("mt-0.5 size-4 shrink-0", iconColor[tone])}
-      />
-      <div className="space-y-1">
-        {title && <p className="font-semibold text-fg">{title}</p>}
+      <span
+        className={cn(
+          "flex size-8 shrink-0 items-center justify-center rounded-xl",
+          icon_,
+        )}
+      >
+        <Icon aria-hidden className="size-4" />
+      </span>
+      <div className="space-y-0.5 pt-1">
+        {title && <p className="font-medium text-fg">{title}</p>}
         <div>{children}</div>
       </div>
     </div>

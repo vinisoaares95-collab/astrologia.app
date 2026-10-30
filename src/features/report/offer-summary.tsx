@@ -34,21 +34,25 @@ export function OfferSummary({
     );
 
   return (
-    <Card raised className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-2xl text-fg">{main.name}</h2>
-          <p className="text-sm leading-relaxed text-fg-muted">
-            {main.description}
+    <Card variant="glow" className="space-y-6">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Badge tone="accent">Produto principal</Badge>
+          <Badge tone="demo">Protótipo</Badge>
+        </div>
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-xl font-semibold text-fg">{main.name}</h2>
+          <p className="font-mono text-2xl font-medium whitespace-nowrap text-accent tabular-nums">
+            {formatBRL(main.priceCents)}
           </p>
         </div>
-        <p className="font-display text-2xl whitespace-nowrap text-accent tabular-nums">
-          {formatBRL(main.priceCents)}
+        <p className="text-sm leading-relaxed text-fg-muted">
+          {main.description}
         </p>
       </div>
 
-      <fieldset className="space-y-3">
-        <legend className="mb-3 text-sm font-medium text-fg">
+      <fieldset className="space-y-2.5">
+        <legend className="mb-3 font-mono text-[0.65rem] tracking-[0.16em] text-fg-subtle uppercase">
           Complementos opcionais
         </legend>
         {bumps.map((bump) => {
@@ -57,10 +61,10 @@ export function OfferSummary({
             <label
               key={bump.slug}
               className={cn(
-                "flex cursor-pointer gap-4 rounded-2xl border p-4 transition-colors duration-300",
+                "flex cursor-pointer gap-3.5 rounded-2xl p-4 transition-all duration-300 ease-soft",
                 checked
-                  ? "border-accent/70 bg-accent-soft"
-                  : "border-line hover:border-line hover:bg-surface",
+                  ? "bg-accent-soft shadow-[0_0_0_1px_var(--color-accent)]"
+                  : "bg-bg-deep/60 shadow-[0_0_0_1px_var(--color-line)] hover:shadow-[0_0_0_1px_#ff7a3366]",
               )}
             >
               <input
@@ -72,22 +76,24 @@ export function OfferSummary({
               <span
                 aria-hidden
                 className={cn(
-                  "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent",
+                  "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border transition-all duration-300 ease-spring peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent",
                   checked
-                    ? "border-accent bg-accent text-bg"
+                    ? "scale-110 border-accent bg-accent text-bg-deep"
                     : "border-fg-subtle",
                 )}
               >
                 {checked && <Check className="size-3.5" strokeWidth={3} />}
               </span>
               <span className="flex-1 space-y-1">
-                <span className="flex flex-wrap items-baseline justify-between gap-2">
-                  <span className="font-medium text-fg">{bump.name}</span>
-                  <span className="text-sm whitespace-nowrap text-accent tabular-nums">
+                <span className="flex items-baseline justify-between gap-3">
+                  <span className="text-sm font-medium text-fg">
+                    {bump.name}
+                  </span>
+                  <span className="font-mono text-xs whitespace-nowrap text-accent tabular-nums">
                     + {formatBRL(bump.priceCents)}
                   </span>
                 </span>
-                <span className="block text-sm leading-relaxed text-fg-muted">
+                <span className="block text-xs leading-relaxed text-fg-muted">
                   {bump.description}
                 </span>
               </span>
@@ -96,28 +102,27 @@ export function OfferSummary({
         })}
       </fieldset>
 
-      <div className="flex items-baseline justify-between border-t border-line-soft pt-5">
-        <span className="text-sm text-fg-muted">Total</span>
+      <div className="flex items-baseline justify-between border-t border-line pt-5">
+        <span className="font-mono text-[0.65rem] tracking-[0.16em] text-fg-subtle uppercase">
+          Total
+        </span>
         <output
           aria-live="polite"
-          className="font-display text-3xl text-fg tabular-nums"
+          className="font-mono text-3xl font-medium text-fg tabular-nums"
           data-testid="offer-total"
         >
           {formatBRL(total)}
         </output>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         <Button size="lg" fullWidth disabled>
           <Lock aria-hidden className="size-4" />
           Pagamento disponível em breve
         </Button>
-        <div className="flex flex-wrap items-center justify-center gap-2 text-center">
-          <Badge tone="demo">Protótipo</Badge>
-          <p className="text-xs text-fg-subtle">
-            Valores em validação. Nenhuma cobrança é feita nesta versão.
-          </p>
-        </div>
+        <p className="text-center text-xs text-fg-subtle">
+          Valores em validação. Nenhuma cobrança é feita nesta versão.
+        </p>
       </div>
     </Card>
   );

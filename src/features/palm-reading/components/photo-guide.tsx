@@ -1,67 +1,80 @@
-import { Check, X } from "lucide-react";
+import { Focus, Hand, Scan, Sun, X } from "lucide-react";
 
 const tips = [
   {
-    title: "Luz natural e uniforme",
-    text: "Perto de uma janela, sem flash e sem sombras fortes sobre a palma.",
+    icon: Sun,
+    title: "Luz natural",
+    text: "Perto da janela, sem flash nem sombras fortes.",
   },
   {
-    title: "Palma aberta e relaxada",
-    text: "Dedos levemente afastados, mão esticada sem forçar.",
+    icon: Hand,
+    title: "Palma aberta",
+    text: "Dedos levemente afastados, sem forçar.",
   },
   {
-    title: "Enquadre a mão inteira",
-    text: "Do pulso à ponta dos dedos, com a palma ocupando a maior parte da foto.",
+    icon: Scan,
+    title: "Mão inteira",
+    text: "Do pulso à ponta dos dedos, ocupando a foto.",
   },
   {
-    title: "Câmera paralela à mão",
-    text: "Fotografe de frente, a cerca de 25 cm, e confira se ficou nítido.",
+    icon: Focus,
+    title: "De frente",
+    text: "Câmera paralela, a ~25 cm. Confira a nitidez.",
   },
 ];
 
 const avoid = [
-  "Anéis, relógios ou pulseiras cobrindo a palma",
-  "Fundos com estampas ou muito parecidos com o tom da pele",
-  "Fotos tremidas, cortadas ou muito inclinadas",
+  "Anéis e relógios",
+  "Fundo estampado",
+  "Foto tremida ou cortada",
 ];
 
 export function PhotoGuide() {
   return (
-    <div className="grid gap-8 sm:grid-cols-2">
-      <div className="space-y-4">
-        <h2 className="text-xl text-fg">Para uma boa foto</h2>
-        <ol className="space-y-4">
-          {tips.map((tip, index) => (
-            <li key={tip.title} className="flex gap-4">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-accent/40 text-xs text-accent tabular-nums">
-                {index + 1}
+    <div className="space-y-5">
+      <ul className="grid grid-cols-2 gap-3">
+        {tips.map((tip, index) => (
+          <li
+            key={tip.title}
+            className="space-y-3 rounded-3xl bg-surface/80 p-4 edge-light"
+          >
+            <div className="flex items-center justify-between">
+              <span className="flex size-9 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                <tip.icon aria-hidden className="size-4" />
               </span>
-              <div className="space-y-1">
-                <p className="font-medium text-fg">{tip.title}</p>
-                <p className="text-sm leading-relaxed text-fg-muted">
-                  {tip.text}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
-      <div className="space-y-4">
-        <h2 className="text-xl text-fg">Evite</h2>
-        <ul className="space-y-3">
+              <span className="font-mono text-[0.65rem] text-fg-subtle">
+                0{index + 1}
+              </span>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-fg">{tip.title}</p>
+              <p className="text-xs leading-relaxed text-fg-muted">
+                {tip.text}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <div className="space-y-2">
+        <p className="font-mono text-[0.65rem] tracking-[0.16em] text-fg-subtle uppercase">
+          Evite
+        </p>
+        <ul className="flex flex-wrap gap-2">
           {avoid.map((item) => (
-            <li key={item} className="flex gap-3 text-sm text-fg-muted">
-              <X aria-hidden className="mt-0.5 size-4 shrink-0 text-danger" />
+            <li
+              key={item}
+              className="flex items-center gap-1.5 rounded-full border border-danger/25 bg-danger-soft px-3 py-1.5 text-xs text-fg-muted"
+            >
+              <X aria-hidden className="size-3 text-danger" />
               {item}
             </li>
           ))}
         </ul>
-        <p className="flex gap-3 pt-2 text-sm text-fg-muted">
-          <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-success" />
-          Na tradição da quiromancia, costuma-se ler primeiro a mão dominante —
-          aquela com que você escreve.
-        </p>
       </div>
+      <p className="text-xs leading-relaxed text-fg-subtle">
+        Na tradição da quiromancia, costuma-se ler primeiro a mão dominante —
+        aquela com que você escreve.
+      </p>
     </div>
   );
 }

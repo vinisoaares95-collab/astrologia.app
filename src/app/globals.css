@@ -1,56 +1,70 @@
 @import "tailwindcss";
 
 /*
- * Design tokens — identidade provisória.
+ * Design tokens — identidade provisória (v2: dark premium, cobre).
  *
  * Os componentes usam apenas os nomes semânticos (bg, surface, fg, accent…).
  * Para trocar a paleta, altere somente os valores abaixo.
  */
 @theme {
-  /* Superfícies: céu noturno */
-  --color-bg: #080b16;
-  --color-bg-deep: #05070f;
-  --color-surface: #0f1427;
-  --color-surface-raised: #161d36;
-  --color-line: #262f52;
-  --color-line-soft: #1b2341;
+  /* Superfícies: preto quase neutro, levemente quente */
+  --color-bg: #09090b;
+  --color-bg-deep: #050506;
+  --color-surface: #111113;
+  --color-surface-raised: #18181b;
+  --color-surface-bright: #222226;
+  --color-line: #2a2a2f;
+  --color-line-soft: #1d1d21;
 
-  /* Texto: tons de pergaminho */
-  --color-fg: #f2ebdc;
-  --color-fg-muted: #b3b6c8;
-  --color-fg-subtle: #828aa6;
+  /* Texto */
+  --color-fg: #f6f4f1;
+  --color-fg-muted: #a5a4ab;
+  --color-fg-subtle: #6f6e76;
 
-  /* Acentos */
-  --color-accent: #d6b77a;
-  --color-accent-strong: #e8d3a2;
-  --color-accent-soft: #d6b77a1f;
-  --color-celestial: #9aa8e6;
-  --color-celestial-soft: #9aa8e61f;
+  /* Acento: laranja-cobre */
+  --color-accent: #ff7a33;
+  --color-accent-strong: #ff9b62;
+  --color-accent-deep: #c4501a;
+  --color-accent-soft: #ff7a331a;
+
+  /* Secundária fria, usada com parcimônia (cálculos / céu) */
+  --color-celestial: #8fa3ff;
+  --color-celestial-soft: #8fa3ff1a;
 
   /* Feedback */
-  --color-danger: #ec9a92;
-  --color-danger-soft: #ec9a921a;
-  --color-success: #9fcfae;
-  --color-success-soft: #9fcfae1a;
+  --color-danger: #ff7a7a;
+  --color-danger-soft: #ff7a7a14;
+  --color-success: #6fdba0;
+  --color-success-soft: #6fdba014;
 
   /* Tipografia (variáveis definidas por next/font no layout) */
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   /* Movimento */
   --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-fade-up: fade-up 0.7s var(--ease-soft) both;
-  --animate-spin-slow: spin 180s linear infinite;
-  --animate-draw: draw 2.4s var(--ease-soft) both;
+  --animate-spin-slow: spin 160s linear infinite;
+  --animate-spin-reverse: spin-reverse 220s linear infinite;
+  --animate-draw: draw 2.2s var(--ease-soft) both;
+  --animate-pulse-glow: pulse-glow 4s ease-in-out infinite;
 
   @keyframes fade-up {
     from {
       opacity: 0;
-      transform: translateY(12px);
+      transform: translateY(14px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes spin-reverse {
+    to {
+      transform: rotate(-360deg);
     }
   }
 
@@ -60,6 +74,16 @@
     }
     to {
       stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 0.9;
     }
   }
 }
@@ -74,19 +98,44 @@
     background-color: var(--color-bg);
     color: var(--color-fg);
     font-family: var(--font-sans);
-    /* Céu sutil: dois brilhos difusos, sem imagens externas */
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  /* Grid técnico sutil, esmaecendo para as bordas */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
     background-image:
-      radial-gradient(
-        ellipse 80% 50% at 50% -10%,
-        color-mix(in oklab, var(--color-celestial) 14%, transparent),
-        transparent 70%
-      ),
-      radial-gradient(
-        ellipse 60% 40% at 100% 40%,
-        color-mix(in oklab, var(--color-accent) 6%, transparent),
-        transparent 70%
-      );
-    background-attachment: fixed;
+      linear-gradient(to right, #ffffff0a 1px, transparent 1px),
+      linear-gradient(to bottom, #ffffff0a 1px, transparent 1px);
+    background-size: 44px 44px;
+    background-position: center top;
+    mask-image: radial-gradient(
+      ellipse 90% 70% at 50% 0%,
+      #000 30%,
+      transparent 85%
+    );
+  }
+
+  /* Brilho cobre no topo */
+  body::after {
+    content: "";
+    position: fixed;
+    top: -30vh;
+    left: 50%;
+    z-index: -1;
+    width: 120vw;
+    height: 70vh;
+    translate: -50% 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at center,
+      color-mix(in oklab, var(--color-accent) 16%, transparent),
+      transparent 65%
+    );
   }
 
   ::selection {
@@ -102,8 +151,8 @@
   h1,
   h2,
   h3 {
-    font-family: var(--font-display);
     text-wrap: balance;
+    letter-spacing: -0.025em;
   }
 
   p {
@@ -116,6 +165,31 @@
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
   animation: var(--animate-draw);
+}
+
+/* Borda com reflexo de luz no topo — base dos cards */
+@utility edge-light {
+  box-shadow:
+    inset 0 1px 0 0 #ffffff12,
+    0 0 0 1px var(--color-line-soft),
+    0 24px 48px -24px #00000099;
+}
+
+/* Texto com gradiente cobre */
+@utility text-copper {
+  background-image: linear-gradient(
+    100deg,
+    var(--color-accent-strong),
+    var(--color-accent) 45%,
+    var(--color-accent-deep)
+  );
+  background-clip: text;
+  color: transparent;
+}
+
+/* Espaço inferior seguro em iPhones */
+@utility pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
 @media (prefers-reduced-motion: reduce) {

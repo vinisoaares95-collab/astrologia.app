@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { Container, JourneySteps, SectionHeading } from "@/components/ui";
+import { Container, SectionHeading } from "@/components/ui";
 import { DemoPreview } from "@/features/palm-reading/components/demo-preview";
 
 export const metadata: Metadata = {
@@ -9,13 +9,11 @@ export const metadata: Metadata = {
 
 export default function PalmPreviewPage() {
   return (
-    <Container size="default" className="space-y-10 py-10 sm:py-16">
-      <JourneySteps current="preview" />
+    <Container size="narrow" className="flex flex-1 flex-col gap-6 pt-6">
       <SectionHeading
         as="h1"
-        eyebrow="Passo 2"
         title="Sua prévia"
-        description="Um primeiro olhar sobre as linhas das mãos, como ele será apresentado."
+        description="Um primeiro olhar sobre as linhas das mãos."
       />
       <DemoPreview />
     </Container>

@@ -1,51 +1,39 @@
 import { journeySteps, type JourneyStepId } from "@/config/routes";
 import { cn } from "@/lib/cn";
 
-/** Indicador de progresso da jornada (puramente visual). */
+/** Barra de progresso segmentada da jornada (puramente visual). */
 export function JourneySteps({ current }: { current: JourneyStepId }) {
   const currentIndex = journeySteps.findIndex((step) => step.id === current);
 
   return (
-    <nav aria-label="Etapas da jornada">
-      <ol className="flex items-center gap-2">
-        {journeySteps.map((step, index) => {
-          const state =
-            index < currentIndex
-              ? "done"
-              : index === currentIndex
-                ? "current"
-                : "upcoming";
-          return (
-            <li
-              key={step.id}
-              className="flex flex-1 flex-col gap-2"
-              aria-current={state === "current" ? "step" : undefined}
-            >
-              <span
-                className={cn(
-                  "h-0.5 rounded-full transition-colors duration-500",
-                  state === "upcoming" ? "bg-line" : "bg-accent",
-                )}
-              />
-              <span
-                className={cn(
-                  "text-[0.7rem] font-medium tracking-wider uppercase",
-                  state === "current"
-                    ? "text-fg"
-                    : state === "done"
-                      ? "text-accent"
-                      : "text-fg-subtle",
-                )}
-              >
-                <span className="sr-only">
-                  Etapa {index + 1} de {journeySteps.length}:{" "}
-                </span>
-                {step.label}
-              </span>
-            </li>
-          );
-        })}
-      </ol>
-    </nav>
+    <ol className="flex gap-1.5" aria-label="Etapas da jornada">
+      {journeySteps.map((step, index) => {
+        const done = index < currentIndex;
+        const active = index === currentIndex;
+        return (
+          <li
+            key={step.id}
+            className="relative h-1 flex-1 overflow-hidden rounded-full bg-line"
+            aria-current={active ? "step" : undefined}
+          >
+            <span className="sr-only">
+              Etapa {index + 1} de {journeySteps.length}: {step.label}
+              {done ? " (concluída)" : active ? " (atual)" : ""}
+            </span>
+            <span
+              aria-hidden
+              className={cn(
+                "absolute inset-y-0 left-0 rounded-full bg-accent transition-[width] duration-700 ease-soft",
+                done
+                  ? "w-full"
+                  : active
+                    ? "w-1/2 shadow-[0_0_12px_var(--color-accent)]"
+                    : "w-0",
+              )}
+            />
+          </li>
+        );
+      })}
+    </ol>
   );
 }

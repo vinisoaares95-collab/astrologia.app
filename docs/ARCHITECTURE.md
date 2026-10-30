@@ -25,17 +25,19 @@ prisma/
 prisma.config.ts           # Config do Prisma 7 (DATABASE_URL opcional)
 src/
   app/                     # Rotas (App Router)
-    layout.tsx             # Fontes, metadados, header/footer
+    layout.tsx             # Fontes, metadados
     globals.css            # Design tokens (Tailwind v4 @theme)
-    leitura-das-maos/      # layout.tsx mantém a foto em memória
+    (site)/                # Home, como funciona, sistema visual (header + rodapé)
+    (jornada)/             # Fluxo com barra de app (FlowHeader)
+      leitura-das-maos/    # layout.tsx mantém a foto em memória
   components/
     ui/                    # Design system: Button, Badge, Card, Callout…
-    layout/                # Header, footer, wordmark
-    visuals/               # Mandala e ilustração da palma (SVG)
+    layout/                # Header, FlowHeader, footer, wordmark
+    visuals/               # Mandala, HeroOrb e ilustração da palma (SVG)
   features/
     palm-reading/          # Contexto da foto, validação, captura, prévia demo
     birth-data/            # Formulário e validação local
-    report/                # Resumo da oferta (order bumps)
+    report/                # Abas de capítulos e resumo da oferta
   config/                  # brand.ts (marca provisória), routes.ts
   content/                 # Catálogo e estrutura editorial do relatório
   lib/                     # Utilitários (cn, format, db)

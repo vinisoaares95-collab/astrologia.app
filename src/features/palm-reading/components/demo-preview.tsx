@@ -1,14 +1,20 @@
 "use client";
 
-import { ImageOff } from "lucide-react";
+import { ImageOff, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { Badge, Button, ButtonLink, Callout, Card } from "@/components/ui";
 import {
-  PalmIllustration,
-  palmLines,
-} from "@/components/visuals/palm-illustration";
+  ActionDock,
+  Badge,
+  Button,
+  ButtonLink,
+  Callout,
+  Card,
+} from "@/components/ui";
+import { Mandala } from "@/components/visuals/mandala";
+import { palmLines } from "@/components/visuals/palm-illustration";
 import { routes } from "@/config/routes";
+import { reportParts } from "@/content/report-chapters";
 
 import { usePalmPhoto } from "../palm-photo-context";
 
@@ -23,16 +29,24 @@ const traditionNotes: Record<(typeof palmLines)[number]["id"], string> = {
   life: "Tradicionalmente associada à vitalidade e à forma de viver as mudanças — não à duração da vida.",
 };
 
+const lockedChapters = reportParts
+  .flatMap((part) => part.chapters)
+  .filter((chapter) => chapter.number >= 6);
+
 export function DemoPreview() {
   const router = useRouter();
   const { photo, clearPhoto } = usePalmPhoto();
 
   if (!photo) {
     return (
-      <Card className="flex flex-col items-center gap-5 py-12 text-center">
-        <ImageOff aria-hidden className="size-8 text-fg-subtle" />
+      <Card className="my-auto flex flex-col items-center gap-5 py-12 text-center">
+        <span className="flex size-14 items-center justify-center rounded-2xl bg-surface-bright">
+          <ImageOff aria-hidden className="size-6 text-fg-subtle" />
+        </span>
         <div className="space-y-2">
-          <h2 className="text-2xl text-fg">Nenhuma foto por aqui</h2>
+          <h2 className="text-xl font-semibold text-fg">
+            Nenhuma foto por aqui
+          </h2>
           <p className="text-sm text-fg-muted">
             A foto fica apenas na memória desta tela. Se você recarregou a
             página ou saiu do fluxo, ela foi descartada.
@@ -44,83 +58,120 @@ export function DemoPreview() {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="flex flex-1 flex-col gap-8">
       <Callout tone="demo" title="Demonstração — sua foto não foi analisada">
-        Esta é uma prévia ilustrativa da experiência. Nenhuma inteligência
-        artificial processou sua imagem, e o conteúdo abaixo é um texto fixo,
-        igual para todas as pessoas.
+        Nenhuma inteligência artificial processou sua imagem. O conteúdo abaixo
+        é um texto fixo, igual para todas as pessoas.
       </Callout>
 
-      <div className="grid gap-6 sm:grid-cols-[minmax(0,14rem)_1fr] sm:items-start">
-        <figure className="mx-auto w-full max-w-56 space-y-2">
-          <div className="overflow-hidden rounded-2xl border border-line bg-bg-deep">
+      {/* Destaque: foto dentro da mandala */}
+      <Card
+        variant="glow"
+        className="flex flex-col items-center gap-5 overflow-hidden pt-8 text-center"
+      >
+        <div className="relative aspect-square w-full max-w-[17rem]">
+          <Mandala className="absolute inset-0 size-full" />
+          <div className="absolute inset-[24%] overflow-hidden rounded-full shadow-[0_0_0_1px_var(--color-accent),0_0_40px_-6px_var(--color-accent)]">
             {/* eslint-disable-next-line @next/next/no-img-element -- URL blob local; next/image não se aplica */}
             <img
               src={photo.url}
               alt="Sua foto, mantida apenas neste dispositivo"
-              className="aspect-[3/4] w-full object-cover"
+              className="size-full object-cover"
             />
           </div>
-          <figcaption className="text-xs text-fg-subtle">
-            Mantida apenas neste dispositivo.
-          </figcaption>
-        </figure>
-
-        <Card className="space-y-6">
-          <div className="flex flex-wrap items-center gap-2">
+        </div>
+        <div className="space-y-3">
+          <div className="flex flex-wrap justify-center gap-2">
             <Badge tone="demo">Exemplo fixo</Badge>
             <Badge>Não personalizado</Badge>
           </div>
-          <h2 className="text-2xl leading-snug text-fg">
-            As três linhas principais na tradição da quiromancia
+          <h2 className="text-2xl font-semibold text-fg">
+            As três linhas principais
           </h2>
-          <div className="flex gap-5">
-            <PalmIllustration className="w-24 shrink-0" />
-            <ul className="space-y-4">
-              {palmLines.map((line) => (
-                <li key={line.id} className="space-y-1">
-                  <p className="flex items-center gap-2 text-sm font-medium text-fg">
-                    <span
-                      aria-hidden
-                      className="h-0.5 w-4 rounded-full"
-                      style={{ backgroundColor: line.color }}
-                    />
-                    {line.label}
-                  </p>
-                  <p className="text-sm leading-relaxed text-fg-muted">
-                    {traditionNotes[line.id]}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <p className="border-t border-line-soft pt-4 text-xs leading-relaxed text-fg-subtle">
-            Na versão final, a prévia descreverá características observadas na
-            sua foto — quando a imagem permitir — sempre separando o que foi
-            observado do que é interpretação simbólica.
+          <p className="mx-auto max-w-sm text-sm text-fg-muted">
+            Como a tradição da quiromancia descreve cada uma delas.
           </p>
-        </Card>
-      </div>
-
-      <div className="space-y-3">
-        <p className="text-sm text-fg-muted">
-          O relatório completo une suas mãos ao céu do seu nascimento.
-        </p>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <ButtonLink href={routes.birthData} size="lg">
-            Continuar com meus dados de nascimento
-          </ButtonLink>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              clearPhoto();
-              router.push(routes.home);
-            }}
-          >
-            Descartar foto e sair
-          </Button>
         </div>
-      </div>
+      </Card>
+
+      <ul className="space-y-3">
+        {palmLines.map((line, index) => (
+          <li key={line.id}>
+            <Card className="flex gap-4 p-5">
+              <span
+                aria-hidden
+                className="mt-1 h-10 w-1 shrink-0 rounded-full"
+                style={{
+                  backgroundColor: line.color,
+                  boxShadow: `0 0 16px ${line.color}`,
+                }}
+              />
+              <div className="space-y-1.5">
+                <p className="font-mono text-[0.65rem] tracking-[0.16em] text-fg-subtle uppercase">
+                  Linha 0{index + 1} · Tradição
+                </p>
+                <p className="font-semibold text-fg">{line.label}</p>
+                <p className="text-sm leading-relaxed text-fg-muted">
+                  {traditionNotes[line.id]}
+                </p>
+              </div>
+            </Card>
+          </li>
+        ))}
+      </ul>
+
+      {/* O que o relatório completo adiciona */}
+      <section className="space-y-3" aria-labelledby="no-relatorio">
+        <div className="flex items-center justify-between">
+          <h2 id="no-relatorio" className="text-lg font-semibold text-fg">
+            No relatório completo
+          </h2>
+          <Badge tone="accent">
+            <Lock aria-hidden className="size-3" />
+            Bloqueado
+          </Badge>
+        </div>
+        <ul className="space-y-2">
+          {lockedChapters.map((chapter) => (
+            <li
+              key={chapter.number}
+              className="flex items-center gap-4 rounded-2xl bg-surface/60 p-4 edge-light"
+            >
+              <span className="font-mono text-sm text-accent">
+                {String(chapter.number).padStart(2, "0")}
+              </span>
+              <div className="flex-1 space-y-2">
+                <p className="text-sm font-medium text-fg">{chapter.title}</p>
+                <div aria-hidden className="space-y-1.5 blur-[1.5px]">
+                  <span className="block h-1.5 w-11/12 rounded-full bg-surface-bright" />
+                  <span className="block h-1.5 w-2/3 rounded-full bg-surface-bright" />
+                </div>
+              </div>
+              <Lock aria-hidden className="size-4 text-fg-subtle" />
+            </li>
+          ))}
+        </ul>
+        <p className="text-xs leading-relaxed text-fg-subtle">
+          Na versão final, a prévia descreverá características observadas na sua
+          foto — quando a imagem permitir — sempre separando o que foi observado
+          do que é interpretação simbólica.
+        </p>
+      </section>
+
+      <ActionDock>
+        <ButtonLink href={routes.birthData} size="lg" fullWidth>
+          Continuar: dados de nascimento
+        </ButtonLink>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            clearPhoto();
+            router.push(routes.home);
+          }}
+        >
+          Descartar foto e sair
+        </Button>
+      </ActionDock>
     </div>
   );
 }

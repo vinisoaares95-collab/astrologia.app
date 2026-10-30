@@ -68,7 +68,11 @@ página também descarta a imagem.
 
 - Nome, slogan e empresa: `src/config/brand.ts`
 - Cores, fontes e movimento: tokens em `src/app/globals.css` (`@theme`)
-- Fontes: `src/app/layout.tsx`
+- Fontes (Geist / Geist Mono): `src/app/layout.tsx`
+
+## Capturas
+
+Veja `docs/capturas/` (mobile 390 px e desktop 1440 px).
 
 ## Documentação
 

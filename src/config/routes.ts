@@ -23,3 +23,36 @@ export const journeySteps = [
 ] as const;
 
 export type JourneyStepId = (typeof journeySteps)[number]["id"];
+
+/** Mapeia cada tela da jornada para sua etapa e para o destino do "voltar". */
+export const journeyScreens: Record<
+  string,
+  { step: JourneyStepId; title: string; back: string }
+> = {
+  [routes.palmIntro]: {
+    step: "palm",
+    title: "Leitura das mãos",
+    back: routes.home,
+  },
+  [routes.palmPhoto]: {
+    step: "palm",
+    title: "Foto da palma",
+    back: routes.palmIntro,
+  },
+  [routes.palmPreview]: {
+    step: "preview",
+    title: "Sua prévia",
+    back: routes.palmPhoto,
+  },
+  // A foto é descartada ao sair do fluxo das mãos; voltamos ao início dele.
+  [routes.birthData]: {
+    step: "birth",
+    title: "Nascimento",
+    back: routes.palmIntro,
+  },
+  [routes.report]: {
+    step: "report",
+    title: "Relatório",
+    back: routes.birthData,
+  },
+};
