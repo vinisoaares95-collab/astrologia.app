@@ -50,6 +50,9 @@ Opcional: copie `.env.example` para `.env` para definir variáveis.
 | `npm run ephe:fetch`  | Baixa e confere os arquivos de efemérides    |
 | `npm run tz:diff`     | Compara transições de fuso entre versões     |
 
+Mapa natal (somente ambiente interno, licença AGPL do Swiss Ephemeris):
+`SIDERA_INTERNAL_ENGINE=1 npm run dev`. Veja `docs/fase-02d-mandala-natal.md`.
+
 `dev`, `build`, `start` e `test` rodam com a base de fusos fixada em
 `tzdata/2026f` (via `scripts/with-tzdata.mjs`). Rodar `next` diretamente usa a
 base embutida no Node, e a normalização de horários fica bloqueada. Veja

@@ -22,7 +22,7 @@ d9382726ee8a499514310e63a9e97f1dbdd7fc2db328e1a785dde05f2afbb7e6  zoneinfo64.res
 
 Os scripts `dev`, `build`, `start` e `test` passam por `scripts/with-tzdata.mjs`,
 que define a variável. Em produção (Vercel), a variável precisa ser
-configurada no projeto e os arquivos incluídos na função
+configurada no projeto com **caminho absoluto** (exigência do ICU) e os arquivos incluídos na função
 (`outputFileTracingIncludes` em `next.config.ts`).
 
 ## Atualizar para uma nova versão

@@ -21,6 +21,12 @@ import { getPlaceAction } from "@/features/places/actions";
 import type { PlaceSummary } from "@/features/places/types";
 import { cn } from "@/lib/cn";
 
+import { NatalChartView } from "@/features/natal-chart/components/natal-chart-view";
+import {
+  computeChartAction,
+  type ComputeChartResult,
+} from "@/features/natal-chart/actions";
+
 import { normalizeBirthAction } from "./actions";
 import { NormalizationReview } from "./components/normalization-review";
 import { PlaceCombobox } from "./components/place-combobox";
@@ -129,17 +135,26 @@ function toInput(
   };
 }
 
-export function BirthDataForm() {
+export function BirthDataForm({
+  engineEnabled = false,
+}: {
+  /** Motor de cálculo disponível (somente ambiente interno). */
+  engineEnabled?: boolean;
+}) {
   const router = useRouter();
   const id = useId();
   const [values, setValues] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<BirthDataErrors>({});
   const [result, setResult] = useState<NormalizationResult | null>(null);
+  const [occurrence, setOccurrence] = useState<"earlier" | "later">();
+  const [chart, setChart] = useState<ComputeChartResult | null>(null);
   const [pending, startTransition] = useTransition();
+  const [chartPending, startChartTransition] = useTransition();
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
     setResult(null); // qualquer edição invalida a conferência anterior
+    setChart(null);
     const field = key === "precision" || key === "margin" ? "time" : key;
     setErrors((prev) => {
       if (!(field in prev)) return prev;
@@ -155,6 +170,8 @@ export function BirthDataForm() {
     setErrors(found);
     if (Object.keys(found).length > 0) return;
 
+    setOccurrence(occurrence);
+    setChart(null);
     startTransition(async () => {
       const response = await normalizeBirthAction(input);
       if (response.status === "invalid") {
@@ -166,6 +183,15 @@ export function BirthDataForm() {
       } else {
         setResult(response);
       }
+    });
+  }
+
+  function computeChart() {
+    // Mesma entrada já conferida (inclui a ocorrência escolhida, se houver);
+    // o servidor normaliza de novo com o mesmo código antes de calcular.
+    const input = toInput(values, occurrence);
+    startChartTransition(async () => {
+      setChart(await computeChartAction(input));
     });
   }
 
@@ -307,9 +333,41 @@ export function BirthDataForm() {
 
       {result?.status === "ok" && <NormalizationReview birth={result.birth} />}
 
+      {result?.status === "ok" && engineEnabled && (
+        <Button
+          variant="secondary"
+          onClick={computeChart}
+          disabled={chartPending}
+        >
+          {chartPending
+            ? "Calculando…"
+            : "Calcular mapa natal (ambiente interno)"}
+        </Button>
+      )}
+      {chart?.status === "engine-disabled" && (
+        <Callout tone="info" title="Cálculo indisponível neste ambiente">
+          O motor astrológico só funciona no ambiente interno de
+          desenvolvimento.
+        </Callout>
+      )}
+      {chart?.status === "engine-error" && (
+        <Callout tone="danger" title="Não foi possível calcular o mapa">
+          {chart.message}
+        </Callout>
+      )}
+      {chart?.status === "invalid" && (
+        <Callout tone="danger" title="Dados inválidos para o cálculo">
+          {chart.issues.map((i) => i.message).join(" ")}
+        </Callout>
+      )}
+      {chart?.status === "ok" && <NatalChartView chart={chart.chart} />}
+
       <Callout tone="demo" title="Versão demonstrativa">
         Os dados ficam apenas nesta tela. A verificação acontece no servidor,
-        sem salvar nada, e nenhum mapa é calculado ainda.
+        sem salvar nada,{" "}
+        {engineEnabled
+          ? "e o mapa só é calculado neste ambiente interno."
+          : "e nenhum mapa é calculado ainda."}
       </Callout>
 
       <details className="group rounded-2xl bg-surface/60 px-4 py-3 edge-light">

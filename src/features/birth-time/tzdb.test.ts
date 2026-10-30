@@ -1,4 +1,7 @@
 // @vitest-environment node
+import { execFileSync } from "node:child_process";
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { listTransitions } from "./transitions";
@@ -34,6 +37,53 @@ describe("versão da base de fusos", () => {
     // mudou a base embutida. Revise as diferenças com `npm run tz:diff`.
     expect(runtimeTzdbVersion()).toBe(TZDB_EXPECTED_VERSION);
     expect(isExpectedTzdb()).toBe(true);
+  });
+});
+
+describe("carregamento da base em processos novos", () => {
+  const versionIn = (env: NodeJS.ProcessEnv, cwd: string) =>
+    execFileSync(process.execPath, ["-p", "process.versions.tz"], {
+      env,
+      cwd,
+      encoding: "utf8",
+    }).trim();
+  const base = { ...process.env };
+  delete base.ICU_TIMEZONE_FILES_DIR;
+
+  it("um processo iniciado do zero com caminho absoluto usa a versão fixada", () => {
+    const dir = path.resolve("tzdata", TZDB_EXPECTED_VERSION);
+    expect(versionIn({ ...base, ICU_TIMEZONE_FILES_DIR: dir }, "/")).toBe(
+      TZDB_EXPECTED_VERSION,
+    );
+  });
+
+  it("caminho relativo fora da raiz cai na base embutida (por isso o launcher usa caminho absoluto)", () => {
+    const relative = path.join("tzdata", TZDB_EXPECTED_VERSION);
+    expect(
+      versionIn({ ...base, ICU_TIMEZONE_FILES_DIR: relative }, "/"),
+    ).not.toBe(TZDB_EXPECTED_VERSION);
+  });
+
+  it("o launcher converte um caminho relativo em absoluto", () => {
+    const out = execFileSync(
+      process.execPath,
+      [
+        "scripts/with-tzdata.mjs",
+        process.execPath,
+        "-p",
+        "process.env.ICU_TIMEZONE_FILES_DIR + ' ' + process.versions.tz",
+      ],
+      {
+        env: {
+          ...base,
+          ICU_TIMEZONE_FILES_DIR: path.join("tzdata", TZDB_EXPECTED_VERSION),
+        },
+        encoding: "utf8",
+      },
+    ).trim();
+    const [dir, version] = out.split(" ");
+    expect(path.isAbsolute(dir)).toBe(true);
+    expect(version).toBe(TZDB_EXPECTED_VERSION);
   });
 });
 

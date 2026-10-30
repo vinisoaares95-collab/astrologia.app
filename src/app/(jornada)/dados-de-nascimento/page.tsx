@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Container, SectionHeading } from "@/components/ui";
 import { Mandala } from "@/components/visuals/mandala";
 import { BirthDataForm } from "@/features/birth-data/birth-data-form";
+import { isInternalEngineEnabled } from "@/features/natal-chart/engine-gate";
 
 export const metadata: Metadata = {
   title: "Dados de nascimento",
@@ -20,7 +21,7 @@ export default function BirthDataPage() {
         />
         <Mandala detail="compact" className="size-20 shrink-0 sm:size-28" />
       </div>
-      <BirthDataForm />
+      <BirthDataForm engineEnabled={isInternalEngineEnabled()} />
     </Container>
   );
 }

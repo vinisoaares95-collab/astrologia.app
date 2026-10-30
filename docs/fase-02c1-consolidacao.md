@@ -73,7 +73,7 @@ Exemplo verificado no navegador: **São Paulo, 31/03/1965, 12:00**. Com a 2025b 
 
 ### Produção (Vercel), a configurar no deploy
 
-- Variável de ambiente `ICU_TIMEZONE_FILES_DIR=tzdata/2026f`.
+- Variável de ambiente `ICU_TIMEZONE_FILES_DIR` com o **caminho absoluto** da pasta `tzdata/2026f` dentro da função (ex.: `/var/task/tzdata/2026f`; confirmar num preview privado). O ICU exige caminho absoluto; um caminho relativo depende do diretório de execução e faz o ICU voltar à base embutida (corrigido na Fase 02D).
 - `tzdata/**` já está incluído no pacote da função (`outputFileTracingIncludes`).
 - Sem a variável, a normalização fica **bloqueada**, e não incorreta.
 

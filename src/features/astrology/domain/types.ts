@@ -96,7 +96,7 @@ export type Aspect = {
 };
 
 export type AnglesUnavailableReason =
-  "BIRTH_TIME_UNKNOWN" | "PLACIDUS_UNDEFINED";
+  "BIRTH_TIME_UNKNOWN" | "BIRTH_TIME_APPROXIMATE" | "PLACIDUS_UNDEFINED";
 
 export type NatalChart = {
   meta: {

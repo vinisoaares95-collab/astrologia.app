@@ -85,6 +85,18 @@ Versões verificadas no npm em 30/10/2026.
 | Segundos                         | `UtcInstant.second` opcional, sem arredondamento                       | Hora média local tem segundos; 28 s mudam o Ascendente em ~7′                  |
 | Datas civis puladas              | Recusadas (`DATE_NONEXISTENT_IN_ZONE`) com qualquer precisão           | Não existem como data de nascimento                                            |
 
+## Mandala natal (Fase 02D)
+
+| Tema                     | Decisão                                                                          | Motivo                                            |
+| ------------------------ | -------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Acesso ao motor          | `SIDERA_INTERNAL_ENGINE=1`, verificado na Server Action antes de processar dados | Licença AGPL; nada calculado em deploys           |
+| Orientação               | Ascendente às 9 h; sem horário, 0° Áries às 9 h; longitude anti-horária          | Convenção ocidental; nada afirmado sem horário    |
+| Planetas próximos        | Só o símbolo é afastado (≥ 9°); marca na posição real                            | A posição exata nunca é deslocada                 |
+| Símbolos                 | Contornos vetoriais das fontes Noto (OFL)                                        | Evita emoji no iOS e dependência de fonte         |
+| Horário aproximado       | Faixas de ASC/MC; casas não determinadas; aspectos incertos tracejados           | Não apresentar valores variáveis como definitivos |
+| Horário desconhecido     | Sem ângulos/casas; intervalos no dia local                                       | Idem                                              |
+| `ICU_TIMEZONE_FILES_DIR` | Sempre absoluto (launcher)                                                       | Exigência do ICU; relativo caía na 2025b          |
+
 ## Limitações conhecidas
 
 - **HEIC** é aceito, mas só tem pré-visualização no Safari; em outros

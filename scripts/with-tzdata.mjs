@@ -6,7 +6,12 @@ import path from "node:path";
 
 // Mantido em sincronia com TZDB_EXPECTED_VERSION (src/features/birth-time/tzdb.ts).
 const VERSION = "2026f";
-const dir = path.resolve("tzdata", VERSION);
+// O ICU exige caminho ABSOLUTO (guia do ICU, "Time Zone Data"). Um caminho
+// relativo depende do diretório de execução e cai em silêncio na base
+// embutida do Node — por isso qualquer valor recebido é convertido.
+const dir = path.resolve(
+  process.env.ICU_TIMEZONE_FILES_DIR ?? path.join("tzdata", VERSION),
+);
 
 if (!existsSync(path.join(dir, "zoneinfo64.res"))) {
   console.error(`Base de fusos ausente em ${dir}.`);
@@ -19,7 +24,7 @@ const child = spawn(command, args, {
   shell: process.platform === "win32",
   env: {
     ...process.env,
-    ICU_TIMEZONE_FILES_DIR: process.env.ICU_TIMEZONE_FILES_DIR ?? dir,
+    ICU_TIMEZONE_FILES_DIR: dir,
   },
 });
 child.on("exit", (code, signal) => process.exit(signal ? 1 : (code ?? 1)));

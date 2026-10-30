@@ -39,6 +39,7 @@ src/
       domain/              #   funções puras: signos, casas, aspectos, orbes
       engine/              #   EphemerisProvider + adapter Swiss Ephemeris
       service/             #   computeNatalChart (validação + orquestração)
+    natal-chart/           # Mapa natal: ChartView, geometria, mandala SVG (Fase 02D)
     places/                # Localidades: base IBGE + GeoNames, busca (Fase 02C)
     birth-time/            # Horário local → UTC com regras históricas IANA (Fase 02C)
     birth-data/            # Formulário + normalização (contrato, Server Actions)
@@ -86,7 +87,7 @@ mexer em componentes.
 - Efemérides em `ephe/` (não versionado): `npm run ephe:fetch`.
 - **Swiss Ephemeris sob AGPL**: uso interno; nenhum serviço público antes do
   licenciamento. A rota `/api/dev/astro-poc` responde 404 sem
-  `SIDERA_ASTRO_POC=1`.
+  `SIDERA_ASTRO_POC=1` (rota removida na Fase 02D).
 
 ## Localização e fusos (Fase 02C)
 
@@ -100,6 +101,14 @@ mexer em componentes.
   base de fusos fixada em `tzdata/2026f` (`ICU_TIMEZONE_FILES_DIR`), com
   bloqueio se a versão do processo divergir e snapshot de regressão das
   transições brasileiras. Detalhes em `docs/fase-02c1-consolidacao.md`.
+
+## Mandala natal (Fase 02D)
+
+- `computeChartAction` reutiliza `normalizeOnServer` (mesma normalização da
+  conferência) e `computeNatalChart` (02B); a mandala só desenha o `ChartView`.
+- Ambiente interno apenas: `SIDERA_INTERNAL_ENGINE=1` no servidor (AGPL).
+- Convenção geométrica, testes de correspondência e limitações em
+  `docs/fase-02d-mandala-natal.md`.
 
 ## Segurança
 

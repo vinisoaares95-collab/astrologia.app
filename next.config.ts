@@ -21,14 +21,14 @@ const nextConfig: NextConfig = {
   // Arquivos de efemérides (baixados por `npm run ephe:fetch`) precisam
   // acompanhar a função que usa o motor.
   outputFileTracingIncludes: {
-    // Base de localidades (lida com fs) e base de fusos fixada (tzdata/).
+    // Página que normaliza e calcula (Server Actions): base de localidades
+    // (lida com fs), base de fusos fixada (tzdata/), efemérides (ephe/) e o
+    // binário do sweph — o node-gyp-build o escolhe em tempo de execução,
+    // então o rastreador não o detecta sozinho.
+    // O motor só executa com SIDERA_INTERNAL_ENGINE=1 (licença AGPL).
     "/dados-de-nascimento": [
       "./src/features/places/data/*.json",
       "./tzdata/**/*",
-    ],
-    // O node-gyp-build escolhe o binário em tempo de execução, então o
-    // rastreador não o detecta: incluímos os binários Linux explicitamente.
-    "/api/dev/astro-poc": [
       "./ephe/**/*",
       "./node_modules/sweph/prebuilds/linux-*/**/*",
     ],
