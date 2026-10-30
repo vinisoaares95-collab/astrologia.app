@@ -45,3 +45,6 @@ next-env.d.ts
 
 # permite versionar o exemplo de variáveis
 !.env.example
+
+# efemérides do Swiss Ephemeris (AGPL) — baixadas por `npm run ephe:fetch`
+/ephe/

@@ -35,6 +35,10 @@ src/
     layout/                # Header, FlowHeader, footer, wordmark
     visuals/               # Mandala, HeroOrb e ilustração da palma (SVG)
   features/
+    astrology/             # Motor astrológico (Fase 02B, experimental, server-only)
+      domain/              #   funções puras: signos, casas, aspectos, orbes
+      engine/              #   EphemerisProvider + adapter Swiss Ephemeris
+      service/             #   computeNatalChart (validação + orquestração)
     palm-reading/          # Contexto da foto, validação, captura, prévia demo
     birth-data/            # Formulário e validação local
     report/                # Abas de capítulos e resumo da oferta
@@ -67,6 +71,19 @@ mexer em componentes.
 - Nenhuma migração criada. Entidades previstas para as próximas fases:
   `Customer`, `Order`/`OrderItem`, `BirthData`, `PalmPhoto` (com política de
   retenção), `Report`/`ReportChapter`, `ConsentRecord`.
+
+## Motor astrológico (Fase 02B — experimental)
+
+- Detalhes, convenções e resultados: `docs/fase-02a-motor-astrologico.md` e
+  `docs/fase-02b-prova-de-viabilidade.md`.
+- O cálculo roda **apenas no servidor** (`server-only`, runtime Node.js
+  padrão). Componentes visuais nunca importam o motor; consomem `NatalChart`.
+- `sweph` é um addon nativo: `serverExternalPackages` + binários Linux e
+  arquivos `.se1` em `outputFileTracingIncludes` (`next.config.ts`).
+- Efemérides em `ephe/` (não versionado): `npm run ephe:fetch`.
+- **Swiss Ephemeris sob AGPL**: uso interno; nenhum serviço público antes do
+  licenciamento. A rota `/api/dev/astro-poc` responde 404 sem
+  `SIDERA_ASTRO_POC=1`.
 
 ## Segurança
 

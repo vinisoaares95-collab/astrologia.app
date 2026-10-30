@@ -21,6 +21,10 @@ npm install
 ```
 
 ```bash
+npm run ephe:fetch   # efemérides do motor astrológico (necessário para testes)
+```
+
+```bash
 npm run dev
 ```
 
@@ -43,6 +47,7 @@ Opcional: copie `.env.example` para `.env` para definir variáveis.
 | `npm run format`      | Prettier (com ordenação de classes Tailwind) |
 | `npm run db:generate` | Gera o Prisma Client                         |
 | `npm run db:validate` | Valida o schema Prisma                       |
+| `npm run ephe:fetch`  | Baixa e confere os arquivos de efemérides    |
 
 ## Telas
 

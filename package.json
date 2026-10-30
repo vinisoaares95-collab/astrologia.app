@@ -15,7 +15,9 @@
     "check": "npm run typecheck && npm run lint && npm run test",
     "db:generate": "prisma generate",
     "db:validate": "prisma validate",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "ephe:fetch": "node scripts/fetch-ephemeris.mjs",
+    "pretest": "node scripts/fetch-ephemeris.mjs --if-missing"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",
@@ -24,7 +26,8 @@
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "sweph": "2.10.3-8"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
@@ -36,6 +39,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.1.2",
+    "astronomy-engine": "2.1.19",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "jsdom": "^29.1.1",

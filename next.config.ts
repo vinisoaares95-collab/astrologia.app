@@ -16,6 +16,18 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // Addon nativo (N-API): carregado com `require` do Node, sem bundling.
+  serverExternalPackages: ["sweph"],
+  // Arquivos de efemérides (baixados por `npm run ephe:fetch`) precisam
+  // acompanhar a função que usa o motor.
+  outputFileTracingIncludes: {
+    // O node-gyp-build escolhe o binário em tempo de execução, então o
+    // rastreador não o detecta: incluímos os binários Linux explicitamente.
+    "/api/dev/astro-poc": [
+      "./ephe/**/*",
+      "./node_modules/sweph/prebuilds/linux-*/**/*",
+    ],
+  },
   turbopack: {
     rules: {
       "*.css": {

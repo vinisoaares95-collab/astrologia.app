@@ -46,6 +46,19 @@ Versões verificadas no npm em 30/10/2026.
   capítulos e não cobre a oferta.
 - Abas do relatório com navegação por setas, Home e End (padrão WAI-ARIA).
 
+## Motor astrológico (Fases 02A e 02B)
+
+| Tema       | Decisão                                                                 | Motivo                                          |
+| ---------- | ----------------------------------------------------------------------- | ----------------------------------------------- |
+| Motor      | Swiss Ephemeris via `sweph` 2.10.3-8, provisório                        | Precisão de referência; ASC/MC/Placidus prontos |
+| Licença    | AGPL, uso interno; **sem serviço público** até resolver o licenciamento | Decisão da revisão da Fase 02A                  |
+| Isolamento | Interface `EphemerisProvider`                                           | Permite trocar de motor                         |
+| Efemérides | `sepl_18`/`semo_18` (1800–2399), baixadas com SHA-256                   | Não redistribuir arquivos AGPL no repositório   |
+| Fallbacks  | Recusar o modo Moshier e a troca automática para Porfírio               | Precisão e sistema de casas sempre conhecidos   |
+| Tempo      | UTC → JD via `swe_utc_to_jd`; antes de 1972, entrada tratada como UT1   | Não existia UTC com segundos bissextos          |
+| Orbes      | `orbs-v1` (8/8/7/7/5, +2 luminares, 5 ângulos), versionado              | Aprovado provisoriamente                        |
+| Validação  | JPL DE421 (Skyfield), oráculo próprio de casas, Astronomy Engine        | Referências independentes do motor              |
+
 ## Limitações conhecidas
 
 - **HEIC** é aceito, mas só tem pré-visualização no Safari; em outros
