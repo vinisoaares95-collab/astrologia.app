@@ -16,5 +16,5 @@ export async function searchPlacesAction(query: unknown) {
 /** Resumo de uma localidade pelo id (usado pelos casos demonstrativos). */
 export async function getPlaceAction(id: unknown) {
   if (typeof id !== "string" || id.length > 40) return null;
-  return getPlaceSummary(id) ?? null;
+  return (await getPlaceSummary(id)) ?? null;
 }

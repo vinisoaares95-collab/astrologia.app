@@ -214,8 +214,9 @@ export function PlaceCombobox({
               aria-disabled
               className="px-3 py-3 text-sm text-fg-muted"
             >
-              Nenhuma cidade encontrada. Confira a grafia ou busque a cidade
-              grande mais próxima.
+              Nenhuma localidade encontrada. Refine com “cidade, país” (ex.:
+              Venice, Itália). Se ela não estiver no catálogo, o Sidera não
+              calcula com segurança e não a substitui por outra cidade.
             </li>
           ) : (
             results.map((place, i) => (
@@ -261,7 +262,7 @@ export function PlaceCombobox({
         </p>
       ) : (
         <p id={hintId} className="px-1 text-xs text-fg-subtle">
-          Escolha a cidade na lista — homônimas aparecem com o estado ou país.
+          Escolha a cidade na lista. Homônimas: use “cidade, estado ou país”.
         </p>
       )}
       <p className="px-1 text-[0.65rem] text-fg-subtle/80">

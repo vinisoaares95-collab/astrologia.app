@@ -96,6 +96,10 @@ mexer em componentes.
 - Conversão local → UTC via `Intl` com fuso IANA explícito: inexistente e
   duplicado nunca são resolvidos automaticamente.
 - Nada é persistido; o motor astrológico não é chamado nesta fase.
+- Fase 02C.1: catálogo estendido (GeoNames cities1000) lido sob demanda;
+  base de fusos fixada em `tzdata/2026f` (`ICU_TIMEZONE_FILES_DIR`), com
+  bloqueio se a versão do processo divergir e snapshot de regressão das
+  transições brasileiras. Detalhes em `docs/fase-02c1-consolidacao.md`.
 
 ## Segurança
 

@@ -167,6 +167,21 @@ export function normalizeBirthData(
 
   const timeZone = place.tz;
   const localDate = date.value;
+
+  // Datas civis inteiras puladas (ex.: 30/12/2011 em Samoa) não são datas de
+  // nascimento possíveis — vale para qualquer precisão de horário.
+  const bounds = localDayBounds(localDate, timeZone);
+  if (!bounds) {
+    return {
+      status: "invalid",
+      issues: [
+        issue("date", "DATE_NONEXISTENT_IN_ZONE", {
+          message: `${formatDate(localDate)} não existiu no calendário civil de ${place.name}: os relógios saltaram o dia inteiro numa mudança de fuso.`,
+        }),
+      ],
+    };
+  }
+
   const summary = { ...toSummary(place), timeZone };
   const provenance = {
     tzdbVersion: deps.tzdbVersion,
@@ -179,7 +194,6 @@ export function normalizeBirthData(
   const warnings: Warning[] = [];
 
   if (input.time.precision === "unknown") {
-    const bounds = localDayBounds(localDate, timeZone);
     const noon = resolveLocalTime(
       { ...localDate, hour: 12, minute: 0 },
       timeZone,

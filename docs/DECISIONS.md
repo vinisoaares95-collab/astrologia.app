@@ -73,6 +73,18 @@ Versões verificadas no npm em 30/10/2026.
 | Horário desconhecido                  | Dia local em UTC + meio-dia de referência                                                             | Convenção declarada; sem ângulos                                 |
 | "Hoje" no servidor                    | Data em UTC+14                                                                                        | Nunca recusar um nascimento de hoje em nenhum fuso               |
 
+## Consolidação (Fase 02C.1)
+
+| Tema                             | Decisão                                                                | Motivo                                                                         |
+| -------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Localidades estrangeiras menores | Catálogo offline GeoNames cities1000 (+128.913), carregado sob demanda | Sem serviço externo; a política do Nominatim proíbe autocompletar; privacidade |
+| Localidade fora do catálogo      | Recusar; nunca substituir por cidade próxima                           | Coordenadas erradas alteram Ascendente e casas                                 |
+| Versão da tzdb                   | Fixada em **2026f** via arquivos ICU (`tzdata/`), não a do Node        | Resultados não mudam em silêncio; a 2026f corrige o Brasil em 1965/1966        |
+| Divergência de versão            | Bloquear a normalização (`TZDB_VERSION_MISMATCH`)                      | Melhor indisponível do que incorreto                                           |
+| Regressão                        | Snapshot de 757 transições brasileiras, conferido contra o Python      | Qualquer mudança exige revisão explícita                                       |
+| Segundos                         | `UtcInstant.second` opcional, sem arredondamento                       | Hora média local tem segundos; 28 s mudam o Ascendente em ~7′                  |
+| Datas civis puladas              | Recusadas (`DATE_NONEXISTENT_IN_ZONE`) com qualquer precisão           | Não existem como data de nascimento                                            |
+
 ## Limitações conhecidas
 
 - **HEIC** é aceito, mas só tem pré-visualização no Safari; em outros

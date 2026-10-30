@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import reference from "./__fixtures__/zoneinfo-reference.json";
 import {
   formatOffset,
+  localDateExists,
   localDayBounds,
   resolveLocalTime,
   toLocalDateTime,
@@ -136,7 +137,7 @@ describe("localDayBounds", () => {
     const b = localDayBounds(
       { year: 1985, month: 11, day: 2 },
       "America/Sao_Paulo",
-    );
+    )!;
     expect(b.start.utc).toBe("1985-11-02T03:00:00Z"); // 01:00 local, UTC−2
     expect(b.endExclusive.utc).toBe("1985-11-03T02:00:00Z");
   });
@@ -145,7 +146,7 @@ describe("localDayBounds", () => {
     const b = localDayBounds(
       { year: 1990, month: 5, day: 12 },
       "America/Recife",
-    );
+    )!;
     expect(b.endExclusive.epochMs - b.start.epochMs).toBe(24 * 3_600_000);
   });
 
@@ -153,8 +154,36 @@ describe("localDayBounds", () => {
     const b = localDayBounds(
       { year: 1986, month: 3, day: 14 },
       "America/Sao_Paulo",
-    );
+    )!;
     expect(b.endExclusive.epochMs - b.start.epochMs).toBe(25 * 3_600_000);
+  });
+});
+
+describe("datas civis inteiramente puladas", () => {
+  it.each([
+    ["Pacific/Apia", { year: 2011, month: 12, day: 30 }],
+    ["Pacific/Kiritimati", { year: 1994, month: 12, day: 31 }],
+  ] as const)("%s não teve o dia %o", (zone, date) => {
+    expect(localDayBounds(date, zone)).toBeNull();
+    expect(localDateExists(date, zone)).toBe(false);
+    expect(resolveLocalTime({ ...date, hour: 12, minute: 0 }, zone).kind).toBe(
+      "nonexistent",
+    );
+  });
+
+  it("os dias vizinhos existem normalmente", () => {
+    expect(
+      localDateExists({ year: 2011, month: 12, day: 29 }, "Pacific/Apia"),
+    ).toBe(true);
+    expect(
+      localDateExists({ year: 2011, month: 12, day: 31 }, "Pacific/Apia"),
+    ).toBe(true);
+    // 29/12/2011 em Samoa teve 24 h; o dia seguinte local já é 31/12.
+    const before = localDayBounds(
+      { year: 2011, month: 12, day: 29 },
+      "Pacific/Apia",
+    )!;
+    expect(before.endExclusive.utc).toBe("2011-12-30T10:00:00Z");
   });
 });
 
@@ -199,7 +228,7 @@ describe("independência do fuso do computador", () => {
       });
       expect(
         localDayBounds({ year: 1985, month: 11, day: 2 }, "America/Sao_Paulo")
-          .start.utc,
+          ?.start.utc,
       ).toBe("1985-11-02T03:00:00Z");
     },
   );

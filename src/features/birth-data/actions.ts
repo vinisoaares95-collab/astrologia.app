@@ -1,7 +1,13 @@
 "use server";
 
-import { getPlaceRecord } from "../places/repository";
+import {
+  TZDB_EXPECTED_VERSION,
+  isExpectedTzdb,
+  runtimeTzdbVersion,
+} from "../birth-time/tzdb";
 import { offsetSecondsAt } from "../birth-time/zoned-time";
+import { getPlaceLookup } from "../places/repository";
+import { ISSUE_MESSAGES } from "./messages";
 import {
   APPROXIMATE_MARGINS,
   type BirthDataInput,
@@ -77,9 +83,26 @@ export async function normalizeBirthAction(
       ],
     };
   }
+  // Nunca converter com uma base de fusos diferente da validada: os
+  // resultados mudariam sem aviso (ex.: Brasil 1965/1966 entre 2025b e 2026f).
+  if (!isExpectedTzdb()) {
+    console.error(
+      `tzdb ${runtimeTzdbVersion()} em uso; esperada ${TZDB_EXPECTED_VERSION}. Defina ICU_TIMEZONE_FILES_DIR (tzdata/README.md).`,
+    );
+    return {
+      status: "invalid",
+      issues: [
+        {
+          field: "time",
+          code: "TZDB_VERSION_MISMATCH",
+          message: ISSUE_MESSAGES.TZDB_VERSION_MISMATCH,
+        },
+      ],
+    };
+  }
   return normalizeBirthData(input, {
-    getPlace: getPlaceRecord,
+    getPlace: await getPlaceLookup(),
     today: latestToday(),
-    tzdbVersion: process.versions.tz ?? "desconhecida",
+    tzdbVersion: runtimeTzdbVersion(),
   });
 }

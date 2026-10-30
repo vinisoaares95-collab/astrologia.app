@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { swissEphemeris } from "../engine/swiss-ephemeris";
 import type { ChartRequest } from "../domain/types";
+import { utcInstantFromIso } from "../domain/utc-instant";
 import { computeNatalChart } from "./compute-natal-chart";
 
 // Nascimento fictício: 12/05/1990, 17:30 UTC, São Paulo.
@@ -95,6 +96,15 @@ describe("computeNatalChart", () => {
     expect(mercury.retrograde).toBe(true);
   });
 
+  it("aceita instante normalizado com segundos (hora média local, 1910)", () => {
+    const chart = computeNatalChart(
+      { ...base, instant: utcInstantFromIso("1910-01-01T15:06:28Z") },
+      swissEphemeris,
+    );
+    // JD(UT) de referência: 1910-01-01 15:06:28 UT1 (JPL DE421 via Skyfield).
+    expect(chart.julianDay.ut).toBeCloseTo(2418673.12949074, 7);
+  });
+
   it.each([
     [
       "data inexistente",
@@ -134,6 +144,21 @@ describe("computeNatalChart", () => {
     [
       "valor não numérico",
       { location: { latitude: Number.NaN, longitude: 0 } },
+      "INVALID_DATE",
+    ],
+    [
+      "segundo 60 (intercalar)",
+      { instant: { ...base.instant, second: 60 } },
+      "INVALID_DATE",
+    ],
+    [
+      "segundo negativo",
+      { instant: { ...base.instant, second: -1 } },
+      "INVALID_DATE",
+    ],
+    [
+      "segundo não numérico",
+      { instant: { ...base.instant, second: Number.NaN } },
       "INVALID_DATE",
     ],
   ] as const)("recusa %s", (_label, patch, code) => {

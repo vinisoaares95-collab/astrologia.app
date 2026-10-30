@@ -41,13 +41,15 @@ export type IssueCode =
   | "DATE_NONEXISTENT"
   | "DATE_BEFORE_MIN"
   | "DATE_FUTURE"
+  | "DATE_NONEXISTENT_IN_ZONE"
   | "TIME_REQUIRED"
   | "TIME_FORMAT"
   | "TIME_NONEXISTENT"
   | "MARGIN_INVALID"
   | "PLACE_REQUIRED"
   | "PLACE_NOT_FOUND"
-  | "PLACE_INCOMPLETE";
+  | "PLACE_INCOMPLETE"
+  | "TZDB_VERSION_MISMATCH";
 
 export type Issue = {
   field: "date" | "time" | "place";

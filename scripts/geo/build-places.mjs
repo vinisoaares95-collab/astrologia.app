@@ -240,6 +240,47 @@ if (report.brMismatches.length) {
   for (const m of report.brMismatches) console.error("  " + m);
 }
 
+// ---------- Exterior estendido (Fase 02C.1) ----------
+// Demais cidades do GeoNames (cities1000: ≥ 1.000 habitantes ou população
+// desconhecida), carregadas no servidor só quando a busca precisa delas.
+// Formato compacto: tabelas de regiões e fusos + linhas em array.
+const mainIds = new Set(world.map((c) => c.id));
+const admin1Table = [];
+const admin1Index = new Map();
+const zoneTable = [];
+const zoneIndex = new Map();
+const intern = (table, index, value) => {
+  if (value == null) return -1;
+  if (!index.has(value)) {
+    index.set(value, table.length);
+    table.push(value);
+  }
+  return index.get(value);
+};
+const extendedRows = [];
+const extendedTzCandidates = {};
+for (const c of allTheCities) {
+  if (c.country === "BR" || mainIds.has(`geonames:${c.cityId}`)) continue;
+  const [lon, lat] = c.loc.coordinates;
+  const admin = admin1Names.find(
+    (a) => a.code === `${c.country}.${c.adminCode}`,
+  );
+  const zones = zonesAt(lat, lon);
+  if (zones.length !== 1) extendedTzCandidates[c.cityId] = zones;
+  extendedRows.push([
+    c.cityId,
+    c.name,
+    intern(admin1Table, admin1Index, admin ? admin.name : null),
+    c.country,
+    round(lat),
+    round(lon),
+    zones.length === 1 ? intern(zoneTable, zoneIndex, zones[0]) : -1,
+    c.population,
+    ...(c.altName ? [c.altName] : []),
+  ]);
+}
+extendedRows.sort((a, b) => a[0] - b[0]);
+
 const byName = (a, b) =>
   a.name.localeCompare(b.name, "pt-BR") || a.country.localeCompare(b.country);
 brazil.sort(byName);
@@ -247,6 +288,26 @@ world.sort(byName);
 
 writeFileSync(path.join(OUT, "places-br.json"), JSON.stringify(brazil));
 writeFileSync(path.join(OUT, "places-world.json"), JSON.stringify(world));
+writeFileSync(
+  path.join(OUT, "places-world-extended.json"),
+  JSON.stringify({
+    columns: [
+      "geonameId",
+      "name",
+      "admin1",
+      "country",
+      "lat",
+      "lon",
+      "tz",
+      "pop",
+      "altName?",
+    ],
+    admin1: admin1Table,
+    zones: zoneTable,
+    tzCandidates: extendedTzCandidates,
+    rows: extendedRows,
+  }),
+);
 const meta = {
   generatedBy: "scripts/geo/build-places.mjs",
   sources: {
@@ -261,6 +322,11 @@ const meta = {
       license: "CC BY 4.0",
       minPopulation: WORLD_MIN_POPULATION,
     },
+    worldExtended: {
+      dataset: "GeoNames cities1000 via all-the-cities",
+      license: "CC BY 4.0",
+      note: "demais cidades estrangeiras, carregadas sob demanda",
+    },
     timeZones: {
       dataset: "timezone-boundary-builder via geo-tz/all",
       license: "código MIT; dados ODbL (OpenStreetMap)",
@@ -268,12 +334,18 @@ const meta = {
     zoneTable: "IANA tzdb zone1970.tab (domínio público)",
   },
   toolVersions,
-  counts: { brazil: brazil.length, world: world.length },
+  counts: {
+    brazil: brazil.length,
+    world: world.length,
+    worldExtended: extendedRows.length,
+  },
   report: {
     brazilPopulationMatched: report.brPopulationMatched,
     brazilPolygonDecided: report.brPolygonDecided,
     brazilTableVsPolygonMismatches: report.brMismatches.length,
     worldWithoutSingleTimeZone: report.worldAmbiguousTz,
+    worldExtendedWithoutSingleTimeZone:
+      Object.keys(extendedTzCandidates).length,
   },
 };
 writeFileSync(

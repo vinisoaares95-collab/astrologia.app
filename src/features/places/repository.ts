@@ -1,40 +1,104 @@
 import "server-only";
 
-import brazil from "./data/places-br.json";
-import meta from "./data/places-meta.json";
-import world from "./data/places-world.json";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
 import { buildIndex, searchPlaces, toSummary, type PlaceIndex } from "./search";
 import type { PlaceRecord, PlaceSummary } from "./types";
 
 /*
- * Base de localidades carregada apenas no servidor (~1,5 MB de JSON).
- * Volume proporcional ao MVP: 5.571 municípios do IBGE + cidades
- * estrangeiras com 100 mil habitantes ou mais e capitais nacionais.
+ * Base de localidades carregada apenas no servidor, sob demanda.
+ * - principal (~1,5 MB): 5.571 municípios do IBGE + cidades estrangeiras com
+ *   100 mil habitantes ou mais e capitais;
+ * - estendida (~7,4 MB): demais cidades estrangeiras do GeoNames (≥ 1.000
+ *   habitantes), formato compacto. Veja docs/fase-02c1-consolidacao.md.
  */
 
-let index: PlaceIndex | null = null;
+type ExtendedFile = {
+  admin1: string[];
+  zones: string[];
+  tzCandidates: Record<string, string[]>;
+  rows: [
+    number,
+    string,
+    number,
+    string,
+    number,
+    number,
+    number,
+    number,
+    string?,
+  ][];
+};
 
-function getIndex(): PlaceIndex {
-  index ??= buildIndex([
-    ...(brazil as PlaceRecord[]),
-    ...(world as PlaceRecord[]),
-  ]);
-  return index;
+/** Converte o formato compacto do catálogo estendido em registros. */
+export function decodeExtended(file: ExtendedFile): PlaceRecord[] {
+  return file.rows.map(
+    ([id, name, admin1, country, lat, lon, tz, pop, altName]) => ({
+      id: `geonames:${id}`,
+      name,
+      admin1: admin1 >= 0 ? file.admin1[admin1] : null,
+      country,
+      lat,
+      lon,
+      tz: tz >= 0 ? file.zones[tz] : null,
+      ...(tz < 0 && file.tzCandidates[id]
+        ? { tzCandidates: file.tzCandidates[id] }
+        : {}),
+      pop,
+      ...(altName ? { alt: [altName] } : {}),
+    }),
+  );
 }
 
-export function findPlaces(query: string) {
-  return searchPlaces(getIndex(), query);
+// Leitura com JSON.parse (bem mais rápida que importar 7 MB como módulo JS).
+// Os arquivos entram no deploy via outputFileTracingIncludes (next.config.ts);
+// o marcador evita que o Turbopack rastreie o projeto inteiro.
+const DATA_DIR = path.join(process.cwd(), "src/features/places/data");
+const readData = (file: string) =>
+  readFile(
+    /*turbopackIgnore: true*/ path.join(
+      /*turbopackIgnore: true*/ DATA_DIR,
+      file,
+    ),
+    "utf8",
+  );
+
+let loading: Promise<PlaceIndex> | null = null;
+
+function getIndex(): Promise<PlaceIndex> {
+  loading ??= (async () => {
+    const [brazil, world, extended] = await Promise.all([
+      readData("places-br.json"),
+      readData("places-world.json"),
+      readData("places-world-extended.json"),
+    ]);
+    return buildIndex([
+      ...(JSON.parse(brazil) as PlaceRecord[]),
+      ...(JSON.parse(world) as PlaceRecord[]),
+      ...decodeExtended(JSON.parse(extended) as ExtendedFile),
+    ]);
+  })();
+  return loading;
 }
 
-export function getPlaceRecord(id: string): PlaceRecord | undefined {
-  return getIndex().byId.get(id);
+export async function findPlaces(query: string) {
+  return searchPlaces(await getIndex(), query);
 }
 
-export function getPlaceSummary(id: string): PlaceSummary | undefined {
-  const record = getPlaceRecord(id);
+/** Resolve o id escolhido (síncrono após a carga, para a normalização). */
+export async function getPlaceLookup(): Promise<
+  (id: string) => PlaceRecord | undefined
+> {
+  const index = await getIndex();
+  return (id) => index.byId.get(id);
+}
+
+export async function getPlaceSummary(
+  id: string,
+): Promise<PlaceSummary | undefined> {
+  const record = (await getIndex()).byId.get(id);
   return record && toSummary(record);
 }
-
-export const placesDatasetInfo = meta;
 
 export { PLACES_ATTRIBUTION } from "./attribution";

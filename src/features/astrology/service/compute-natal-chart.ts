@@ -30,6 +30,7 @@ function validateRequest(
     instant.day,
     instant.hour,
     instant.minute,
+    instant.second ?? 0,
     location.latitude,
     location.longitude,
   ];
@@ -48,6 +49,12 @@ function validateRequest(
       "INVALID_DATE",
       "Horário fora do intervalo 00:00–23:59.",
     );
+  }
+  // Segundos são aceitos com fração, mas nunca ajustados: 60 (segundo
+  // intercalar) ou valores fora da faixa são recusados.
+  const second = instant.second ?? 0;
+  if (second < 0 || second >= 60) {
+    throw new ChartError("INVALID_DATE", "Segundos fora do intervalo 0–59.");
   }
   const { from, to } = provider.info.supportedYears;
   if (instant.year < from || instant.year > to) {

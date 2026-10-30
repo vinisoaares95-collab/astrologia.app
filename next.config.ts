@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
   // Arquivos de efemérides (baixados por `npm run ephe:fetch`) precisam
   // acompanhar a função que usa o motor.
   outputFileTracingIncludes: {
+    // Base de localidades (lida com fs) e base de fusos fixada (tzdata/).
+    "/dados-de-nascimento": [
+      "./src/features/places/data/*.json",
+      "./tzdata/**/*",
+    ],
     // O node-gyp-build escolhe o binário em tempo de execução, então o
     // rastreador não o detecta: incluímos os binários Linux explicitamente.
     "/api/dev/astro-poc": [

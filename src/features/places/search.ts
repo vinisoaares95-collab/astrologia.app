@@ -12,8 +12,15 @@ export function foldText(value: string): string {
 
 const countryNames = new Intl.DisplayNames(["pt-BR"], { type: "region" });
 
+const countryNameCache = new Map<string, string>();
+
 export function countryName(code: string): string {
-  return countryNames.of(code) ?? code;
+  let name = countryNameCache.get(code);
+  if (name === undefined) {
+    name = countryNames.of(code) ?? code;
+    countryNameCache.set(code, name);
+  }
+  return name;
 }
 
 export function toSummary(record: PlaceRecord): PlaceSummary {
@@ -34,7 +41,12 @@ export function toSummary(record: PlaceRecord): PlaceSummary {
   };
 }
 
-type IndexedPlace = { record: PlaceRecord; keys: string[] };
+type IndexedPlace = {
+  record: PlaceRecord;
+  keys: string[];
+  /** Estado/região, UF, código e nome do país (para "cidade, contexto"). */
+  context: string[];
+};
 
 export type PlaceIndex = {
   entries: IndexedPlace[];
@@ -46,6 +58,14 @@ export function buildIndex(records: readonly PlaceRecord[]): PlaceIndex {
     entries: records.map((record) => ({
       record,
       keys: [record.name, ...(record.alt ?? [])].map(foldText),
+      context: [
+        record.admin1,
+        record.admin1Code,
+        record.country,
+        countryName(record.country),
+      ]
+        .filter((v): v is string => Boolean(v))
+        .map(foldText),
     })),
     byId: new Map(records.map((r) => [r.id, r])),
   };
@@ -56,6 +76,8 @@ const DEFAULT_LIMIT = 12;
 
 /**
  * Busca por nome (ou nome alternativo), ignorando acentos e caixa.
+ * Aceita contexto após uma vírgula — "Venice, Itália", "Santa Maria, RS" —
+ * comparado com o início do estado/região, da UF ou do país.
  * Ordem: correspondência exata > início do nome > início de uma palavra;
  * depois, população (Brasil com peso maior, pelo público do produto).
  * NUNCA escolhe uma localidade: devolve todas as candidatas para seleção.
@@ -65,11 +87,14 @@ export function searchPlaces(
   query: string,
   limit = DEFAULT_LIMIT,
 ): { results: PlaceSummary[]; total: number } {
-  const q = foldText(query);
+  const [namePart, ...rest] = query.split(",");
+  const q = foldText(namePart);
+  const ctx = foldText(rest.join(" "));
   if (q.length < MIN_QUERY_LENGTH) return { results: [], total: 0 };
 
   const scored: { record: PlaceRecord; tier: number; weight: number }[] = [];
-  for (const { record, keys } of index.entries) {
+  for (const { record, keys, context } of index.entries) {
+    if (ctx && !context.some((c) => c.startsWith(ctx))) continue;
     let tier = 0;
     for (const key of keys) {
       if (key === q) tier = Math.max(tier, 3);

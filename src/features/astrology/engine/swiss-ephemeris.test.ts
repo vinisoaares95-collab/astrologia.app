@@ -27,8 +27,8 @@ const TOLERANCE = {
 type Case = (typeof reference.cases)[number];
 
 function instantOf(c: Case) {
-  const [year, month, day, hour, minute] = c.utc;
-  return { year, month, day, hour, minute };
+  const [year, month, day, hour, minute, second = 0] = c.utc;
+  return { year, month, day, hour, minute, second };
 }
 
 const ASTRONOMY_BODY: Record<Body, Astronomy.Body> = {
@@ -63,8 +63,10 @@ describe.each(reference.cases)("$id", (c) => {
 
   it.each(BODIES)("%s coincide com o Astronomy Engine (±1′)", (body) => {
     const p = swissEphemeris.bodyPosition(jd.ut, body);
-    const [y, mo, d, h, mi] = c.utc;
-    const time = Astronomy.MakeTime(new Date(Date.UTC(y, mo - 1, d, h, mi)));
+    const [y, mo, d, h, mi, sec = 0] = c.utc;
+    const time = Astronomy.MakeTime(
+      new Date(Date.UTC(y, mo - 1, d, h, mi, sec)),
+    );
     const ecl = Astronomy.Ecliptic(
       Astronomy.GeoVector(ASTRONOMY_BODY[body], time, true),
     );
@@ -90,6 +92,37 @@ describe.each(reference.cases)("$id", (c) => {
         );
       });
     }
+  });
+});
+
+describe("precisão de segundos", () => {
+  it("o dia juliano incorpora os segundos exatamente, sem arredondar", () => {
+    const base = { year: 1910, month: 1, day: 1, hour: 15, minute: 6 };
+    const without = swissEphemeris.julianDay(base);
+    const withSeconds = swissEphemeris.julianDay({ ...base, second: 28 });
+    const fractional = swissEphemeris.julianDay({ ...base, second: 28.5 });
+    expect((withSeconds.ut - without.ut) * 86400).toBeCloseTo(28, 4);
+    expect((fractional.ut - without.ut) * 86400).toBeCloseTo(28.5, 4);
+  });
+
+  it("ignorar os segundos da hora média local mudaria o Ascendente além da tolerância", () => {
+    // Referência: DE421/oráculo no instante 1910-01-01 15:06:28 UT1.
+    const ref = reference.cases.find(
+      (c) => c.id === "sao-paulo-1910-lmt-segundos",
+    )!;
+    const location = { latitude: ref.lat, longitude: ref.lon };
+    const exact = swissEphemeris.housesPlacidus(
+      swissEphemeris.julianDay(instantOf(ref)).ut,
+      location,
+    );
+    const truncated = swissEphemeris.housesPlacidus(
+      swissEphemeris.julianDay({ ...instantOf(ref), second: 0 }).ut,
+      location,
+    );
+    expect(angularSeparation(exact.asc, ref.asc)).toBeLessThan(TOLERANCE.angle);
+    expect(angularSeparation(truncated.asc, ref.asc)).toBeGreaterThan(
+      TOLERANCE.angle,
+    );
   });
 });
 

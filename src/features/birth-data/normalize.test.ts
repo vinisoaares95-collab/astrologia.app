@@ -264,6 +264,68 @@ describe("normalizeBirthData", () => {
     );
   });
 
+  describe("data civil inteiramente pulada (Samoa, 30/12/2011)", () => {
+    const apia = () => idOf("Apia", "WS");
+
+    it.each([
+      ["exato", { precision: "exact", value: "12:00" }],
+      [
+        "aproximado",
+        { precision: "approximate", value: "12:00", marginMinutes: 60 },
+      ],
+      ["desconhecido", { precision: "unknown" }],
+    ] as const)("é recusada com horário %s", (_label, time) => {
+      const r = normalizeBirthData(
+        { date: "30/12/2011", time, placeId: apia() },
+        deps,
+      );
+      expect(r.status).toBe("invalid");
+      if (r.status !== "invalid") return;
+      expect(r.issues).toHaveLength(1);
+      expect(r.issues[0]).toMatchObject({
+        field: "date",
+        code: "DATE_NONEXISTENT_IN_ZONE",
+      });
+      expect(r.issues[0].message).toContain("30/12/2011");
+    });
+
+    it("os dias vizinhos são aceitos", () => {
+      for (const date of ["29/12/2011", "31/12/2011"]) {
+        const r = normalizeBirthData(
+          { date, time: { precision: "unknown" }, placeId: apia() },
+          deps,
+        );
+        expect(r.status, date).toBe("ok");
+      }
+    });
+
+    it("Kiritimati, 31/12/1994 (localidade fictícia na base)", () => {
+      const kiritimati: PlaceRecord = {
+        id: "teste:kiritimati",
+        name: "Kiritimati",
+        admin1: "Line Islands",
+        country: "KI",
+        lat: 1.87,
+        lon: -157.4,
+        tz: "Pacific/Kiritimati",
+      };
+      const r = normalizeBirthData(
+        {
+          date: "31/12/1994",
+          time: { precision: "unknown" },
+          placeId: kiritimati.id,
+        },
+        {
+          ...deps,
+          getPlace: (id) => (id === kiritimati.id ? kiritimati : undefined),
+        },
+      );
+      expect(r.status === "invalid" && r.issues[0].code).toBe(
+        "DATE_NONEXISTENT_IN_ZONE",
+      );
+    });
+  });
+
   it("reúne todos os problemas de uma vez", () => {
     const r = exact("", "", null);
     expect(r.status === "invalid" && r.issues.map((i) => i.field)).toEqual([

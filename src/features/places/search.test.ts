@@ -127,3 +127,60 @@ describe("searchPlaces", () => {
     expect(kashgar.timeZone).toBeNull();
   });
 });
+
+describe("catálogo estendido (GeoNames, ≥ 1.000 habitantes)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { decodeExtended } = await import("./repository");
+  const extended = decodeExtended(
+    JSON.parse(
+      readFileSync(
+        "src/features/places/data/places-world-extended.json",
+        "utf8",
+      ),
+    ),
+  );
+  const full = buildIndex([...records, ...extended]);
+  const find = (q: string) => searchPlaces(full, q, 50);
+
+  it("não repete localidades do catálogo principal nem inclui o Brasil", () => {
+    const mainIds = new Set(records.map((r) => r.id));
+    expect(extended.some((r) => mainIds.has(r.id))).toBe(false);
+    expect(extended.some((r) => r.country === "BR")).toBe(false);
+    expect(extended.length).toBeGreaterThan(100_000);
+  });
+
+  it("encontra cidades estrangeiras menores, com coordenadas e fuso próprios", () => {
+    const sintra = find("Sintra").results.find((r) => r.country === "PT");
+    expect(sintra).toMatchObject({ timeZone: "Europe/Lisbon" });
+    expect(sintra!.coordinates.latitude).toBeCloseTo(38.8, 1);
+  });
+
+  it("lista homônimas e permite filtrar por país ou região após a vírgula", () => {
+    const all = find("Venice").results.filter((r) => r.name === "Venice");
+    expect(new Set(all.map((r) => r.country))).toEqual(new Set(["IT", "US"]));
+    const italy = find("Venice, Itália").results;
+    expect(italy.map((r) => r.country)).toEqual(["IT"]);
+    expect(italy[0].timeZone).toBe("Europe/Rome");
+    expect(
+      find("Venice, Florida").results.every((r) => r.region === "Florida"),
+    ).toBe(true);
+    expect(find("Santa Maria, RS").results[0]).toMatchObject({
+      regionCode: "RS",
+    });
+  });
+
+  it("todas as localidades estendidas têm fuso válido ou ficam sem fuso (nunca adivinhado)", () => {
+    const zones = new Set(
+      extended.map((r) => r.tz).filter((tz): tz is string => tz !== null),
+    );
+    for (const tz of zones) {
+      expect(
+        () => new Intl.DateTimeFormat("en", { timeZone: tz }),
+      ).not.toThrow();
+    }
+    const withoutTz = extended.filter((r) => r.tz === null);
+    expect(withoutTz.every((r) => (r.tzCandidates?.length ?? 0) > 1)).toBe(
+      true,
+    );
+  });
+});

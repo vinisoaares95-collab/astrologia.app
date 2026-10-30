@@ -82,8 +82,16 @@ export const swissEphemeris: EphemerisProvider = {
     supportedYears: EPHEMERIS_YEARS,
   },
 
-  julianDay({ year, month, day, hour, minute }: UtcInstant) {
-    const result = utc_to_jd(year, month, day, hour, minute, 0, C.SE_GREG_CAL);
+  julianDay({ year, month, day, hour, minute, second = 0 }: UtcInstant) {
+    const result = utc_to_jd(
+      year,
+      month,
+      day,
+      hour,
+      minute,
+      second,
+      C.SE_GREG_CAL,
+    );
     if (result.flag === C.ERR) {
       throw new ChartError("INVALID_DATE", result.error);
     }

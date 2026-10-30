@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "node scripts/with-tzdata.mjs next dev",
+    "build": "node scripts/with-tzdata.mjs next build",
+    "start": "node scripts/with-tzdata.mjs next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "node scripts/with-tzdata.mjs vitest run",
+    "test:watch": "node scripts/with-tzdata.mjs vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run typecheck && npm run lint && npm run test",
@@ -17,7 +17,8 @@
     "db:validate": "prisma validate",
     "postinstall": "prisma generate",
     "ephe:fetch": "node scripts/fetch-ephemeris.mjs",
-    "pretest": "node scripts/fetch-ephemeris.mjs --if-missing"
+    "pretest": "node scripts/fetch-ephemeris.mjs --if-missing",
+    "tz:diff": "node scripts/tz/compare-tzdb.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",

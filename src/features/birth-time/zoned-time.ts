@@ -204,11 +204,13 @@ export function clockBoundInstant(
  * Primeiro instante de um dia local e o primeiro instante do dia seguinte.
  * Se a meia-noite não existiu (início do horário de verão no Brasil), o dia
  * começa logo após o salto; se ocorreu duas vezes, na primeira ocorrência.
+ * Devolve `null` quando o dia civil inteiro não existiu naquele fuso
+ * (ex.: 30/12/2011 em Samoa, 31/12/1994 em Kiritimati).
  */
 export function localDayBounds(
   date: { year: number; month: number; day: number },
   timeZone: string,
-): { start: ResolvedInstant; endExclusive: ResolvedInstant } {
+): { start: ResolvedInstant; endExclusive: ResolvedInstant } | null {
   const startOf = (d: { year: number; month: number; day: number }) => {
     const r = resolveLocalTime({ ...d, hour: 0, minute: 0 }, timeZone);
     if (r.kind === "unique") return r.instant.epochMs;
@@ -223,17 +225,26 @@ export function localDayBounds(
       : shifted.earlier.epochMs;
   };
   const next = new Date(Date.UTC(date.year, date.month - 1, date.day + 1));
+  const start = startOf(date);
+  const end = startOf({
+    year: next.getUTCFullYear(),
+    month: next.getUTCMonth() + 1,
+    day: next.getUTCDate(),
+  });
+  // Dia sem nenhum instante: o relógio saltou o dia inteiro.
+  if (end <= start) return null;
   return {
-    start: toInstant(timeZone, startOf(date)),
-    endExclusive: toInstant(
-      timeZone,
-      startOf({
-        year: next.getUTCFullYear(),
-        month: next.getUTCMonth() + 1,
-        day: next.getUTCDate(),
-      }),
-    ),
+    start: toInstant(timeZone, start),
+    endExclusive: toInstant(timeZone, end),
   };
+}
+
+/** O dia civil existiu naquele fuso? */
+export function localDateExists(
+  date: { year: number; month: number; day: number },
+  timeZone: string,
+): boolean {
+  return localDayBounds(date, timeZone) !== null;
 }
 
 /** Lê o horário local de um instante (para exibir datas de conferência). */

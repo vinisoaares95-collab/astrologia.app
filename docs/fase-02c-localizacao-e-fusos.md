@@ -1,5 +1,7 @@
 # Sidera — Fase 02C · Localização e fusos históricos
 
+> **Atualizado pela Fase 02C.1** (`docs/fase-02c1-consolidacao.md`): catálogo internacional estendido (≥ 1.000 habitantes), base de fusos fixada em **IANA 2026f** (não mais a 2025b do runtime), segundos aceitos pelo motor e recusa de datas civis inexistentes.
+
 Data: 30/10/2026 · Escopo: normalização dos dados de nascimento, busca de cidades e conversão de horário local para UTC. Não chama o motor astrológico, não persiste dados e não faz deploy.
 
 ---

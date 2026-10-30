@@ -48,6 +48,12 @@ Opcional: copie `.env.example` para `.env` para definir variáveis.
 | `npm run db:generate` | Gera o Prisma Client                         |
 | `npm run db:validate` | Valida o schema Prisma                       |
 | `npm run ephe:fetch`  | Baixa e confere os arquivos de efemérides    |
+| `npm run tz:diff`     | Compara transições de fuso entre versões     |
+
+`dev`, `build`, `start` e `test` rodam com a base de fusos fixada em
+`tzdata/2026f` (via `scripts/with-tzdata.mjs`). Rodar `next` diretamente usa a
+base embutida no Node, e a normalização de horários fica bloqueada. Veja
+`tzdata/README.md`.
 
 A base de localidades é gerada por `scripts/geo/build-places.mjs`; veja
 `docs/fase-02c-localizacao-e-fusos.md` (seção "Regenerar a base").

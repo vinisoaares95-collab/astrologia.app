@@ -12,6 +12,11 @@
       "license": "CC BY 4.0",
       "minPopulation": 100000
     },
+    "worldExtended": {
+      "dataset": "GeoNames cities1000 via all-the-cities",
+      "license": "CC BY 4.0",
+      "note": "demais cidades estrangeiras, carregadas sob demanda"
+    },
     "timeZones": {
       "dataset": "timezone-boundary-builder via geo-tz/all",
       "license": "código MIT; dados ODbL (OpenStreetMap)"
@@ -25,7 +30,8 @@
   },
   "counts": {
     "brazil": 5571,
-    "world": 4288
+    "world": 4288,
+    "worldExtended": 128913
   },
   "report": {
     "brazilPopulationMatched": 1929,
@@ -52,6 +58,7 @@
       "Altay/CN: Asia/Shanghai | Asia/Urumqi",
       "Aksu/CN: Asia/Urumqi | Asia/Shanghai",
       "Huocheng/CN: Asia/Shanghai | Asia/Urumqi"
-    ]
+    ],
+    "worldExtendedWithoutSingleTimeZone": 302
   }
 }

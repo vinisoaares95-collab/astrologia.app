@@ -38,6 +38,8 @@ CASES = [
     {"id": "equinocio-2000-limite", "utc": [2000, 3, 20, 7, 30], "lat": -15.7939, "lon": -47.8828, "note": "Sol a poucos minutos de arco de 0° Áries"},
     {"id": "mercurio-retro-2016", "utc": [2016, 9, 10, 12, 0], "lat": -12.9714, "lon": -38.5014, "note": "Mercúrio retrógrado"},
     {"id": "porto-alegre-1905", "utc": [1905, 3, 1, 12, 0], "lat": -30.0346, "lon": -51.2177, "note": "Início do século XX"},
+    {"id": "sao-paulo-1910-lmt-segundos", "utc": [1910, 1, 1, 15, 6, 28], "lat": -23.5505, "lon": -46.6333, "note": "Hora média local de São Paulo (UTC−03:06:28): instante com segundos"},
+    {"id": "recife-2020-segundos", "utc": [2020, 6, 15, 12, 34, 56], "lat": -8.0476, "lon": -34.8770, "note": "Instante moderno com segundos"},
     {"id": "manaus-2024-bissexto", "utc": [2024, 2, 29, 23, 59], "lat": -3.1190, "lon": -60.0217, "note": "29 de fevereiro, perto da virada de data"},
 ]
 
@@ -105,11 +107,12 @@ def main():
     earth = eph["earth"]
     out = []
     for case in CASES:
-        y, mo, d, h, mi = case["utc"]
+        y, mo, d, h, mi, *rest = case["utc"]
+        sec = rest[0] if rest else 0
         # UTC com segundos bissextos só existe a partir de 1972. Antes disso, o
         # horário civil seguia o Tempo Universal: tratamos a entrada como UT1
         # (mesma convenção do swe_utc_to_jd do Swiss Ephemeris).
-        t = ts.utc(y, mo, d, h, mi) if y >= 1972 else ts.ut1(y, mo, d, h, mi)
+        t = ts.utc(y, mo, d, h, mi, sec) if y >= 1972 else ts.ut1(y, mo, d, h, mi, sec)
         bodies = {}
         for key, target in BODIES.items():
             app = earth.at(t).observe(eph[target]).apparent()

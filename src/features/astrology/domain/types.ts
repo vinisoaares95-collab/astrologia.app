@@ -38,13 +38,18 @@ export type Sign = (typeof SIGNS)[number];
 export type AnglePoint = "asc" | "mc";
 export type ChartPoint = Body | AnglePoint;
 
-/** Instante em UTC (a conversão de horário local é escopo da Fase 02C). */
+/**
+ * Instante em UTC (antes de 1972, interpretado como UT1).
+ * `second` é opcional para compatibilidade; quando informado, é usado
+ * exatamente — inclusive a fração — sem arredondamento.
+ */
 export type UtcInstant = {
   year: number;
   month: number; // 1–12
   day: number;
   hour: number; // 0–23
   minute: number; // 0–59
+  second?: number; // 0 ≤ s < 60
 };
 
 export type GeoLocation = {

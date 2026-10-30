@@ -4,3 +4,4 @@ coverage
 package-lock.json
 src/generated
 src/features/places/data
+src/features/birth-time/__fixtures__/brazil-transitions.json
