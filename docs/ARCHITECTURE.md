@@ -39,6 +39,9 @@ src/
       domain/              #   funções puras: signos, casas, aspectos, orbes
       engine/              #   EphemerisProvider + adapter Swiss Ephemeris
       service/             #   computeNatalChart (validação + orquestração)
+    places/                # Localidades: base IBGE + GeoNames, busca (Fase 02C)
+    birth-time/            # Horário local → UTC com regras históricas IANA (Fase 02C)
+    birth-data/            # Formulário + normalização (contrato, Server Actions)
     palm-reading/          # Contexto da foto, validação, captura, prévia demo
     birth-data/            # Formulário e validação local
     report/                # Abas de capítulos e resumo da oferta
@@ -84,6 +87,15 @@ mexer em componentes.
 - **Swiss Ephemeris sob AGPL**: uso interno; nenhum serviço público antes do
   licenciamento. A rota `/api/dev/astro-poc` responde 404 sem
   `SIDERA_ASTRO_POC=1`.
+
+## Localização e fusos (Fase 02C)
+
+- Detalhes, fontes e limitações: `docs/fase-02c-localizacao-e-fusos.md`.
+- Base estática (~1,5 MB) carregada só no servidor; busca em memória por
+  Server Action. Gerada por `scripts/geo/build-places.mjs` (reproduzível).
+- Conversão local → UTC via `Intl` com fuso IANA explícito: inexistente e
+  duplicado nunca são resolvidos automaticamente.
+- Nada é persistido; o motor astrológico não é chamado nesta fase.
 
 ## Segurança
 

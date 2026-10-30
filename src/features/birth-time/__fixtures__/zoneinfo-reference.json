@@ -1,0 +1,337 @@
+{
+  "source": "Python zoneinfo + pacote tzdata (PyPI), independente do ICU do Node",
+  "generator": "scripts/reference/generate_zoneinfo_reference.py",
+  "versions": {
+    "tzdata": "2026.6",
+    "python": "3.13.17"
+  },
+  "cases": [
+    {
+      "id": "recife-comum",
+      "timeZone": "America/Recife",
+      "local": [1990, 5, 12, 14, 30],
+      "note": "Cidade brasileira, data comum",
+      "expected": {
+        "kind": "unique",
+        "utc": "1990-05-12T17:30:00Z",
+        "offsetSeconds": -10800
+      }
+    },
+    {
+      "id": "recife-verao-1986",
+      "timeZone": "America/Recife",
+      "local": [1986, 1, 15, 14, 30],
+      "note": "Nordeste com horário de verão em 1985/86",
+      "expected": {
+        "kind": "unique",
+        "utc": "1986-01-15T16:30:00Z",
+        "offsetSeconds": -7200
+      }
+    },
+    {
+      "id": "sp-inicio-verao-1985",
+      "timeZone": "America/Sao_Paulo",
+      "local": [1985, 11, 2, 0, 30],
+      "note": "Início do horário de verão: horário inexistente",
+      "expected": {
+        "kind": "nonexistent"
+      }
+    },
+    {
+      "id": "sp-fim-verao-1986",
+      "timeZone": "America/Sao_Paulo",
+      "local": [1986, 3, 14, 23, 30],
+      "note": "Fim do horário de verão: horário duplicado",
+      "expected": {
+        "kind": "ambiguous",
+        "earlier": {
+          "utc": "1986-03-15T01:30:00Z",
+          "offsetSeconds": -7200
+        },
+        "later": {
+          "utc": "1986-03-15T02:30:00Z",
+          "offsetSeconds": -10800
+        }
+      }
+    },
+    {
+      "id": "sp-inicio-verao-2018",
+      "timeZone": "America/Sao_Paulo",
+      "local": [2018, 11, 4, 0, 30],
+      "note": "Último início de horário de verão no Brasil",
+      "expected": {
+        "kind": "nonexistent"
+      }
+    },
+    {
+      "id": "sp-fim-verao-2019",
+      "timeZone": "America/Sao_Paulo",
+      "local": [2019, 2, 16, 23, 30],
+      "note": "Último fim de horário de verão no Brasil",
+      "expected": {
+        "kind": "ambiguous",
+        "earlier": {
+          "utc": "2019-02-17T01:30:00Z",
+          "offsetSeconds": -7200
+        },
+        "later": {
+          "utc": "2019-02-17T02:30:00Z",
+          "offsetSeconds": -10800
+        }
+      }
+    },
+    {
+      "id": "sp-sem-verao-2019",
+      "timeZone": "America/Sao_Paulo",
+      "local": [2019, 11, 3, 0, 30],
+      "note": "Após a extinção (Decreto 9.772/2019): horário existe",
+      "expected": {
+        "kind": "unique",
+        "utc": "2019-11-03T03:30:00Z",
+        "offsetSeconds": -10800
+      }
+    },
+    {
+      "id": "sp-virada-de-data",
+      "timeZone": "America/Sao_Paulo",
+      "local": [1995, 11, 5, 23, 30],
+      "note": "Data local diferente da data UTC",
+      "expected": {
+        "kind": "unique",
+        "utc": "1995-11-06T01:30:00Z",
+        "offsetSeconds": -7200
+      }
+    },
+    {
+      "id": "sp-1910-lmt",
+      "timeZone": "America/Sao_Paulo",
+      "local": [1910, 1, 1, 12, 0],
+      "note": "Antes de 1914: hora média local",
+      "expected": {
+        "kind": "unique",
+        "utc": "1910-01-01T15:06:28Z",
+        "offsetSeconds": -11188
+      }
+    },
+    {
+      "id": "sp-1963-verao",
+      "timeZone": "America/Sao_Paulo",
+      "local": [1963, 12, 15, 12, 0],
+      "note": "Horário de verão de 1963",
+      "expected": {
+        "kind": "unique",
+        "utc": "1963-12-15T14:00:00Z",
+        "offsetSeconds": -7200
+      }
+    },
+    {
+      "id": "recife-1963",
+      "timeZone": "America/Recife",
+      "local": [1963, 12, 5, 12, 0],
+      "note": "1963: Nordeste começou depois do Sudeste",
+      "expected": {
+        "kind": "unique",
+        "utc": "1963-12-05T15:00:00Z",
+        "offsetSeconds": -10800
+      }
+    },
+    {
+      "id": "rio-branco-2008-antes",
+      "timeZone": "America/Rio_Branco",
+      "local": [2008, 6, 23, 12, 0],
+      "note": "Acre antes da mudança de fuso (UTC−5)",
+      "expected": {
+        "kind": "unique",
+        "utc": "2008-06-23T17:00:00Z",
+        "offsetSeconds": -18000
+      }
+    },
+    {
+      "id": "rio-branco-2008-lacuna",
+      "timeZone": "America/Rio_Branco",
+      "local": [2008, 6, 24, 0, 30],
+      "note": "Acre: salto de −5 para −4 (Lei 11.662/2008)",
+      "expected": {
+        "kind": "nonexistent"
+      }
+    },
+    {
+      "id": "rio-branco-2008-depois",
+      "timeZone": "America/Rio_Branco",
+      "local": [2008, 6, 25, 12, 0],
+      "note": "Acre depois da mudança (UTC−4)",
+      "expected": {
+        "kind": "unique",
+        "utc": "2008-06-25T16:00:00Z",
+        "offsetSeconds": -14400
+      }
+    },
+    {
+      "id": "rio-branco-2013-duplicado",
+      "timeZone": "America/Rio_Branco",
+      "local": [2013, 11, 9, 23, 30],
+      "note": "Acre volta a UTC−5 em 2013: horário duplicado",
+      "expected": {
+        "kind": "ambiguous",
+        "earlier": {
+          "utc": "2013-11-10T03:30:00Z",
+          "offsetSeconds": -14400
+        },
+        "later": {
+          "utc": "2013-11-10T04:30:00Z",
+          "offsetSeconds": -18000
+        }
+      }
+    },
+    {
+      "id": "bahia-2012",
+      "timeZone": "America/Bahia",
+      "local": [2012, 1, 15, 12, 0],
+      "note": "Bahia com horário de verão só em 2011/12",
+      "expected": {
+        "kind": "unique",
+        "utc": "2012-01-15T14:00:00Z",
+        "offsetSeconds": -7200
+      }
+    },
+    {
+      "id": "bahia-2013",
+      "timeZone": "America/Bahia",
+      "local": [2013, 1, 15, 12, 0],
+      "note": "Bahia sem horário de verão",
+      "expected": {
+        "kind": "unique",
+        "utc": "2013-01-15T15:00:00Z",
+        "offsetSeconds": -10800
+      }
+    },
+    {
+      "id": "noronha-1990",
+      "timeZone": "America/Noronha",
+      "local": [1990, 1, 15, 12, 0],
+      "note": "Fernando de Noronha",
+      "expected": {
+        "kind": "unique",
+        "utc": "1990-01-15T13:00:00Z",
+        "offsetSeconds": -3600
+      }
+    },
+    {
+      "id": "manaus-1986",
+      "timeZone": "America/Manaus",
+      "local": [1986, 1, 15, 12, 0],
+      "note": "Amazonas em 1985/86",
+      "expected": {
+        "kind": "unique",
+        "utc": "1986-01-15T15:00:00Z",
+        "offsetSeconds": -10800
+      }
+    },
+    {
+      "id": "lisboa-meia-noite",
+      "timeZone": "Europe/Lisbon",
+      "local": [1975, 11, 23, 23, 55],
+      "note": "Exterior, perto da meia-noite",
+      "expected": {
+        "kind": "unique",
+        "utc": "1975-11-23T22:55:00Z",
+        "offsetSeconds": 3600
+      }
+    },
+    {
+      "id": "nova-york-2001",
+      "timeZone": "America/New_York",
+      "local": [2001, 9, 30, 0, 20],
+      "note": "Exterior, horário de verão americano",
+      "expected": {
+        "kind": "unique",
+        "utc": "2001-09-30T04:20:00Z",
+        "offsetSeconds": -14400
+      }
+    },
+    {
+      "id": "nova-york-2007-lacuna",
+      "timeZone": "America/New_York",
+      "local": [2007, 3, 11, 2, 30],
+      "note": "Regra americana de 2007: horário inexistente",
+      "expected": {
+        "kind": "nonexistent"
+      }
+    },
+    {
+      "id": "nova-york-2006-regra-antiga",
+      "timeZone": "America/New_York",
+      "local": [2006, 3, 12, 2, 30],
+      "note": "Mesma data pela regra antiga: horário existe",
+      "expected": {
+        "kind": "unique",
+        "utc": "2006-03-12T07:30:00Z",
+        "offsetSeconds": -18000
+      }
+    },
+    {
+      "id": "londres-1970",
+      "timeZone": "Europe/London",
+      "local": [1970, 1, 15, 12, 0],
+      "note": "British Standard Time (1968–71): UTC+1 no inverno",
+      "expected": {
+        "kind": "unique",
+        "utc": "1970-01-15T11:00:00Z",
+        "offsetSeconds": 3600
+      }
+    },
+    {
+      "id": "moscou-2012",
+      "timeZone": "Europe/Moscow",
+      "local": [2012, 1, 15, 12, 0],
+      "note": "Moscou com UTC+4 permanente (2011–2014)",
+      "expected": {
+        "kind": "unique",
+        "utc": "2012-01-15T08:00:00Z",
+        "offsetSeconds": 14400
+      }
+    },
+    {
+      "id": "moscou-2015",
+      "timeZone": "Europe/Moscow",
+      "local": [2015, 1, 15, 12, 0],
+      "note": "Moscou com UTC+3",
+      "expected": {
+        "kind": "unique",
+        "utc": "2015-01-15T09:00:00Z",
+        "offsetSeconds": 10800
+      }
+    },
+    {
+      "id": "apia-2011-dia-pulado",
+      "timeZone": "Pacific/Apia",
+      "local": [2011, 12, 30, 12, 0],
+      "note": "Samoa pulou o dia 30/12/2011",
+      "expected": {
+        "kind": "nonexistent"
+      }
+    },
+    {
+      "id": "katmandu-1985",
+      "timeZone": "Asia/Kathmandu",
+      "local": [1985, 6, 1, 12, 0],
+      "note": "Nepal antes de adotar UTC+5:45",
+      "expected": {
+        "kind": "unique",
+        "utc": "1985-06-01T06:30:00Z",
+        "offsetSeconds": 19800
+      }
+    },
+    {
+      "id": "toquio-1990",
+      "timeZone": "Asia/Tokyo",
+      "local": [1990, 6, 1, 12, 0],
+      "note": "Japão, sem horário de verão",
+      "expected": {
+        "kind": "unique",
+        "utc": "1990-06-01T03:00:00Z",
+        "offsetSeconds": 32400
+      }
+    }
+  ]
+}

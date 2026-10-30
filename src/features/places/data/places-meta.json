@@ -1,0 +1,57 @@
+{
+  "generatedBy": "scripts/geo/build-places.mjs",
+  "sources": {
+    "brazil": {
+      "dataset": "kelvins/municipios-brasileiros",
+      "commit": "503e2f70bbf1b4b7ec0b1f68b09086ccc38fe861",
+      "license": "MIT",
+      "origin": "IBGE"
+    },
+    "world": {
+      "dataset": "GeoNames via all-the-cities + cities.json",
+      "license": "CC BY 4.0",
+      "minPopulation": 100000
+    },
+    "timeZones": {
+      "dataset": "timezone-boundary-builder via geo-tz/all",
+      "license": "código MIT; dados ODbL (OpenStreetMap)"
+    },
+    "zoneTable": "IANA tzdb zone1970.tab (domínio público)"
+  },
+  "toolVersions": {
+    "geo-tz": "8.1.10",
+    "all-the-cities": "3.1.0",
+    "cities.json": "1.1.65"
+  },
+  "counts": {
+    "brazil": 5571,
+    "world": 4288
+  },
+  "report": {
+    "brazilPopulationMatched": 1929,
+    "brazilPolygonDecided": {
+      "America/Belem": 119,
+      "America/Santarem": 25,
+      "America/Manaus": 56,
+      "America/Eirunepe": 6
+    },
+    "brazilTableVsPolygonMismatches": 0,
+    "worldWithoutSingleTimeZone": [
+      "Kashgar/CN: Asia/Urumqi | Asia/Shanghai",
+      "Hotan/CN: Asia/Urumqi | Asia/Shanghai",
+      "Xinyuan/CN: Asia/Shanghai | Asia/Urumqi",
+      "Ürümqi/CN: Asia/Urumqi | Asia/Shanghai",
+      "Turpan/CN: Asia/Urumqi | Asia/Shanghai",
+      "Shihezi/CN: Asia/Urumqi | Asia/Shanghai",
+      "Qapqal/CN: Asia/Shanghai | Asia/Urumqi",
+      "Korla/CN: Asia/Urumqi | Asia/Shanghai",
+      "Karamay/CN: Asia/Shanghai | Asia/Urumqi",
+      "Hami/CN: Asia/Shanghai | Asia/Urumqi",
+      "Changji/CN: Asia/Urumqi | Asia/Shanghai",
+      "Aral/CN: Asia/Shanghai | Asia/Urumqi",
+      "Altay/CN: Asia/Shanghai | Asia/Urumqi",
+      "Aksu/CN: Asia/Urumqi | Asia/Shanghai",
+      "Huocheng/CN: Asia/Shanghai | Asia/Urumqi"
+    ]
+  }
+}

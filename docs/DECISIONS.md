@@ -59,6 +59,20 @@ Versões verificadas no npm em 30/10/2026.
 | Orbes      | `orbs-v1` (8/8/7/7/5, +2 luminares, 5 ângulos), versionado              | Aprovado provisoriamente                        |
 | Validação  | JPL DE421 (Skyfield), oráculo próprio de casas, Astronomy Engine        | Referências independentes do motor              |
 
+## Localização e fusos (Fase 02C)
+
+| Tema                                  | Decisão                                                                                               | Motivo                                                           |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Base de localidades                   | JSON estático no servidor: 5.571 municípios IBGE + 4.288 cidades GeoNames (≥ 100 mil hab. e capitais) | Proporcional ao MVP; sem banco nem serviço pago                  |
+| Fuso dos municípios                   | `zone1970.tab` por UF; polígonos (`geo-tz/all`) para PA e AM; Noronha explícito                       | Fonte oficial; 0 divergências com os polígonos nas demais UFs    |
+| Coluna `fuso_horario` do dataset IBGE | **Não usada**                                                                                         | Agrupa por deslocamento atual; erra o histórico                  |
+| Fuso disputado                        | Localidade sem fuso → recusada                                                                        | Não adivinhar                                                    |
+| Conversão                             | `Intl` (ICU/tzdb) com fuso explícito; módulo próprio                                                  | Sem dependência; trata inexistente/duplicado explicitamente      |
+| Horário de verão                      | Metadados do ICU (`true`/`false`/`null`)                                                              | Heurística de deslocamento confundia mudança de fuso (Acre 2008) |
+| Horário aproximado                    | Extremos pelo relógio, com piso na janela física                                                      | Cobre horários duplicados na janela                              |
+| Horário desconhecido                  | Dia local em UTC + meio-dia de referência                                                             | Convenção declarada; sem ângulos                                 |
+| "Hoje" no servidor                    | Data em UTC+14                                                                                        | Nunca recusar um nascimento de hoje em nenhum fuso               |
+
 ## Limitações conhecidas
 
 - **HEIC** é aceito, mas só tem pré-visualização no Safari; em outros

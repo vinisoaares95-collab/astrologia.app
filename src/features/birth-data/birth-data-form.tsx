@@ -1,19 +1,41 @@
 "use client";
 
-import { CalendarDays, Clock3, MapPin, type LucideIcon } from "lucide-react";
+import {
+  CalendarDays,
+  Clock3,
+  FlaskConical,
+  type LucideIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useId, useState, type FormEvent, type ReactNode } from "react";
+import {
+  useId,
+  useState,
+  useTransition,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 
-import { ActionDock, Button, Callout, Switch } from "@/components/ui";
+import { ActionDock, Button, Callout } from "@/components/ui";
 import { routes } from "@/config/routes";
+import { getPlaceAction } from "@/features/places/actions";
+import type { PlaceSummary } from "@/features/places/types";
 import { cn } from "@/lib/cn";
 
-import { maskDateBR, maskTime24 } from "./input-masks";
+import { normalizeBirthAction } from "./actions";
+import { NormalizationReview } from "./components/normalization-review";
+import { PlaceCombobox } from "./components/place-combobox";
 import {
-  validateBirthData,
-  type BirthDataErrors,
-  type BirthDataInput,
-} from "./validate-birth-data";
+  TimePrecisionField,
+  type TimePrecision,
+} from "./components/time-precision-field";
+import type {
+  ApproximateMargin,
+  BirthDataInput,
+  NormalizationResult,
+} from "./contract";
+import { DEMO_CASES } from "./demo-cases";
+import { maskDateBR, maskTime24 } from "./input-masks";
+import { validateBirthData, type BirthDataErrors } from "./validate-birth-data";
 
 const inputClass =
   "h-9 w-full bg-transparent text-base text-fg tabular-nums placeholder:text-fg-subtle/70 focus:outline-none disabled:opacity-40";
@@ -69,24 +91,56 @@ function Field({
   );
 }
 
+type FormState = {
+  date: string;
+  time: string;
+  precision: TimePrecision;
+  margin: ApproximateMargin;
+  place: PlaceSummary | null;
+};
+
+const EMPTY: FormState = {
+  date: "",
+  time: "",
+  precision: "exact",
+  margin: 30,
+  place: null,
+};
+
+function toInput(
+  values: FormState,
+  occurrence?: "earlier" | "later",
+): BirthDataInput {
+  const time: BirthDataInput["time"] =
+    values.precision === "unknown"
+      ? { precision: "unknown" }
+      : values.precision === "approximate"
+        ? {
+            precision: "approximate",
+            value: values.time,
+            marginMinutes: values.margin,
+          }
+        : { precision: "exact", value: values.time };
+  return {
+    date: values.date,
+    time,
+    placeId: values.place?.id ?? null,
+    occurrence,
+  };
+}
+
 export function BirthDataForm() {
   const router = useRouter();
   const id = useId();
-  const [values, setValues] = useState<BirthDataInput>({
-    date: "",
-    time: "",
-    unknownTime: false,
-    place: "",
-  });
+  const [values, setValues] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<BirthDataErrors>({});
+  const [result, setResult] = useState<NormalizationResult | null>(null);
+  const [pending, startTransition] = useTransition();
 
-  function update<K extends keyof BirthDataInput>(
-    key: K,
-    value: BirthDataInput[K],
-  ) {
+  function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
-    // O erro de um campo some assim que a pessoa volta a editá-lo.
-    const field = key === "unknownTime" ? "time" : key;
+    setResult(null); // qualquer edição invalida a conferência anterior
+    const field = key === "precision" || key === "margin" ? "time" : key;
     setErrors((prev) => {
       if (!(field in prev)) return prev;
       const next = { ...prev };
@@ -95,14 +149,48 @@ export function BirthDataForm() {
     });
   }
 
+  function normalize(occurrence?: "earlier" | "later") {
+    const input = toInput(values, occurrence);
+    const found = validateBirthData(input, new Date());
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
+
+    startTransition(async () => {
+      const response = await normalizeBirthAction(input);
+      if (response.status === "invalid") {
+        const next: BirthDataErrors = {};
+        for (const issue of response.issues)
+          next[issue.field] ??= issue.message;
+        setErrors(next);
+        setResult(null);
+      } else {
+        setResult(response);
+      }
+    });
+  }
+
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const found = validateBirthData(values, new Date());
-    setErrors(found);
-    if (Object.keys(found).length === 0) {
-      // Nada é enviado: seguimos para a proposta e os dados são descartados.
+    if (result?.status === "ok") {
+      // Nada é enviado nem salvo: seguimos para a proposta e os dados são descartados.
       router.push(routes.report);
+      return;
     }
+    normalize();
+  }
+
+  async function loadDemo(index: number) {
+    const demo = DEMO_CASES[index];
+    const place = await getPlaceAction(demo.placeId);
+    setValues({
+      date: demo.date,
+      time: demo.time,
+      precision: demo.precision,
+      margin: demo.margin ?? 30,
+      place,
+    });
+    setErrors({});
+    setResult(null);
   }
 
   const describedBy = (field: keyof BirthDataErrors, hasHint = false) =>
@@ -142,71 +230,125 @@ export function BirthDataForm() {
       </Field>
 
       <div className="space-y-2">
-        <Field
-          id={`${id}-time`}
-          icon={Clock3}
-          label="Horário (24 h)"
-          hint="Ex.: 09:30 ou 21:45. Consulte a certidão, se possível."
-          error={errors.time}
-        >
-          <input
-            id={`${id}-time`}
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            placeholder="HH:MM"
-            maxLength={5}
-            className={inputClass}
-            value={values.time}
-            disabled={values.unknownTime}
-            onChange={(e) => update("time", maskTime24(e.target.value))}
-            aria-invalid={Boolean(errors.time)}
-            aria-describedby={describedBy("time", true)}
-          />
-        </Field>
-        <Switch
-          label="Não sei o horário exato"
-          checked={values.unknownTime}
-          onChange={(checked) => update("unknownTime", checked)}
+        <TimePrecisionField
+          precision={values.precision}
+          margin={values.margin}
+          onPrecisionChange={(p) => update("precision", p)}
+          onMarginChange={(m) => update("margin", m)}
         />
+        {values.precision !== "unknown" && (
+          <Field
+            id={`${id}-time`}
+            icon={Clock3}
+            label={
+              values.precision === "approximate"
+                ? "Horário aproximado (24 h)"
+                : "Horário (24 h)"
+            }
+            hint="Ex.: 09:30 ou 21:45. Consulte a certidão, se possível."
+            error={errors.time}
+          >
+            <input
+              id={`${id}-time`}
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="HH:MM"
+              maxLength={5}
+              className={inputClass}
+              value={values.time}
+              onChange={(e) => update("time", maskTime24(e.target.value))}
+              aria-invalid={Boolean(errors.time)}
+              aria-describedby={describedBy("time", true)}
+            />
+          </Field>
+        )}
+        {values.precision === "unknown" && (
+          <Callout tone="info">
+            Sem o horário, o Ascendente e as casas não serão calculados. O
+            relatório indicará isso com clareza.
+          </Callout>
+        )}
+        {values.precision === "unknown" && errors.time && (
+          <p className="px-1 text-xs text-danger">{errors.time}</p>
+        )}
       </div>
 
-      <Field
-        id={`${id}-place`}
-        icon={MapPin}
-        label="Cidade de nascimento"
-        hint="Ex.: Belo Horizonte, MG. A busca de cidades chega em breve."
+      <PlaceCombobox
+        value={values.place}
+        onChange={(p) => update("place", p)}
         error={errors.place}
-      >
-        <input
-          id={`${id}-place`}
-          type="text"
-          autoComplete="off"
-          placeholder="Cidade, estado ou país"
-          className={inputClass}
-          value={values.place}
-          onChange={(e) => update("place", e.target.value)}
-          aria-invalid={Boolean(errors.place)}
-          aria-describedby={describedBy("place", true)}
-        />
-      </Field>
+      />
 
-      {values.unknownTime && (
-        <Callout tone="info">
-          Sem o horário, o Ascendente e as casas não podem ser calculados com
-          precisão. O relatório indicará isso com clareza.
+      {result?.status === "needs-choice" && (
+        <Callout
+          tone="info"
+          title={`O horário ${result.localTime} aconteceu duas vezes`}
+        >
+          <p>
+            Nesta data, os relógios foram atrasados e esse horário se repetiu.
+            Qual das ocorrências corresponde ao nascimento? Se não souber,
+            consulte a certidão.
+          </p>
+          <div className="mt-3 flex flex-col gap-2">
+            {result.options.map((option) => (
+              <Button
+                key={option.occurrence}
+                variant="secondary"
+                onClick={() => normalize(option.occurrence)}
+                disabled={pending}
+              >
+                {option.description}
+              </Button>
+            ))}
+          </div>
         </Callout>
       )}
 
+      {result?.status === "ok" && <NormalizationReview birth={result.birth} />}
+
       <Callout tone="demo" title="Versão demonstrativa">
-        Os dados ficam apenas nesta tela. Nada é enviado, salvo ou calculado.
+        Os dados ficam apenas nesta tela. A verificação acontece no servidor,
+        sem salvar nada, e nenhum mapa é calculado ainda.
       </Callout>
 
-      <ActionDock>
-        <Button type="submit" size="lg" fullWidth>
-          Ver a proposta do relatório
-        </Button>
-      </ActionDock>
+      <details className="group rounded-2xl bg-surface/60 px-4 py-3 edge-light">
+        <summary className="flex cursor-pointer list-none items-center gap-2 text-sm text-fg-muted">
+          <FlaskConical aria-hidden className="size-4 text-accent" />
+          Casos de verificação (fictícios)
+        </summary>
+        <ul className="mt-3 grid gap-1.5">
+          {DEMO_CASES.map((demo, i) => (
+            <li key={demo.label}>
+              <button
+                type="button"
+                onClick={() => loadDemo(i)}
+                className="w-full rounded-xl px-3 py-2 text-left text-xs text-fg-muted transition-colors hover:bg-surface-bright hover:text-fg"
+              >
+                {demo.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </details>
+
+      {/* Com uma escolha pendente, a ação fica nas opções acima. */}
+      {result?.status !== "needs-choice" && (
+        <ActionDock>
+          <Button type="submit" size="lg" fullWidth disabled={pending}>
+            {pending
+              ? "Verificando…"
+              : result?.status === "ok"
+                ? "Confirmar e ver a proposta"
+                : "Verificar dados"}
+          </Button>
+          {result?.status === "ok" && (
+            <Button variant="ghost" onClick={() => setResult(null)}>
+              Corrigir dados
+            </Button>
+          )}
+        </ActionDock>
+      )}
     </form>
   );
 }

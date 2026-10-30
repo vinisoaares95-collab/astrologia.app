@@ -49,6 +49,9 @@ Opcional: copie `.env.example` para `.env` para definir variáveis.
 | `npm run db:validate` | Valida o schema Prisma                       |
 | `npm run ephe:fetch`  | Baixa e confere os arquivos de efemérides    |
 
+A base de localidades é gerada por `scripts/geo/build-places.mjs`; veja
+`docs/fase-02c-localizacao-e-fusos.md` (seção "Regenerar a base").
+
 ## Telas
 
 | Rota                       | Conteúdo                                               |

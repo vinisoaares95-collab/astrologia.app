@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 
+import type { BirthDataInput } from "./contract";
 import { validateBirthData } from "./validate-birth-data";
 
 const today = new Date(2026, 9, 30);
-const valid = {
+const valid: Pick<BirthDataInput, "date" | "time" | "placeId"> = {
   date: "12/05/1990",
-  time: "14:30",
-  unknownTime: false,
-  place: "Recife",
+  time: { precision: "exact", value: "14:30" },
+  placeId: "ibge:2611606",
 };
 
 describe("validateBirthData", () => {
@@ -17,20 +17,31 @@ describe("validateBirthData", () => {
 
   it("dispensa o horário quando a pessoa não sabe", () => {
     expect(
-      validateBirthData({ ...valid, time: "", unknownTime: true }, today),
+      validateBirthData({ ...valid, time: { precision: "unknown" } }, today),
     ).toEqual({});
   });
 
-  it("aponta campos ausentes", () => {
+  it("valida o horário também no modo aproximado", () => {
     const errors = validateBirthData(
-      { date: "", time: "", unknownTime: false, place: " " },
+      {
+        ...valid,
+        time: { precision: "approximate", value: "9:3", marginMinutes: 30 },
+      },
+      today,
+    );
+    expect(errors.time).toMatch(/HH:MM/);
+  });
+
+  it("aponta campos ausentes, inclusive a cidade não selecionada", () => {
+    const errors = validateBirthData(
+      { date: "", time: { precision: "exact", value: "" }, placeId: null },
       today,
     );
     expect(Object.keys(errors).sort()).toEqual(["date", "place", "time"]);
+    expect(errors.place).toMatch(/Selecione a cidade/);
   });
 
   it("interpreta a data como dia/mês, nunca mês/dia", () => {
-    // 03/04 é 3 de abril; 13/04 é válido; 04/13 não existe.
     expect(validateBirthData({ ...valid, date: "13/04/1990" }, today)).toEqual(
       {},
     );
@@ -44,9 +55,6 @@ describe("validateBirthData", () => {
       validateBirthData({ ...valid, date: "12/05/90" }, today).date,
     ).toMatch(/DD\/MM\/AAAA/);
     expect(
-      validateBirthData({ ...valid, date: "1990-05-12" }, today).date,
-    ).toMatch(/DD\/MM\/AAAA/);
-    expect(
       validateBirthData({ ...valid, date: "30/02/1990" }, today).date,
     ).toMatch(/não existe/);
     expect(
@@ -58,13 +66,14 @@ describe("validateBirthData", () => {
   });
 
   it("aceita horário de 24 horas e recusa valores inválidos", () => {
-    expect(validateBirthData({ ...valid, time: "23:59" }, today)).toEqual({});
-    expect(validateBirthData({ ...valid, time: "00:00" }, today)).toEqual({});
-    expect(validateBirthData({ ...valid, time: "24:00" }, today).time).toMatch(
-      /HH:MM/,
-    );
-    expect(validateBirthData({ ...valid, time: "9:30" }, today).time).toMatch(
-      /HH:MM/,
-    );
+    const at = (value: string) =>
+      validateBirthData(
+        { ...valid, time: { precision: "exact", value } },
+        today,
+      ).time;
+    expect(at("23:59")).toBeUndefined();
+    expect(at("00:00")).toBeUndefined();
+    expect(at("24:00")).toMatch(/HH:MM/);
+    expect(at("9:30")).toMatch(/HH:MM/);
   });
 });
