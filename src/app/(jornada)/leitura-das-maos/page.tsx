@@ -23,8 +23,8 @@ export const metadata: Metadata = {
 
 export default function PalmIntroPage() {
   return (
-    <Container size="narrow" className="flex flex-1 flex-col gap-8 pt-6">
-      <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[1.75rem] bg-surface/70 bg-[radial-gradient(70%_70%_at_50%_45%,#ff7a3324,transparent_70%)] edge-light">
+    <Container size="narrow" className="flex flex-1 flex-col gap-6 pt-5">
+      <div className="relative flex aspect-[16/10] items-center justify-center overflow-hidden rounded-3xl bg-surface/70 bg-[radial-gradient(70%_70%_at_50%_45%,#ff7a3324,transparent_70%)] edge-light">
         <FrameCorners />
         <PalmIllustration className="h-[78%]" />
         <div className="absolute top-5 left-5">

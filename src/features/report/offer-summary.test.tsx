@@ -24,7 +24,7 @@ describe("OfferSummary", () => {
   it("mantém o pagamento desabilitado no protótipo", () => {
     render(<OfferSummary main={mainProduct} bumps={orderBumps} />);
     expect(
-      screen.getByRole("button", { name: /pagamento disponível em breve/i }),
+      screen.getByRole("button", { name: /pagamento em breve/i }),
     ).toBeDisabled();
   });
 });

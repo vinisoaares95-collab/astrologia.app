@@ -30,19 +30,19 @@ const chapterCount = reportParts.reduce((n, p) => n + p.chapters.length, 0);
 
 export default function ReportPage() {
   return (
-    <Container size="wide" className="flex flex-1 flex-col gap-10 pt-6">
-      <div className="grid gap-10 lg:grid-cols-[1fr_25rem] lg:items-start">
-        <div className="space-y-10">
+    <Container size="wide" className="flex flex-1 flex-col gap-8 pt-5 pb-10">
+      <div className="grid gap-8 lg:grid-cols-[1fr_25rem] lg:items-start lg:gap-12">
+        <div className="flex flex-col gap-8">
           {/* Hero com mandala */}
-          <section className="flex flex-col items-center gap-6 text-center">
-            <div className="relative aspect-square w-full max-w-[22rem]">
+          <section className="flex flex-col items-center gap-5 text-center">
+            <div className="relative aspect-square w-full max-w-[19rem] sm:max-w-[22rem]">
               <div
                 aria-hidden
                 className="absolute inset-[15%] rounded-full bg-accent/15 blur-3xl"
               />
               <Mandala className="absolute inset-0 size-full" />
               <div className="absolute inset-[32%] flex flex-col items-center justify-center rounded-full bg-bg/85 shadow-[0_0_0_1px_var(--color-line)] backdrop-blur">
-                <span className="text-copper font-mono text-4xl font-medium">
+                <span className="text-copper font-mono text-[2rem] leading-none font-medium">
                   {chapterCount}
                 </span>
                 <span className="font-mono text-[0.6rem] tracking-[0.18em] text-fg-muted uppercase">
@@ -84,6 +84,23 @@ export default function ReportPage() {
             </div>
             <ReportExplorer parts={reportParts} />
           </section>
+          {/*
+           * Barra fixa apenas enquanto a pessoa percorre os capítulos: fica
+           * presa a esta coluna e sai de cena antes do card da oferta.
+           */}
+          <ActionDock className="-mb-4 lg:hidden">
+            <div className="flex items-center gap-4 rounded-full bg-surface-raised/90 p-1.5 pl-5 shadow-[inset_0_1px_0_#ffffff14,0_0_0_1px_var(--color-line)] backdrop-blur-xl">
+              <div className="flex-1">
+                <p className="font-mono text-[0.6rem] tracking-[0.14em] text-fg-subtle uppercase">
+                  A partir de
+                </p>
+                <p className="font-mono text-sm font-medium text-fg">
+                  {formatBRL(mainProduct.priceCents)}
+                </p>
+              </div>
+              <ButtonLink href="#oferta">Ver oferta</ButtonLink>
+            </div>
+          </ActionDock>
         </div>
 
         <aside
@@ -98,20 +115,6 @@ export default function ReportPage() {
           </p>
         </aside>
       </div>
-
-      <ActionDock className="lg:hidden">
-        <div className="flex items-center gap-4 rounded-full bg-surface-raised/90 p-1.5 pl-5 shadow-[inset_0_1px_0_#ffffff14,0_0_0_1px_var(--color-line)] backdrop-blur-xl">
-          <div className="flex-1">
-            <p className="font-mono text-[0.6rem] tracking-[0.14em] text-fg-subtle uppercase">
-              A partir de
-            </p>
-            <p className="font-mono text-sm font-medium text-fg">
-              {formatBRL(mainProduct.priceCents)}
-            </p>
-          </div>
-          <ButtonLink href="#oferta">Ver oferta</ButtonLink>
-        </div>
-      </ActionDock>
     </Container>
   );
 }

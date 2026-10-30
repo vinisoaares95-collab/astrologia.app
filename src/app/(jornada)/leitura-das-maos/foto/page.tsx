@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function PalmPhotoPage() {
   return (
-    <Container size="narrow" className="flex flex-1 flex-col gap-6 pt-6">
+    <Container size="narrow" className="flex flex-1 flex-col gap-5 pt-5">
       <SectionHeading
         as="h1"
         title="Fotografe sua palma"

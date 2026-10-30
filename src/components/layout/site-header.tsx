@@ -9,7 +9,7 @@ import { Wordmark } from "./wordmark";
 /** Header flutuante em cápsula, translúcido. */
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 px-3 pt-3 sm:px-6">
+    <header className="sticky top-0 z-40 px-3 pt-safe sm:px-6">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 rounded-full bg-surface/70 pr-2 pl-4 shadow-[inset_0_1px_0_#ffffff12,0_0_0_1px_var(--color-line-soft),0_12px_32px_-16px_#000] backdrop-blur-xl">
         <Wordmark />
         <nav aria-label="Principal" className="ml-auto hidden sm:block">

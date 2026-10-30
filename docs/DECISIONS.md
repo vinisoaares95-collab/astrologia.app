@@ -31,6 +31,21 @@ Versões verificadas no npm em 30/10/2026.
   `IconButtonLink`, `FlowHeader`, `HeroOrb`, `ReportExplorer` (abas).
 - Capturas de referência em `docs/capturas/`.
 
+## Refinamento final (v3)
+
+- Mandala com escala de 1°, rótulos a cada 30°, 12 setores com os símbolos
+  geométricos tradicionais dos quatro elementos (fogo, terra, ar, água — na
+  sequência clássica), losangos cardeais, hexagrama + dodecagrama e retícula.
+  Removidas as “órbitas” soltas, que podiam ser lidas como posições de
+  planetas. Variante `detail="compact"` para tamanhos pequenos.
+- Datas e horários em campos de texto com máscara `DD/MM/AAAA` e `HH:MM`
+  (24 h), validados como dia/mês — independentes do idioma do navegador.
+- Contraste: `fg-subtle` ajustado para ≥ 4,5:1 (WCAG AA).
+- Áreas seguras (`pt-safe`, `pb-safe`) e `scroll-padding` para foco e âncoras
+  não ficarem sob barras fixas; a barra “Ver oferta” fica presa à coluna de
+  capítulos e não cobre a oferta.
+- Abas do relatório com navegação por setas, Home e End (padrão WAI-ARIA).
+
 ## Limitações conhecidas
 
 - **HEIC** é aceito, mas só tem pré-visualização no Safari; em outros
@@ -38,6 +53,6 @@ Versões verificadas no npm em 30/10/2026.
   fase de processamento de imagem.
 - O botão “Tirar foto” só aparece em dispositivos de toque (`pointer: coarse`);
   em desktop há seleção de arquivo e arrastar-e-soltar.
-- O formato do campo de data segue o idioma do navegador.
+- O seletor de data nativo (calendário) não é usado; a pessoa digita a data.
 - A busca de cidades (geocodificação + fuso horário histórico) ainda não existe;
   é pré-requisito do cálculo do mapa.

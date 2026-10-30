@@ -58,7 +58,7 @@ export function DemoPreview() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-8">
+    <div className="flex flex-1 flex-col gap-6">
       <Callout tone="demo" title="Demonstração — sua foto não foi analisada">
         Nenhuma inteligência artificial processou sua imagem. O conteúdo abaixo
         é um texto fixo, igual para todas as pessoas.
@@ -67,9 +67,9 @@ export function DemoPreview() {
       {/* Destaque: foto dentro da mandala */}
       <Card
         variant="glow"
-        className="flex flex-col items-center gap-5 overflow-hidden pt-8 text-center"
+        className="flex flex-col items-center gap-4 overflow-hidden pt-6 text-center"
       >
-        <div className="relative aspect-square w-full max-w-[17rem]">
+        <div className="relative aspect-square w-full max-w-[15rem]">
           <Mandala className="absolute inset-0 size-full" />
           <div className="absolute inset-[24%] overflow-hidden rounded-full shadow-[0_0_0_1px_var(--color-accent),0_0_40px_-6px_var(--color-accent)]">
             {/* eslint-disable-next-line @next/next/no-img-element -- URL blob local; next/image não se aplica */}
@@ -94,10 +94,10 @@ export function DemoPreview() {
         </div>
       </Card>
 
-      <ul className="space-y-3">
+      <ul className="space-y-2.5">
         {palmLines.map((line, index) => (
           <li key={line.id}>
-            <Card className="flex gap-4 p-5">
+            <Card className="flex gap-3.5 p-4">
               <span
                 aria-hidden
                 className="mt-1 h-10 w-1 shrink-0 rounded-full"
@@ -135,7 +135,7 @@ export function DemoPreview() {
           {lockedChapters.map((chapter) => (
             <li
               key={chapter.number}
-              className="flex items-center gap-4 rounded-2xl bg-surface/60 p-4 edge-light"
+              className="flex items-center gap-3.5 rounded-2xl bg-surface/60 px-4 py-3 edge-light"
             >
               <span className="font-mono text-sm text-accent">
                 {String(chapter.number).padStart(2, "0")}

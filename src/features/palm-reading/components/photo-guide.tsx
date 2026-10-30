@@ -33,25 +33,18 @@ export function PhotoGuide() {
   return (
     <div className="space-y-5">
       <ul className="grid grid-cols-2 gap-3">
-        {tips.map((tip, index) => (
+        {tips.map((tip) => (
           <li
             key={tip.title}
-            className="space-y-3 rounded-3xl bg-surface/80 p-4 edge-light"
+            className="space-y-2 rounded-2xl bg-surface/80 p-3.5 edge-light"
           >
-            <div className="flex items-center justify-between">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-accent-soft text-accent">
+            <p className="flex items-center gap-2.5 text-sm font-semibold text-fg">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
                 <tip.icon aria-hidden className="size-4" />
               </span>
-              <span className="font-mono text-[0.65rem] text-fg-subtle">
-                0{index + 1}
-              </span>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-fg">{tip.title}</p>
-              <p className="text-xs leading-relaxed text-fg-muted">
-                {tip.text}
-              </p>
-            </div>
+              {tip.title}
+            </p>
+            <p className="text-xs leading-relaxed text-fg-muted">{tip.text}</p>
           </li>
         ))}
       </ul>

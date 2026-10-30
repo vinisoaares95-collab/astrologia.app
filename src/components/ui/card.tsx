@@ -20,7 +20,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "relative rounded-[1.75rem] p-5 sm:p-7",
+        "relative rounded-3xl p-4 sm:p-6",
         variants[variant],
         className,
       )}

@@ -27,7 +27,7 @@ const variants: Record<Variant, string> = {
 const sizes: Record<Size, string> = {
   sm: "min-h-9 px-4 py-1.5 text-[0.8rem]",
   md: "min-h-11 px-5 py-2 text-sm",
-  lg: "min-h-14 px-7 py-3 text-[0.95rem]",
+  lg: "min-h-13 px-6 py-3 text-[0.9375rem]",
 };
 
 export function buttonStyles({

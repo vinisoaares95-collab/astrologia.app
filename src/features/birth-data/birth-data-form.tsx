@@ -8,6 +8,7 @@ import { ActionDock, Button, Callout, Switch } from "@/components/ui";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/cn";
 
+import { maskDateBR, maskTime24 } from "./input-masks";
 import {
   validateBirthData,
   type BirthDataErrors,
@@ -15,7 +16,7 @@ import {
 } from "./validate-birth-data";
 
 const inputClass =
-  "h-11 w-full bg-transparent text-[0.95rem] text-fg placeholder:text-fg-subtle focus:outline-none disabled:opacity-40 [color-scheme:dark]";
+  "h-9 w-full bg-transparent text-base text-fg tabular-nums placeholder:text-fg-subtle/70 focus:outline-none disabled:opacity-40";
 
 function Field({
   id,
@@ -40,7 +41,7 @@ function Field({
           error && "shadow-[0_0_0_1px_var(--color-danger)]",
         )}
       >
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-surface-raised text-accent">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-raised text-accent">
           <Icon aria-hidden className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
@@ -112,39 +113,53 @@ export function BirthDataForm() {
         : undefined;
 
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-1 flex-col gap-5">
+    <form onSubmit={onSubmit} noValidate className="flex flex-1 flex-col gap-4">
+      {/*
+       * Data e hora usam campos de texto com máscara em vez de inputs nativos:
+       * o formato nativo segue o idioma do navegador (mm/dd, 12 h) e não o
+       * padrão brasileiro.
+       */}
       <Field
         id={`${id}-date`}
         icon={CalendarDays}
         label="Data de nascimento"
+        hint="Dia, mês e ano — ex.: 14/03/1992."
         error={errors.date}
       >
         <input
           id={`${id}-date`}
-          type="date"
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder="DD/MM/AAAA"
+          maxLength={10}
           className={inputClass}
           value={values.date}
-          onChange={(e) => update("date", e.target.value)}
+          onChange={(e) => update("date", maskDateBR(e.target.value))}
           aria-invalid={Boolean(errors.date)}
-          aria-describedby={describedBy("date")}
+          aria-describedby={describedBy("date", true)}
         />
       </Field>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         <Field
           id={`${id}-time`}
           icon={Clock3}
-          label="Horário"
-          hint="Consulte a certidão, se possível. O horário define o Ascendente."
+          label="Horário (24 h)"
+          hint="Ex.: 09:30 ou 21:45. Consulte a certidão, se possível."
           error={errors.time}
         >
           <input
             id={`${id}-time`}
-            type="time"
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="HH:MM"
+            maxLength={5}
             className={inputClass}
             value={values.time}
             disabled={values.unknownTime}
-            onChange={(e) => update("time", e.target.value)}
+            onChange={(e) => update("time", maskTime24(e.target.value))}
             aria-invalid={Boolean(errors.time)}
             aria-describedby={describedBy("time", true)}
           />

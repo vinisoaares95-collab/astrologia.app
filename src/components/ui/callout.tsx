@@ -48,20 +48,20 @@ export function Callout({
     <div
       role={role}
       className={cn(
-        "flex gap-3.5 rounded-2xl border p-4 text-sm leading-relaxed text-fg-muted",
+        "flex gap-3 rounded-2xl border p-3.5 text-[0.8125rem] leading-relaxed text-fg-muted",
         box,
         className,
       )}
     >
       <span
         className={cn(
-          "flex size-8 shrink-0 items-center justify-center rounded-xl",
+          "flex size-7 shrink-0 items-center justify-center rounded-lg",
           icon_,
         )}
       >
         <Icon aria-hidden className="size-4" />
       </span>
-      <div className="space-y-0.5 pt-1">
+      <div className="space-y-0.5 pt-0.5">
         {title && <p className="font-medium text-fg">{title}</p>}
         <div>{children}</div>
       </div>

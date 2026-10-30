@@ -30,3 +30,28 @@ describe("ReportExplorer", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+describe("ReportExplorer — teclado", () => {
+  it("navega entre as abas com as setas e Home/End", async () => {
+    const user = userEvent.setup();
+    render(<ReportExplorer parts={reportParts} />);
+    const [sky, hands, journey] = screen.getAllByRole("tab");
+
+    expect(sky).toHaveAttribute("tabindex", "0");
+    expect(hands).toHaveAttribute("tabindex", "-1");
+
+    sky.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(hands).toHaveFocus();
+    expect(hands).toHaveAttribute("aria-selected", "true");
+
+    await user.keyboard("{End}");
+    expect(journey).toHaveFocus();
+    await user.keyboard("{ArrowRight}");
+    expect(sky).toHaveFocus();
+    await user.keyboard("{ArrowLeft}");
+    expect(journey).toHaveFocus();
+    await user.keyboard("{Home}");
+    expect(sky).toHaveAttribute("aria-selected", "true");
+  });
+});

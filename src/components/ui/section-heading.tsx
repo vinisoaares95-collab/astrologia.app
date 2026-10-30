@@ -41,7 +41,7 @@ export function SectionHeading({
   return (
     <div
       className={cn(
-        "space-y-3",
+        "space-y-2.5",
         align === "center" &&
           "mx-auto max-w-2xl text-center [&>p]:justify-center",
         className,
@@ -52,14 +52,14 @@ export function SectionHeading({
         className={cn(
           "font-semibold text-fg",
           Heading === "h1"
-            ? "text-[2rem] leading-[1.08] sm:text-5xl"
-            : "text-2xl leading-tight sm:text-4xl",
+            ? "text-[1.75rem] leading-[1.1] sm:text-4xl lg:text-5xl"
+            : "text-[1.375rem] leading-tight sm:text-3xl",
         )}
       >
         {title}
       </Heading>
       {description && (
-        <p className="text-[0.95rem] leading-relaxed text-fg-muted sm:text-lg">
+        <p className="text-[0.9375rem] leading-relaxed text-fg-muted sm:text-base">
           {description}
         </p>
       )}

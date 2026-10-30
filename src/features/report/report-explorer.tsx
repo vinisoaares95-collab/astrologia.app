@@ -1,7 +1,7 @@
 "use client";
 
 import { Lock } from "lucide-react";
-import { useId, useState } from "react";
+import { useId, useRef, useState, type KeyboardEvent } from "react";
 
 import { Badge } from "@/components/ui";
 import type { ReportPart } from "@/content/report-chapters";
@@ -23,11 +23,33 @@ export function ReportExplorer({ parts }: { parts: readonly ReportPart[] }) {
   const part = parts[active];
   const badge = sourceBadge[part.source];
 
+  const tabs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  // Padrão WAI-ARIA de abas: setas, Home e End movem o foco e a seleção.
+  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const last = parts.length - 1;
+    const next =
+      event.key === "ArrowRight"
+        ? (active + 1) % parts.length
+        : event.key === "ArrowLeft"
+          ? (active - 1 + parts.length) % parts.length
+          : event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? last
+              : null;
+    if (next === null) return;
+    event.preventDefault();
+    setActive(next);
+    tabs.current[next]?.focus();
+  }
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div
         role="tablist"
         aria-label="Partes do relatório"
+        onKeyDown={onKeyDown}
         className="grid grid-cols-3 gap-1 rounded-full bg-surface p-1 shadow-[inset_0_0_0_1px_var(--color-line-soft)]"
       >
         {parts.map((p, i) => (
@@ -36,6 +58,10 @@ export function ReportExplorer({ parts }: { parts: readonly ReportPart[] }) {
             type="button"
             role="tab"
             id={`${id}-tab-${i}`}
+            ref={(el) => {
+              tabs.current[i] = el;
+            }}
+            tabIndex={i === active ? 0 : -1}
             aria-selected={i === active}
             aria-controls={`${id}-panel`}
             onClick={() => setActive(i)}
@@ -55,7 +81,8 @@ export function ReportExplorer({ parts }: { parts: readonly ReportPart[] }) {
         role="tabpanel"
         id={`${id}-panel`}
         aria-labelledby={`${id}-tab-${active}`}
-        className="space-y-3"
+        tabIndex={0}
+        className="space-y-3 rounded-2xl"
       >
         <div className="flex items-center justify-between px-1">
           <p className="font-mono text-[0.65rem] tracking-[0.16em] text-fg-subtle uppercase">
@@ -67,10 +94,10 @@ export function ReportExplorer({ parts }: { parts: readonly ReportPart[] }) {
           {part.chapters.map((chapter, i) => (
             <li
               key={chapter.number}
-              className="group flex animate-fade-up items-center gap-4 rounded-3xl bg-surface/80 p-5 edge-light transition-colors duration-300 hover:bg-surface-raised"
+              className="group flex animate-fade-up items-center gap-4 rounded-2xl bg-surface/80 px-4 py-3.5 edge-light transition-colors duration-300 hover:bg-surface-raised"
               style={{ animationDelay: `${i * 60}ms` }}
             >
-              <span className="text-copper font-mono text-3xl font-medium tabular-nums">
+              <span className="text-copper font-mono text-2xl font-medium tabular-nums">
                 {String(chapter.number).padStart(2, "0")}
               </span>
               <div className="flex-1 space-y-1">

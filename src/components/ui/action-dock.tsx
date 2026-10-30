@@ -16,11 +16,11 @@ export function ActionDock({
   return (
     <div
       className={cn(
-        "sticky bottom-0 z-30 -mx-5 mt-auto bg-[linear-gradient(to_top,var(--color-bg)_55%,transparent)] px-5 pt-8 pb-safe sm:static sm:mx-0 sm:bg-none sm:px-0 sm:pt-4",
+        "sticky bottom-0 z-30 -mx-5 mt-auto bg-[linear-gradient(to_top,var(--color-bg)_62%,transparent)] px-5 pt-7 pb-safe sm:static sm:mx-0 sm:bg-none sm:px-0 sm:pt-2 sm:pb-8",
         className,
       )}
     >
-      <div className="flex flex-col gap-2.5">{children}</div>
+      <div className="flex flex-col gap-2">{children}</div>
     </div>
   );
 }

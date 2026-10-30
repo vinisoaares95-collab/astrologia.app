@@ -19,7 +19,8 @@
   /* Texto */
   --color-fg: #f6f4f1;
   --color-fg-muted: #a5a4ab;
-  --color-fg-subtle: #6f6e76;
+  /* ≥ 4.5:1 sobre bg e surface (WCAG AA para texto pequeno) */
+  --color-fg-subtle: #8a8992;
 
   /* Acento: laranja-cobre */
   --color-accent: #ff7a33;
@@ -92,6 +93,15 @@
   html {
     color-scheme: dark;
     -webkit-tap-highlight-color: transparent;
+    /* Foco por teclado e âncoras não ficam escondidos sob barras fixas */
+    scroll-padding-top: 7rem;
+    scroll-padding-bottom: 7.5rem;
+  }
+
+  @media (min-width: 40rem) {
+    html {
+      scroll-padding-bottom: 1.5rem;
+    }
   }
 
   body {
@@ -187,9 +197,18 @@
   color: transparent;
 }
 
-/* Espaço inferior seguro em iPhones */
+/* Áreas seguras (notch, barra de gestos) */
 @utility pb-safe {
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  padding-bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem));
+}
+
+@utility pt-safe {
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+}
+
+@utility px-safe {
+  padding-left: max(1.25rem, env(safe-area-inset-left));
+  padding-right: max(1.25rem, env(safe-area-inset-right));
 }
 
 @media (prefers-reduced-motion: reduce) {

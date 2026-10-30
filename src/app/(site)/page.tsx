@@ -197,7 +197,7 @@ export default function HomePage() {
 
           <Card variant="raised" className="space-y-5 p-4 sm:p-6">
             <div className="flex items-center gap-4 rounded-2xl bg-bg/60 p-3 shadow-[0_0_0_1px_var(--color-line-soft)]">
-              <Mandala className="size-16 shrink-0" />
+              <Mandala detail="compact" className="size-16 shrink-0" />
               <div className="flex-1">
                 <p className="font-mono text-[0.6rem] tracking-[0.16em] text-accent uppercase">
                   Seu relatório

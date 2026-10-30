@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function BirthDataPage() {
   return (
-    <Container size="narrow" className="flex flex-1 flex-col gap-7 pt-6">
+    <Container size="narrow" className="flex flex-1 flex-col gap-6 pt-5">
       <div className="flex items-center gap-5">
         <SectionHeading
           as="h1"
@@ -18,7 +18,7 @@ export default function BirthDataPage() {
           title="Quando e onde você nasceu"
           description="Para calcular as posições dos astros naquele instante."
         />
-        <Mandala className="size-24 shrink-0 sm:size-32" />
+        <Mandala detail="compact" className="size-20 shrink-0 sm:size-28" />
       </div>
       <BirthDataForm />
     </Container>

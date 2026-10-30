@@ -1,6 +1,6 @@
 export type BirthDataInput = {
-  date: string; // AAAA-MM-DD (input type="date")
-  time: string; // HH:MM (input type="time")
+  date: string; // DD/MM/AAAA
+  time: string; // HH:MM (24 h)
   unknownTime: boolean;
   place: string;
 };
@@ -18,11 +18,13 @@ export function validateBirthData(
 ): BirthDataErrors {
   const errors: BirthDataErrors = {};
 
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input.date);
-  if (!match) {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(input.date.trim());
+  if (!input.date.trim()) {
     errors.date = "Informe sua data de nascimento.";
+  } else if (!match) {
+    errors.date = "Use o formato DD/MM/AAAA.";
   } else {
-    const [, y, m, d] = match.map(Number);
+    const [d, m, y] = match.slice(1).map(Number);
     const date = new Date(y, m - 1, d);
     const valid =
       date.getFullYear() === y &&
@@ -34,8 +36,12 @@ export function validateBirthData(
     else if (date > today) errors.date = "A data não pode estar no futuro.";
   }
 
-  if (!input.unknownTime && !/^([01]\d|2[0-3]):[0-5]\d$/.test(input.time)) {
-    errors.time = "Informe o horário ou marque que não sabe.";
+  if (!input.unknownTime) {
+    if (!input.time.trim()) {
+      errors.time = "Informe o horário ou marque que não sabe.";
+    } else if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(input.time.trim())) {
+      errors.time = "Use o formato HH:MM, de 00:00 a 23:59.";
+    }
   }
 
   if (input.place.trim().length < 2) {

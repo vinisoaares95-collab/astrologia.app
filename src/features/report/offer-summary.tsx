@@ -118,7 +118,7 @@ export function OfferSummary({
       <div className="space-y-2.5">
         <Button size="lg" fullWidth disabled>
           <Lock aria-hidden className="size-4" />
-          Pagamento disponível em breve
+          Pagamento em breve
         </Button>
         <p className="text-center text-xs text-fg-subtle">
           Valores em validação. Nenhuma cobrança é feita nesta versão.

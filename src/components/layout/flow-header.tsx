@@ -15,13 +15,13 @@ export function FlowHeader() {
 
   return (
     <header className="sticky top-0 z-40 bg-bg/70 backdrop-blur-xl">
-      <div className="mx-auto max-w-5xl space-y-3 px-5 pt-3 pb-3 sm:px-8">
+      <div className="mx-auto max-w-5xl space-y-2.5 px-5 pt-safe pb-2.5 sm:px-8">
         <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center">
           <IconButtonLink href={screen.back} aria-label="Voltar">
             <ChevronLeft aria-hidden className="size-5" />
           </IconButtonLink>
           <div className="text-center">
-            <p className="font-mono text-[0.65rem] tracking-[0.18em] text-accent uppercase">
+            <p className="font-mono text-[0.625rem] tracking-[0.18em] text-accent uppercase">
               {String(index + 1).padStart(2, "0")} /{" "}
               {String(journeySteps.length).padStart(2, "0")}
             </p>

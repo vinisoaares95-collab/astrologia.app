@@ -100,12 +100,12 @@ export function PhotoCapture() {
 
       {photo ? (
         <div className="animate-fade-up space-y-5">
-          <figure className="relative overflow-hidden rounded-[1.75rem] bg-bg-deep edge-light">
+          <figure className="relative overflow-hidden rounded-3xl bg-bg-deep edge-light">
             {/* eslint-disable-next-line @next/next/no-img-element -- URL blob local; next/image não se aplica */}
             <img
               src={photo.url}
               alt="Pré-visualização da foto da sua palma"
-              className="mx-auto max-h-[52vh] w-auto object-contain"
+              className="mx-auto max-h-[46vh] w-auto object-contain"
             />
             <FrameCorners />
             <figcaption className="absolute top-5 left-5">
@@ -156,7 +156,7 @@ export function PhotoCapture() {
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
           className={cn(
-            "relative flex aspect-[4/5] max-h-[56vh] w-full flex-col items-center justify-center gap-5 self-center overflow-hidden rounded-[1.75rem] px-6 text-center edge-light transition-[background-color,box-shadow] duration-500",
+            "relative flex aspect-[4/5] max-h-[50vh] w-full flex-col items-center justify-center gap-5 self-center overflow-hidden rounded-3xl px-6 text-center edge-light transition-[background-color,box-shadow] duration-500",
             dragging
               ? "bg-accent-soft shadow-[0_0_0_1px_var(--color-accent)]"
               : "bg-surface/70 bg-[radial-gradient(80%_60%_at_50%_40%,#ff7a3314,transparent_70%)]",
