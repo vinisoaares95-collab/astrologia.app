@@ -417,8 +417,10 @@ describe("preparação para IA", () => {
     expect(
       codes("Com o Sol em Touro, você pode valorizar o concreto."),
     ).toEqual([]);
+    // Desde a 02F, o signo citado também é conferido isoladamente.
     expect(codes("Com o Sol em Leão, você pode brilhar.")).toEqual([
       "UNSUPPORTED_POSITION",
+      "UNSUPPORTED_SIGN",
     ]);
     expect(codes("O Sol na casa 12 pede recolhimento.")).toEqual([
       "UNSUPPORTED_HOUSE",

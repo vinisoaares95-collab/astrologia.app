@@ -109,6 +109,18 @@ Versões verificadas no npm em 30/10/2026.
 | Corpos lentos          | Signos e aspectos só entre lentos não interpretados       | São geracionais                                              |
 | IA                     | Só payload + validador; modelo nunca recebe o `ChartView` | Impedir posições inventadas; integração depende de aprovação |
 
+## Geração com IA (Fase 02F)
+
+| Tema                 | Decisão                                                           | Motivo                                                        |
+| -------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------- |
+| Modelo recomendado   | Claude Sonnet 5.5, esforço `medium`; Haiku 5.5 como candidato A/B | Custo estimado < 2% do ticket; preços e políticas verificados |
+| Provedor             | Interface `AiProvider` independente                               | Trocar de fornecedor sem mexer no motor nem no validador      |
+| Granularidade        | Uma chamada por capítulo, em paralelo                             | Latência e isolamento de falhas                               |
+| Saída                | JSON Schema por capítulo, `itemIds` restritos                     | Formato validável; impede citar itens de outro capítulo       |
+| Falha                | No máximo 2 tentativas (teto 3); depois, biblioteca identificada  | Nunca entregar texto inválido; sem laços infinitos            |
+| Limitações e títulos | Vêm do motor, não do modelo                                       | O modelo não pode apagar ou reescrever limitações             |
+| Credenciais          | Só variáveis de ambiente do servidor; `.env.example` sem valores  | Segurança                                                     |
+
 ## Limitações conhecidas
 
 - **HEIC** é aceito, mas só tem pré-visualização no Safari; em outros

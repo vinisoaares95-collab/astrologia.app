@@ -21,6 +21,7 @@
     "tz:diff": "node scripts/tz/compare-tzdb.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "lucide-react": "^1.65.0",
