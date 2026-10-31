@@ -110,6 +110,14 @@ mexer em componentes.
 - Convenção geométrica, testes de correspondência e limitações em
   `docs/fase-02d-mandala-natal.md`.
 
+## Motor de interpretação (Fase 02E)
+
+- `src/features/interpretation/`: `ChartView` → fatos (com certeza e origem) →
+  regras dos 5 capítulos → seleção determinística → `InterpretationReport`.
+- Biblioteca editorial em `library/` (base completa + 94 textos autorais).
+- `ai/` prepara payload e validador; nenhum modelo é chamado.
+- Detalhes em `docs/fase-02e-motor-de-interpretacao.md`.
+
 ## Segurança
 
 - Cabeçalhos: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`,

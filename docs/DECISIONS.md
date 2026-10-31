@@ -97,6 +97,18 @@ Versões verificadas no npm em 30/10/2026.
 | Horário desconhecido     | Sem ângulos/casas; intervalos no dia local                                       | Idem                                              |
 | `ICU_TIMEZONE_FILES_DIR` | Sempre absoluto (launcher)                                                       | Exigência do ICU; relativo caía na 2025b          |
 
+## Motor de interpretação (Fase 02E)
+
+| Tema                   | Decisão                                                   | Motivo                                                       |
+| ---------------------- | --------------------------------------------------------- | ------------------------------------------------------------ |
+| Intervalos na janela   | Amostragem a cada 30 min (antes: extremos)                | Estações planetárias e casas intermediárias eram perdidas    |
+| Observação × simbólico | Campos separados em todo item                             | Nunca apresentar tradição como fato                          |
+| Fatos incertos         | Aspectos: metade do peso + ressalva; demais: só limitação | Não afirmar o que muda dentro da janela                      |
+| Distribuição           | Cada fato em um único capítulo; ≤ 6 itens; ≤ 4 por corpo  | Evitar repetição                                             |
+| Regências              | Tradicionais                                              | Convenção mais difundida; documentada                        |
+| Corpos lentos          | Signos e aspectos só entre lentos não interpretados       | São geracionais                                              |
+| IA                     | Só payload + validador; modelo nunca recebe o `ChartView` | Impedir posições inventadas; integração depende de aprovação |
+
 ## Limitações conhecidas
 
 - **HEIC** é aceito, mas só tem pré-visualização no Safari; em outros

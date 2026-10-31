@@ -56,9 +56,7 @@ export function ChartTables({ chart }: { chart: ChartView }) {
                   </td>
                   <td className={td}>
                     {b.house ??
-                      (b.houseVaries
-                        ? `${b.houseVaries[0]}–${b.houseVaries[1]}`
-                        : "—")}
+                      (b.houseVaries ? b.houseVaries.join(", ") : "—")}
                   </td>
                 </tr>
               ))}

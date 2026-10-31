@@ -18,7 +18,7 @@ export function BodyDetails({ chart, body }: { chart: ChartView; body: Body }) {
   const houseText = b.house
     ? `Casa ${b.house}`
     : b.houseVaries
-      ? `Varia entre as casas ${b.houseVaries[0]} e ${b.houseVaries[1]}`
+      ? `Varia na janela: casas ${b.houseVaries.join(", ")}`
       : chart.precision === "unknown"
         ? "Não calculada (sem horário)"
         : "Não determinada";

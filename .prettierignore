@@ -6,3 +6,4 @@ src/generated
 src/features/places/data
 src/features/birth-time/__fixtures__/brazil-transitions.json
 src/features/natal-chart/glyph-paths.ts
+src/features/interpretation/__fixtures__

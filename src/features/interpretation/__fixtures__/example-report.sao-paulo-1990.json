@@ -1,0 +1,1671 @@
+{
+  "version": "02e.1",
+  "disclaimer": "As posições astronômicas deste relatório são calculadas. Os significados atribuídos a elas são interpretações simbólicas da tradição da astrologia ocidental tropical — não são fatos científicos, diagnósticos nem previsões.",
+  "chapters": [
+    {
+      "id": "identidade",
+      "number": 1,
+      "title": "Sua identidade astrológica",
+      "items": [
+        {
+          "id": "identidade:body-sign:sun",
+          "entryKey": "sign:sun:taurus",
+          "origin": "authored",
+          "factIds": [
+            "body-sign:sun"
+          ],
+          "certainty": "determined",
+          "observation": "Sol a 21°43′ de Touro.",
+          "symbolic": "Com o Sol em Touro, a identidade é tradicionalmente ligada à construção paciente: você pode se sentir mais em casa quando cultiva o que é concreto, belo e duradouro.",
+          "caveat": null,
+          "score": 100,
+          "tags": [
+            "ritmo:cautela",
+            "foco:estabilidade"
+          ]
+        },
+        {
+          "id": "identidade:angle-sign:asc",
+          "entryKey": "sign:asc:virgo",
+          "origin": "authored",
+          "factIds": [
+            "angle-sign:asc"
+          ],
+          "certainty": "determined",
+          "observation": "Ascendente a 24°45′ de Virgem.",
+          "symbolic": "Com o Ascendente em Virgem, a aproximação ao mundo é tradicionalmente analítica e cuidadosa: você pode perceber detalhes e oferecer ajuda prática.",
+          "caveat": null,
+          "score": 95,
+          "tags": [
+            "ritmo:cautela"
+          ]
+        },
+        {
+          "id": "identidade:body-house:sun",
+          "entryKey": "house:sun:8",
+          "origin": "authored",
+          "factIds": [
+            "body-house:sun"
+          ],
+          "certainty": "determined",
+          "observation": "Sol na casa 8 (Placidus).",
+          "symbolic": "O Sol na casa 8 é tradicionalmente associado a buscar identidade nas experiências de profundidade: crises, intimidade e transformações podem ser momentos de autodescoberta.",
+          "caveat": null,
+          "score": 70,
+          "tags": []
+        },
+        {
+          "id": "identidade:chart-ruler:mercury",
+          "entryKey": "ruler:mercury:taurus",
+          "origin": "composed",
+          "factIds": [
+            "chart-ruler:mercury"
+          ],
+          "certainty": "determined",
+          "observation": "O Ascendente em Virgem tem como regente tradicional Mercúrio, a 8°37′ de Touro, na casa 8.",
+          "symbolic": "Com o Ascendente em Virgem, o regente tradicional do mapa é Mercúrio. A tradição sugere que o modo de pensar, aprender e se comunicar — aqui em Touro, na casa 8 — ganha peso especial na condução da sua trajetória.",
+          "caveat": null,
+          "score": 65,
+          "tags": []
+        },
+        {
+          "id": "identidade:aspect:asc-sun:trine",
+          "entryKey": "aspect:asc-sun:harmonious",
+          "origin": "composed",
+          "factIds": [
+            "aspect:asc-sun:trine"
+          ],
+          "certainty": "determined",
+          "observation": "Sol em trígono com Ascendente (orbe 3,03°).",
+          "symbolic": "Na tradição, o trígono entre o Sol e o Ascendente sugere que a identidade e a forma de se apresentar fluem com naturalidade, como um talento que se exerce com facilidade.",
+          "caveat": null,
+          "score": 40.91,
+          "tags": []
+        },
+        {
+          "id": "identidade:element-dominant:earth",
+          "entryKey": "element-dominant:earth",
+          "origin": "authored",
+          "factIds": [
+            "element-dominant:earth"
+          ],
+          "certainty": "determined",
+          "observation": "5 de 10 corpos em signos de Terra: Sol, Mercúrio, Saturno, Urano, Netuno.",
+          "symbolic": "Muitos corpos em signos de Terra são associados a senso prático e constância: construir com as próprias mãos pode trazer satisfação.",
+          "caveat": null,
+          "score": 40,
+          "tags": [
+            "ritmo:cautela",
+            "foco:estabilidade"
+          ]
+        }
+      ],
+      "limitations": [],
+      "tensions": []
+    },
+    {
+      "id": "emocional",
+      "number": 2,
+      "title": "Seu mundo emocional",
+      "items": [
+        {
+          "id": "emocional:body-sign:moon",
+          "entryKey": "sign:moon:sagittarius",
+          "origin": "authored",
+          "factIds": [
+            "body-sign:moon"
+          ],
+          "certainty": "determined",
+          "observation": "Lua a 23°35′ de Sagitário.",
+          "symbolic": "A Lua em Sagitário, na tradição, busca sentido e movimento: otimismo, aventura e espaço para explorar podem renovar o seu ânimo.",
+          "caveat": null,
+          "score": 100,
+          "tags": [
+            "foco:mudanca",
+            "expressao:expansiva",
+            "vinculo:autonomia"
+          ]
+        },
+        {
+          "id": "emocional:body-house:moon",
+          "entryKey": "house:moon:3",
+          "origin": "authored",
+          "factIds": [
+            "body-house:moon"
+          ],
+          "certainty": "determined",
+          "observation": "Lua na casa 3 (Placidus).",
+          "symbolic": "A Lua na casa 3 é associada a emoções que circulam pela comunicação: conversas, escrita e o convívio com o entorno próximo podem acalmar você.",
+          "caveat": null,
+          "score": 75,
+          "tags": []
+        },
+        {
+          "id": "emocional:aspect:asc-moon:square",
+          "entryKey": "aspect:asc-moon:tense",
+          "origin": "composed",
+          "factIds": [
+            "aspect:asc-moon:square"
+          ],
+          "certainty": "determined",
+          "observation": "Lua em quadratura com Ascendente (orbe 1,16°).",
+          "symbolic": "Na tradição, a quadratura entre a Lua e o Ascendente sugere que as emoções e a forma de se apresentar geram atrito, um desafio que costuma impulsionar crescimento.",
+          "caveat": null,
+          "score": 55.82,
+          "tags": []
+        },
+        {
+          "id": "emocional:aspect:mc-moon:opposition",
+          "entryKey": "aspect:mc-moon:tense",
+          "origin": "composed",
+          "factIds": [
+            "aspect:mc-moon:opposition"
+          ],
+          "certainty": "determined",
+          "observation": "Lua em oposição com Meio do Céu (orbe 2,82°).",
+          "symbolic": "Na tradição, a oposição entre a Lua e o Meio do Céu sugere que as emoções e a vocação puxam em direções opostas e pedem integração e equilíbrio.",
+          "caveat": null,
+          "score": 49.84,
+          "tags": []
+        },
+        {
+          "id": "emocional:cusp-sign:4",
+          "entryKey": "cusp:4:sagittarius",
+          "origin": "composed",
+          "factIds": [
+            "cusp-sign:4"
+          ],
+          "certainty": "determined",
+          "observation": "Cúspide da casa 4 (Fundo do Céu) a 26°24′ de Sagitário.",
+          "symbolic": "Com a cúspide da casa 4 (Fundo do Céu) em Sagitário, a tradição associa as raízes, o lar e a vida íntima a temas como busca de sentido, entusiasmo e amplitude de horizontes.",
+          "caveat": null,
+          "score": 45,
+          "tags": []
+        }
+      ],
+      "limitations": [],
+      "tensions": []
+    },
+    {
+      "id": "mente",
+      "number": 3,
+      "title": "Sua mente e comunicação",
+      "items": [
+        {
+          "id": "mente:body-sign:mercury",
+          "entryKey": "sign:mercury:taurus",
+          "origin": "authored",
+          "factIds": [
+            "body-sign:mercury"
+          ],
+          "certainty": "determined",
+          "observation": "Mercúrio a 8°37′ de Touro.",
+          "symbolic": "Mercúrio em Touro é tradicionalmente ligado a um raciocínio prático e constante: você pode preferir ideias testadas e aprender no seu próprio ritmo.",
+          "caveat": null,
+          "score": 100,
+          "tags": [
+            "ritmo:cautela",
+            "foco:estabilidade"
+          ]
+        },
+        {
+          "id": "mente:body-house:mercury",
+          "entryKey": "house:mercury:8",
+          "origin": "authored",
+          "factIds": [
+            "body-house:mercury"
+          ],
+          "certainty": "determined",
+          "observation": "Mercúrio na casa 8 (Placidus).",
+          "symbolic": "Mercúrio na casa 8 é tradicionalmente ligado a uma mente que investiga: temas profundos, psicologia e o que está por trás das aparências podem atrair a sua atenção.",
+          "caveat": null,
+          "score": 70,
+          "tags": []
+        },
+        {
+          "id": "mente:body-retrograde:mercury",
+          "entryKey": "retro:mercury",
+          "origin": "authored",
+          "factIds": [
+            "body-retrograde:mercury"
+          ],
+          "certainty": "determined",
+          "observation": "Mercúrio em movimento retrógrado (-0,3196°/dia).",
+          "symbolic": "Mercúrio retrógrado no nascimento é associado, na tradição, a um pensamento que revisa e reelabora: você pode preferir refletir antes de falar e voltar às ideias para aprofundá-las.",
+          "caveat": null,
+          "score": 65,
+          "tags": []
+        },
+        {
+          "id": "mente:aspect:jupiter-mercury:sextile",
+          "entryKey": "aspect:jupiter-mercury:harmonious",
+          "origin": "authored",
+          "factIds": [
+            "aspect:jupiter-mercury:sextile"
+          ],
+          "certainty": "determined",
+          "observation": "Mercúrio em sextil com Júpiter (orbe 0,40°, separativo).",
+          "symbolic": "Mercúrio em aspecto harmonioso com Júpiter é associado a uma mente que gosta de ampliar horizontes: aprender e ensinar podem ser atividades naturais para você.",
+          "caveat": null,
+          "score": 53.69,
+          "tags": []
+        },
+        {
+          "id": "mente:cusp-sign:3",
+          "entryKey": "cusp:3:sagittarius",
+          "origin": "composed",
+          "factIds": [
+            "cusp-sign:3"
+          ],
+          "certainty": "determined",
+          "observation": "Cúspide da casa 3 a 1°19′ de Sagitário.",
+          "symbolic": "Com a cúspide da casa 3 em Sagitário, a tradição associa a comunicação, o aprendizado e o entorno próximo a temas como busca de sentido, entusiasmo e amplitude de horizontes.",
+          "caveat": null,
+          "score": 40,
+          "tags": []
+        }
+      ],
+      "limitations": [],
+      "tensions": []
+    },
+    {
+      "id": "relacionamentos",
+      "number": 4,
+      "title": "Seus relacionamentos e vínculos",
+      "items": [
+        {
+          "id": "relacionamentos:body-sign:venus",
+          "entryKey": "sign:venus:aries",
+          "origin": "authored",
+          "factIds": [
+            "body-sign:venus"
+          ],
+          "certainty": "determined",
+          "observation": "Vênus a 9°39′ de Áries.",
+          "symbolic": "Vênus em Áries é associada a um afeto espontâneo e entusiasmado: você pode se encantar com a conquista e com relações que tenham vitalidade.",
+          "caveat": null,
+          "score": 100,
+          "tags": [
+            "ritmo:impulso",
+            "vinculo:autonomia"
+          ]
+        },
+        {
+          "id": "relacionamentos:body-sign:mars",
+          "entryKey": "sign:mars:pisces",
+          "origin": "composed",
+          "factIds": [
+            "body-sign:mars"
+          ],
+          "certainty": "determined",
+          "observation": "Marte a 16°16′ de Peixes.",
+          "symbolic": "Com Marte em Peixes, a tradição associa a iniciativa, o desejo e a maneira de agir a temas como sensibilidade, imaginação e empatia.",
+          "caveat": null,
+          "score": 80,
+          "tags": [
+            "vinculo:proximidade"
+          ]
+        },
+        {
+          "id": "relacionamentos:cusp-sign:7",
+          "entryKey": "cusp:7:pisces",
+          "origin": "composed",
+          "factIds": [
+            "cusp-sign:7"
+          ],
+          "certainty": "determined",
+          "observation": "Cúspide da casa 7 (Descendente) a 24°45′ de Peixes.",
+          "symbolic": "Com a cúspide da casa 7 (Descendente) em Peixes, a tradição associa as parcerias e os encontros com o outro a temas como sensibilidade, imaginação e empatia.",
+          "caveat": null,
+          "score": 75,
+          "tags": []
+        },
+        {
+          "id": "relacionamentos:body-house:venus",
+          "entryKey": "house:venus:7",
+          "origin": "authored",
+          "factIds": [
+            "body-house:venus"
+          ],
+          "certainty": "determined",
+          "observation": "Vênus na casa 7 (Placidus).",
+          "symbolic": "Vênus na casa 7 é associada à importância das parcerias: o encontro com o outro pode ser um campo central de aprendizado e prazer.",
+          "caveat": null,
+          "score": 60,
+          "tags": []
+        },
+        {
+          "id": "relacionamentos:aspect:mars-pluto:trine",
+          "entryKey": "aspect:mars-pluto:harmonious",
+          "origin": "composed",
+          "factIds": [
+            "aspect:mars-pluto:trine"
+          ],
+          "certainty": "determined",
+          "observation": "Marte em trígono com Plutão (orbe 0,03°, separativo).",
+          "symbolic": "Na tradição, o trígono entre Marte e Plutão sugere que a ação e a intensidade fluem com naturalidade, como um talento que se exerce com facilidade.",
+          "caveat": null,
+          "score": 54.9,
+          "tags": []
+        },
+        {
+          "id": "relacionamentos:aspect:uranus-venus:square",
+          "entryKey": "aspect:uranus-venus:tense",
+          "origin": "authored",
+          "factIds": [
+            "aspect:uranus-venus:square"
+          ],
+          "certainty": "determined",
+          "observation": "Vênus em quadratura com Urano (orbe 0,41°, separativo).",
+          "symbolic": "Vênus em aspecto tenso com Urano é tradicionalmente ligada à tensão entre proximidade e liberdade: relações que acolham a sua independência podem ser mais sustentáveis.",
+          "caveat": null,
+          "score": 53.63,
+          "tags": []
+        }
+      ],
+      "limitations": [],
+      "tensions": [
+        {
+          "axis": "vinculo",
+          "itemIds": [
+            "relacionamentos:body-sign:venus",
+            "relacionamentos:body-sign:mars"
+          ],
+          "note": "Estes itens apontam para lados diferentes do eixo vínculo (autonomia × proximidade). A redação deve apresentá-los como facetas que convivem, não como contradição a resolver nem como erro."
+        }
+      ]
+    },
+    {
+      "id": "talentos",
+      "number": 5,
+      "title": "Seus talentos e desafios",
+      "items": [
+        {
+          "id": "talentos:body-sign:saturn",
+          "entryKey": "sign:saturn:capricorn",
+          "origin": "composed",
+          "factIds": [
+            "body-sign:saturn"
+          ],
+          "certainty": "determined",
+          "observation": "Saturno a 25°17′ de Capricórnio.",
+          "symbolic": "Com Saturno em Capricórnio, a tradição associa a estrutura, os limites e o amadurecimento a temas como responsabilidade, ambição e paciência.",
+          "caveat": null,
+          "score": 75,
+          "tags": [
+            "ritmo:cautela",
+            "expressao:reservada"
+          ]
+        },
+        {
+          "id": "talentos:body-sign:jupiter",
+          "entryKey": "sign:jupiter:cancer",
+          "origin": "composed",
+          "factIds": [
+            "body-sign:jupiter"
+          ],
+          "certainty": "determined",
+          "observation": "Júpiter a 9°01′ de Câncer.",
+          "symbolic": "Com Júpiter em Câncer, a tradição associa a expansão, a confiança e a busca de sentido a temas como cuidado, memória afetiva e proteção.",
+          "caveat": null,
+          "score": 70,
+          "tags": [
+            "vinculo:proximidade",
+            "expressao:reservada"
+          ]
+        },
+        {
+          "id": "talentos:body-house:jupiter",
+          "entryKey": "house:jupiter:10",
+          "origin": "authored",
+          "factIds": [
+            "body-house:jupiter"
+          ],
+          "certainty": "determined",
+          "observation": "Júpiter na casa 10 (Placidus).",
+          "symbolic": "Júpiter na casa 10 é tradicionalmente ligado à expansão pela vocação: a vida profissional pode ser um campo de crescimento e de sentido.",
+          "caveat": null,
+          "score": 60,
+          "tags": []
+        },
+        {
+          "id": "talentos:body-house:saturn",
+          "entryKey": "house:saturn:5",
+          "origin": "authored",
+          "factIds": [
+            "body-house:saturn"
+          ],
+          "certainty": "determined",
+          "observation": "Saturno na casa 5 (Placidus).",
+          "symbolic": "Saturno na casa 5 é associado a levar a sério a autoexpressão: a criatividade pode amadurecer com disciplina e ganhar consistência com o tempo.",
+          "caveat": null,
+          "score": 60,
+          "tags": []
+        },
+        {
+          "id": "talentos:angle-sign:mc",
+          "entryKey": "sign:mc:gemini",
+          "origin": "composed",
+          "factIds": [
+            "angle-sign:mc"
+          ],
+          "certainty": "determined",
+          "observation": "Meio do Céu a 26°24′ de Gêmeos.",
+          "symbolic": "Com o Meio do Céu em Gêmeos, a tradição associa a vocação e a imagem pública a temas como curiosidade, versatilidade e troca de ideias.",
+          "caveat": null,
+          "score": 55,
+          "tags": []
+        },
+        {
+          "id": "talentos:element-absent:air",
+          "entryKey": "element-absent:air",
+          "origin": "authored",
+          "factIds": [
+            "element-absent:air"
+          ],
+          "certainty": "determined",
+          "observation": "Nenhum dos 10 corpos em signos de Ar.",
+          "symbolic": "A ausência de corpos em signos de Ar é lida como um convite a dar palavras ao que sente e a buscar outras perspectivas.",
+          "caveat": null,
+          "score": 45,
+          "tags": []
+        }
+      ],
+      "limitations": [],
+      "tensions": []
+    }
+  ],
+  "facts": [
+    {
+      "id": "body-sign:sun",
+      "kind": "body-sign",
+      "certainty": "determined",
+      "bodies": [
+        "sun"
+      ],
+      "sign": "taurus",
+      "values": {
+        "sign": "taurus",
+        "degree": 21,
+        "minute": 43,
+        "longitude": 51.723,
+        "rangeStart": null,
+        "rangeEnd": null
+      },
+      "source": [
+        "bodies.sun.longitude",
+        "bodies.sun.sign"
+      ],
+      "observation": "Sol a 21°43′ de Touro."
+    },
+    {
+      "id": "body-house:sun",
+      "kind": "body-house",
+      "certainty": "determined",
+      "bodies": [
+        "sun"
+      ],
+      "house": 8,
+      "values": {
+        "house": 8
+      },
+      "source": [
+        "bodies.sun.house"
+      ],
+      "observation": "Sol na casa 8 (Placidus)."
+    },
+    {
+      "id": "body-sign:moon",
+      "kind": "body-sign",
+      "certainty": "determined",
+      "bodies": [
+        "moon"
+      ],
+      "sign": "sagittarius",
+      "values": {
+        "sign": "sagittarius",
+        "degree": 23,
+        "minute": 35,
+        "longitude": 263.5902,
+        "rangeStart": null,
+        "rangeEnd": null
+      },
+      "source": [
+        "bodies.moon.longitude",
+        "bodies.moon.sign"
+      ],
+      "observation": "Lua a 23°35′ de Sagitário."
+    },
+    {
+      "id": "body-house:moon",
+      "kind": "body-house",
+      "certainty": "determined",
+      "bodies": [
+        "moon"
+      ],
+      "house": 3,
+      "values": {
+        "house": 3
+      },
+      "source": [
+        "bodies.moon.house"
+      ],
+      "observation": "Lua na casa 3 (Placidus)."
+    },
+    {
+      "id": "body-sign:mercury",
+      "kind": "body-sign",
+      "certainty": "determined",
+      "bodies": [
+        "mercury"
+      ],
+      "sign": "taurus",
+      "values": {
+        "sign": "taurus",
+        "degree": 8,
+        "minute": 37,
+        "longitude": 38.6267,
+        "rangeStart": null,
+        "rangeEnd": null
+      },
+      "source": [
+        "bodies.mercury.longitude",
+        "bodies.mercury.sign"
+      ],
+      "observation": "Mercúrio a 8°37′ de Touro."
+    },
+    {
+      "id": "body-house:mercury",
+      "kind": "body-house",
+      "certainty": "determined",
+      "bodies": [
+        "mercury"
+      ],
+      "house": 8,
+      "values": {
+        "house": 8
+      },
+      "source": [
+        "bodies.mercury.house"
+      ],
+      "observation": "Mercúrio na casa 8 (Placidus)."
+    },
+    {
+      "id": "body-retrograde:mercury",
+      "kind": "body-retrograde",
+      "certainty": "determined",
+      "bodies": [
+        "mercury"
+      ],
+      "values": {
+        "speed": -0.3196,
+        "retrograde": true
+      },
+      "source": [
+        "bodies.mercury.speed",
+        "bodies.mercury.retrograde"
+      ],
+      "observation": "Mercúrio em movimento retrógrado (-0,3196°/dia)."
+    },
+    {
+      "id": "body-sign:venus",
+      "kind": "body-sign",
+      "certainty": "determined",
+      "bodies": [
+        "venus"
+      ],
+      "sign": "aries",
+      "values": {
+        "sign": "aries",
+        "degree": 9,
+        "minute": 39,
+        "longitude": 9.6642,
+        "rangeStart": null,
+        "rangeEnd": null
+      },
+      "source": [
+        "bodies.venus.longitude",
+        "bodies.venus.sign"
+      ],
+      "observation": "Vênus a 9°39′ de Áries."
+    },
+    {
+      "id": "body-house:venus",
+      "kind": "body-house",
+      "certainty": "determined",
+      "bodies": [
+        "venus"
+      ],
+      "house": 7,
+      "values": {
+        "house": 7
+      },
+      "source": [
+        "bodies.venus.house"
+      ],
+      "observation": "Vênus na casa 7 (Placidus)."
+    },
+    {
+      "id": "body-sign:mars",
+      "kind": "body-sign",
+      "certainty": "determined",
+      "bodies": [
+        "mars"
+      ],
+      "sign": "pisces",
+      "values": {
+        "sign": "pisces",
+        "degree": 16,
+        "minute": 16,
+        "longitude": 346.2745,
+        "rangeStart": null,
+        "rangeEnd": null
+      },
+      "source": [
+        "bodies.mars.longitude",
+        "bodies.mars.sign"
+      ],
+      "observation": "Marte a 16°16′ de Peixes."
+    },
+    {
+      "id": "body-house:mars",
+      "kind": "body-house",
+      "certainty": "determined",
+      "bodies": [
+        "mars"
+      ],
+      "house": 6,
+      "values": {
+        "house": 6
+      },
+      "source": [
+        "bodies.mars.house"
+      ],
+      "observation": "Marte na casa 6 (Placidus)."
+    },
+    {
+      "id": "body-sign:jupiter",
+      "kind": "body-sign",
+      "certainty": "determined",
+      "bodies": [
+        "jupiter"
+      ],
+      "sign": "cancer",
+      "values": {
+        "sign": "cancer",
+        "degree": 9,
+        "minute": 1,
+        "longitude": 99.0224,
+        "rangeStart": null,
+        "rangeEnd": null
+      },
+      "source": [
+        "bodies.jupiter.longitude",
+        "bodies.jupiter.sign"
+      ],
+      "observation": "Júpiter a 9°01′ de Câncer."
+    },
+    {
+      "id": "body-house:jupiter",
+      "kind": "body-house",
+      "certainty": "determined",
+      "bodies": [
+        "jupiter"
+      ],
+      "house": 10,
+      "values": {
+        "house": 10
+      },
+      "source": [
+        "bodies.jupiter.house"
+      ],
+      "observation": "Júpiter na casa 10 (Placidus)."
+    },
+    {
+      "id": "body-sign:saturn",
+      "kind": "body-sign",
+      "certainty": "determined",
+      "bodies": [
+        "saturn"
+      ],
+      "sign": "capricorn",
+      "values": {
+        "sign": "capricorn",
+        "degree": 25,
+        "minute": 17,
+        "longitude": 295.2901,
+        "rangeStart": null,
+        "rangeEnd": null
+      },
+      "source": [
+        "bodies.saturn.longitude",
+        "bodies.saturn.sign"
+      ],
+      "observation": "Saturno a 25°17′ de Capricórnio."
+    },
+    {
+      "id": "body-house:saturn",
+      "kind": "body-house",
+      "certainty": "determined",
+      "bodies": [
+        "saturn"
+      ],
+      "house": 5,
+      "values": {
+        "house": 5
+      },
+      "source": [
+        "bodies.saturn.house"
+      ],
+      "observation": "Saturno na casa 5 (Placidus)."
+    },
+    {
+      "id": "body-retrograde:saturn",
+      "kind": "body-retrograde",
+      "certainty": "determined",
+      "bodies": [
+        "saturn"
+      ],
+      "values": {
+        "speed": -0.0125,
+        "retrograde": true
+      },
+      "source": [
+        "bodies.saturn.speed",
+        "bodies.saturn.retrograde"
+      ],
+      "observation": "Saturno em movimento retrógrado (-0,0125°/dia)."
+    },
+    {
+      "id": "body-sign:uranus",
+      "kind": "body-sign",
+      "certainty": "determined",
+      "bodies": [
+        "uranus"
+      ],
+      "sign": "capricorn",
+      "values": {
+        "sign": "capricorn",
+        "degree": 9,
+        "minute": 14,
+        "longitude": 279.2494,
+        "rangeStart": null,
+        "rangeEnd": null
+      },
+      "source": [
+        "bodies.uranus.longitude",
+        "bodies.uranus.sign"
+      ],
+      "observation": "Urano a 9°14′ de Capricórnio."
+    },
+    {
+      "id": "body-house:uranus",
+      "kind": "body-house",
+      "certainty": "determined",
+      "bodies": [
+        "uranus"
+      ],
+      "house": 4,
+      "values": {
+        "house": 4
+      },
+      "source": [
+        "bodies.uranus.house"
+      ],
+      "observation": "Urano na casa 4 (Placidus)."
+    },
+    {
+      "id": "body-retrograde:uranus",
+      "kind": "body-retrograde",
+      "certainty": "determined",
+      "bodies": [
+        "uranus"
+      ],
+      "values": {
+        "speed": -0.0227,
+        "retrograde": true
+      },
+      "source": [
+        "bodies.uranus.speed",
+        "bodies.uranus.retrograde"
+      ],
+      "observation": "Urano em movimento retrógrado (-0,0227°/dia)."
+    },
+    {
+      "id": "body-sign:neptune",
+      "kind": "body-sign",
+      "certainty": "determined",
+      "bodies": [
+        "neptune"
+      ],
+      "sign": "capricorn",
+      "values": {
+        "sign": "capricorn",
+        "degree": 14,
+        "minute": 23,
+        "longitude": 284.3919,
+        "rangeStart": null,
+        "rangeEnd": null
+      },
+      "source": [
+        "bodies.neptune.longitude",
+        "bodies.neptune.sign"
+      ],
+      "observation": "Netuno a 14°23′ de Capricórnio."
+    },
+    {
+      "id": "body-house:neptune",
+      "kind": "body-house",
+      "certainty": "determined",
+      "bodies": [
+        "neptune"
+      ],
+      "house": 4,
+      "values": {
+        "house": 4
+      },
+      "source": [
+        "bodies.neptune.house"
+      ],
+      "observation": "Netuno na casa 4 (Placidus)."
+    },
+    {
+      "id": "body-retrograde:neptune",
+      "kind": "body-retrograde",
+      "certainty": "determined",
+      "bodies": [
+        "neptune"
+      ],
+      "values": {
+        "speed": -0.0135,
+        "retrograde": true
+      },
+      "source": [
+        "bodies.neptune.speed",
+        "bodies.neptune.retrograde"
+      ],
+      "observation": "Netuno em movimento retrógrado (-0,0135°/dia)."
+    },
+    {
+      "id": "body-sign:pluto",
+      "kind": "body-sign",
+      "certainty": "determined",
+      "bodies": [
+        "pluto"
+      ],
+      "sign": "scorpio",
+      "values": {
+        "sign": "scorpio",
+        "degree": 16,
+        "minute": 14,
+        "longitude": 226.2445,
+        "rangeStart": null,
+        "rangeEnd": null
+      },
+      "source": [
+        "bodies.pluto.longitude",
+        "bodies.pluto.sign"
+      ],
+      "observation": "Plutão a 16°14′ de Escorpião."
+    },
+    {
+      "id": "body-house:pluto",
+      "kind": "body-house",
+      "certainty": "determined",
+      "bodies": [
+        "pluto"
+      ],
+      "house": 2,
+      "values": {
+        "house": 2
+      },
+      "source": [
+        "bodies.pluto.house"
+      ],
+      "observation": "Plutão na casa 2 (Placidus)."
+    },
+    {
+      "id": "body-retrograde:pluto",
+      "kind": "body-retrograde",
+      "certainty": "determined",
+      "bodies": [
+        "pluto"
+      ],
+      "values": {
+        "speed": -0.0279,
+        "retrograde": true
+      },
+      "source": [
+        "bodies.pluto.speed",
+        "bodies.pluto.retrograde"
+      ],
+      "observation": "Plutão em movimento retrógrado (-0,0279°/dia)."
+    },
+    {
+      "id": "angle-sign:asc",
+      "kind": "angle-sign",
+      "certainty": "determined",
+      "bodies": [
+        "asc"
+      ],
+      "sign": "virgo",
+      "values": {
+        "sign": "virgo",
+        "degree": 24,
+        "minute": 45,
+        "longitude": 174.7516
+      },
+      "source": [
+        "angles.asc.longitude"
+      ],
+      "observation": "Ascendente a 24°45′ de Virgem."
+    },
+    {
+      "id": "angle-sign:mc",
+      "kind": "angle-sign",
+      "certainty": "determined",
+      "bodies": [
+        "mc"
+      ],
+      "sign": "gemini",
+      "values": {
+        "sign": "gemini",
+        "degree": 26,
+        "minute": 24,
+        "longitude": 86.4138
+      },
+      "source": [
+        "angles.mc.longitude"
+      ],
+      "observation": "Meio do Céu a 26°24′ de Gêmeos."
+    },
+    {
+      "id": "cusp-sign:3",
+      "kind": "cusp-sign",
+      "certainty": "determined",
+      "bodies": [],
+      "sign": "sagittarius",
+      "house": 3,
+      "values": {
+        "house": 3,
+        "sign": "sagittarius",
+        "degree": 1,
+        "minute": 19
+      },
+      "source": [
+        "houses.cusps.2"
+      ],
+      "observation": "Cúspide da casa 3 a 1°19′ de Sagitário."
+    },
+    {
+      "id": "cusp-sign:4",
+      "kind": "cusp-sign",
+      "certainty": "determined",
+      "bodies": [],
+      "sign": "sagittarius",
+      "house": 4,
+      "values": {
+        "house": 4,
+        "sign": "sagittarius",
+        "degree": 26,
+        "minute": 24
+      },
+      "source": [
+        "houses.cusps.3"
+      ],
+      "observation": "Cúspide da casa 4 (Fundo do Céu) a 26°24′ de Sagitário."
+    },
+    {
+      "id": "cusp-sign:7",
+      "kind": "cusp-sign",
+      "certainty": "determined",
+      "bodies": [],
+      "sign": "pisces",
+      "house": 7,
+      "values": {
+        "house": 7,
+        "sign": "pisces",
+        "degree": 24,
+        "minute": 45
+      },
+      "source": [
+        "houses.cusps.6"
+      ],
+      "observation": "Cúspide da casa 7 (Descendente) a 24°45′ de Peixes."
+    },
+    {
+      "id": "aspect:mars-pluto:trine",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "mars",
+        "pluto"
+      ],
+      "aspect": {
+        "type": "trine",
+        "orb": 0.03,
+        "applying": false
+      },
+      "values": {
+        "a": "mars",
+        "b": "pluto",
+        "type": "trine",
+        "orb": 0.03,
+        "applying": false
+      },
+      "source": [
+        "aspects.mars-pluto-trine"
+      ],
+      "observation": "Marte em trígono com Plutão (orbe 0,03°, separativo)."
+    },
+    {
+      "id": "aspect:jupiter-uranus:opposition",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "jupiter",
+        "uranus"
+      ],
+      "aspect": {
+        "type": "opposition",
+        "orb": 0.227,
+        "applying": true
+      },
+      "values": {
+        "a": "jupiter",
+        "b": "uranus",
+        "type": "opposition",
+        "orb": 0.227,
+        "applying": true
+      },
+      "source": [
+        "aspects.jupiter-uranus-opposition"
+      ],
+      "observation": "Júpiter em oposição com Urano (orbe 0,23°, aplicativo)."
+    },
+    {
+      "id": "aspect:jupiter-mercury:sextile",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "mercury",
+        "jupiter"
+      ],
+      "aspect": {
+        "type": "sextile",
+        "orb": 0.3957,
+        "applying": false
+      },
+      "values": {
+        "a": "mercury",
+        "b": "jupiter",
+        "type": "sextile",
+        "orb": 0.3957,
+        "applying": false
+      },
+      "source": [
+        "aspects.mercury-jupiter-sextile"
+      ],
+      "observation": "Mercúrio em sextil com Júpiter (orbe 0,40°, separativo)."
+    },
+    {
+      "id": "aspect:uranus-venus:square",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "venus",
+        "uranus"
+      ],
+      "aspect": {
+        "type": "square",
+        "orb": 0.4148,
+        "applying": false
+      },
+      "values": {
+        "a": "venus",
+        "b": "uranus",
+        "type": "square",
+        "orb": 0.4148,
+        "applying": false
+      },
+      "source": [
+        "aspects.venus-uranus-square"
+      ],
+      "observation": "Vênus em quadratura com Urano (orbe 0,41°, separativo)."
+    },
+    {
+      "id": "aspect:asc-saturn:trine",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "saturn",
+        "asc"
+      ],
+      "aspect": {
+        "type": "trine",
+        "orb": 0.5385,
+        "applying": null
+      },
+      "values": {
+        "a": "saturn",
+        "b": "asc",
+        "type": "trine",
+        "orb": 0.5385,
+        "applying": null
+      },
+      "source": [
+        "aspects.saturn-asc-trine"
+      ],
+      "observation": "Saturno em trígono com Ascendente (orbe 0,54°)."
+    },
+    {
+      "id": "aspect:mercury-uranus:trine",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "mercury",
+        "uranus"
+      ],
+      "aspect": {
+        "type": "trine",
+        "orb": 0.6227,
+        "applying": false
+      },
+      "values": {
+        "a": "mercury",
+        "b": "uranus",
+        "type": "trine",
+        "orb": 0.6227,
+        "applying": false
+      },
+      "source": [
+        "aspects.mercury-uranus-trine"
+      ],
+      "observation": "Mercúrio em trígono com Urano (orbe 0,62°, separativo)."
+    },
+    {
+      "id": "aspect:jupiter-venus:square",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "venus",
+        "jupiter"
+      ],
+      "aspect": {
+        "type": "square",
+        "orb": 0.6418,
+        "applying": false
+      },
+      "values": {
+        "a": "venus",
+        "b": "jupiter",
+        "type": "square",
+        "orb": 0.6418,
+        "applying": false
+      },
+      "source": [
+        "aspects.venus-jupiter-square"
+      ],
+      "observation": "Vênus em quadratura com Júpiter (orbe 0,64°, separativo)."
+    },
+    {
+      "id": "aspect:asc-moon:square",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "moon",
+        "asc"
+      ],
+      "aspect": {
+        "type": "square",
+        "orb": 1.1615,
+        "applying": null
+      },
+      "values": {
+        "a": "moon",
+        "b": "asc",
+        "type": "square",
+        "orb": 1.1615,
+        "applying": null
+      },
+      "source": [
+        "aspects.moon-asc-square"
+      ],
+      "observation": "Lua em quadratura com Ascendente (orbe 1,16°)."
+    },
+    {
+      "id": "aspect:neptune-pluto:sextile",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "neptune",
+        "pluto"
+      ],
+      "aspect": {
+        "type": "sextile",
+        "orb": 1.8525,
+        "applying": true
+      },
+      "values": {
+        "a": "neptune",
+        "b": "pluto",
+        "type": "sextile",
+        "orb": 1.8525,
+        "applying": true
+      },
+      "source": [
+        "aspects.neptune-pluto-sextile"
+      ],
+      "observation": "Netuno em sextil com Plutão (orbe 1,85°, aplicativo)."
+    },
+    {
+      "id": "aspect:mars-neptune:sextile",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "mars",
+        "neptune"
+      ],
+      "aspect": {
+        "type": "sextile",
+        "orb": 1.8826,
+        "applying": false
+      },
+      "values": {
+        "a": "mars",
+        "b": "neptune",
+        "type": "sextile",
+        "orb": 1.8826,
+        "applying": false
+      },
+      "source": [
+        "aspects.mars-neptune-sextile"
+      ],
+      "observation": "Marte em sextil com Netuno (orbe 1,88°, separativo)."
+    },
+    {
+      "id": "aspect:mc-moon:opposition",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "moon",
+        "mc"
+      ],
+      "aspect": {
+        "type": "opposition",
+        "orb": 2.8236,
+        "applying": null
+      },
+      "values": {
+        "a": "moon",
+        "b": "mc",
+        "type": "opposition",
+        "orb": 2.8236,
+        "applying": null
+      },
+      "source": [
+        "aspects.moon-mc-opposition"
+      ],
+      "observation": "Lua em oposição com Meio do Céu (orbe 2,82°)."
+    },
+    {
+      "id": "aspect:asc-sun:trine",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "sun",
+        "asc"
+      ],
+      "aspect": {
+        "type": "trine",
+        "orb": 3.0286,
+        "applying": null
+      },
+      "values": {
+        "a": "sun",
+        "b": "asc",
+        "type": "trine",
+        "orb": 3.0286,
+        "applying": null
+      },
+      "source": [
+        "aspects.sun-asc-trine"
+      ],
+      "observation": "Sol em trígono com Ascendente (orbe 3,03°)."
+    },
+    {
+      "id": "aspect:saturn-sun:trine",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "sun",
+        "saturn"
+      ],
+      "aspect": {
+        "type": "trine",
+        "orb": 3.5671,
+        "applying": true
+      },
+      "values": {
+        "a": "sun",
+        "b": "saturn",
+        "type": "trine",
+        "orb": 3.5671,
+        "applying": true
+      },
+      "source": [
+        "aspects.sun-saturn-trine"
+      ],
+      "observation": "Sol em trígono com Saturno (orbe 3,57°, aplicativo)."
+    },
+    {
+      "id": "aspect:neptune-venus:square",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "venus",
+        "neptune"
+      ],
+      "aspect": {
+        "type": "square",
+        "orb": 4.7277,
+        "applying": true
+      },
+      "values": {
+        "a": "venus",
+        "b": "neptune",
+        "type": "square",
+        "orb": 4.7277,
+        "applying": true
+      },
+      "source": [
+        "aspects.venus-neptune-square"
+      ],
+      "observation": "Vênus em quadratura com Netuno (orbe 4,73°, aplicativo)."
+    },
+    {
+      "id": "aspect:neptune-uranus:conjunction",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "uranus",
+        "neptune"
+      ],
+      "aspect": {
+        "type": "conjunction",
+        "orb": 5.1425,
+        "applying": false
+      },
+      "values": {
+        "a": "uranus",
+        "b": "neptune",
+        "type": "conjunction",
+        "orb": 5.1425,
+        "applying": false
+      },
+      "source": [
+        "aspects.uranus-neptune-conjunction"
+      ],
+      "observation": "Urano em conjunção com Netuno (orbe 5,14°, separativo)."
+    },
+    {
+      "id": "aspect:jupiter-neptune:opposition",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "jupiter",
+        "neptune"
+      ],
+      "aspect": {
+        "type": "opposition",
+        "orb": 5.3695,
+        "applying": true
+      },
+      "values": {
+        "a": "jupiter",
+        "b": "neptune",
+        "type": "opposition",
+        "orb": 5.3695,
+        "applying": true
+      },
+      "source": [
+        "aspects.jupiter-neptune-opposition"
+      ],
+      "observation": "Júpiter em oposição com Netuno (orbe 5,37°, aplicativo)."
+    },
+    {
+      "id": "aspect:mars-sun:sextile",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "sun",
+        "mars"
+      ],
+      "aspect": {
+        "type": "sextile",
+        "orb": 5.4485,
+        "applying": false
+      },
+      "values": {
+        "a": "sun",
+        "b": "mars",
+        "type": "sextile",
+        "orb": 5.4485,
+        "applying": false
+      },
+      "source": [
+        "aspects.sun-mars-sextile"
+      ],
+      "observation": "Sol em sextil com Marte (orbe 5,45°, separativo)."
+    },
+    {
+      "id": "aspect:pluto-sun:opposition",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "sun",
+        "pluto"
+      ],
+      "aspect": {
+        "type": "opposition",
+        "orb": 5.4786,
+        "applying": false
+      },
+      "values": {
+        "a": "sun",
+        "b": "pluto",
+        "type": "opposition",
+        "orb": 5.4786,
+        "applying": false
+      },
+      "source": [
+        "aspects.sun-pluto-opposition"
+      ],
+      "observation": "Sol em oposição com Plutão (orbe 5,48°, separativo)."
+    },
+    {
+      "id": "aspect:mercury-neptune:trine",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "mercury",
+        "neptune"
+      ],
+      "aspect": {
+        "type": "trine",
+        "orb": 5.7652,
+        "applying": false
+      },
+      "values": {
+        "a": "mercury",
+        "b": "neptune",
+        "type": "trine",
+        "orb": 5.7652,
+        "applying": false
+      },
+      "source": [
+        "aspects.mercury-neptune-trine"
+      ],
+      "observation": "Mercúrio em trígono com Netuno (orbe 5,77°, separativo)."
+    },
+    {
+      "id": "aspect:mars-moon:square",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "moon",
+        "mars"
+      ],
+      "aspect": {
+        "type": "square",
+        "orb": 7.3157,
+        "applying": false
+      },
+      "values": {
+        "a": "moon",
+        "b": "mars",
+        "type": "square",
+        "orb": 7.3157,
+        "applying": false
+      },
+      "source": [
+        "aspects.moon-mars-square"
+      ],
+      "observation": "Lua em quadratura com Marte (orbe 7,32°, separativo)."
+    },
+    {
+      "id": "aspect:neptune-sun:trine",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "sun",
+        "neptune"
+      ],
+      "aspect": {
+        "type": "trine",
+        "orb": 7.3311,
+        "applying": false
+      },
+      "values": {
+        "a": "sun",
+        "b": "neptune",
+        "type": "trine",
+        "orb": 7.3311,
+        "applying": false
+      },
+      "source": [
+        "aspects.sun-neptune-trine"
+      ],
+      "observation": "Sol em trígono com Netuno (orbe 7,33°, separativo)."
+    },
+    {
+      "id": "aspect:mercury-pluto:opposition",
+      "kind": "aspect",
+      "certainty": "determined",
+      "bodies": [
+        "mercury",
+        "pluto"
+      ],
+      "aspect": {
+        "type": "opposition",
+        "orb": 7.6178,
+        "applying": false
+      },
+      "values": {
+        "a": "mercury",
+        "b": "pluto",
+        "type": "opposition",
+        "orb": 7.6178,
+        "applying": false
+      },
+      "source": [
+        "aspects.mercury-pluto-opposition"
+      ],
+      "observation": "Mercúrio em oposição com Plutão (orbe 7,62°, separativo)."
+    },
+    {
+      "id": "chart-ruler:mercury",
+      "kind": "chart-ruler",
+      "certainty": "determined",
+      "bodies": [
+        "asc",
+        "mercury"
+      ],
+      "sign": "taurus",
+      "house": 8,
+      "values": {
+        "ascSign": "virgo",
+        "ruler": "mercury",
+        "rulerSign": "taurus",
+        "rulerHouse": 8
+      },
+      "source": [
+        "angles.asc.sign",
+        "bodies.mercury.sign",
+        "bodies.mercury.house"
+      ],
+      "observation": "O Ascendente em Virgem tem como regente tradicional Mercúrio, a 8°37′ de Touro, na casa 8."
+    },
+    {
+      "bodies": [
+        "sun",
+        "mercury",
+        "saturn",
+        "uranus",
+        "neptune"
+      ],
+      "values": {
+        "element": "earth",
+        "count": 5,
+        "maxCount": 5
+      },
+      "source": [
+        "bodies.sun.sign",
+        "bodies.moon.sign",
+        "bodies.mercury.sign",
+        "bodies.venus.sign",
+        "bodies.mars.sign",
+        "bodies.jupiter.sign",
+        "bodies.saturn.sign",
+        "bodies.uranus.sign",
+        "bodies.neptune.sign",
+        "bodies.pluto.sign"
+      ],
+      "id": "element-dominant:earth",
+      "kind": "element-dominant",
+      "certainty": "determined",
+      "observation": "5 de 10 corpos em signos de Terra: Sol, Mercúrio, Saturno, Urano, Netuno."
+    },
+    {
+      "bodies": [],
+      "values": {
+        "element": "air",
+        "count": 0,
+        "maxCount": 0
+      },
+      "source": [
+        "bodies.sun.sign",
+        "bodies.moon.sign",
+        "bodies.mercury.sign",
+        "bodies.venus.sign",
+        "bodies.mars.sign",
+        "bodies.jupiter.sign",
+        "bodies.saturn.sign",
+        "bodies.uranus.sign",
+        "bodies.neptune.sign",
+        "bodies.pluto.sign"
+      ],
+      "id": "element-absent:air",
+      "kind": "element-absent",
+      "certainty": "determined",
+      "observation": "Nenhum dos 10 corpos em signos de Ar."
+    }
+  ],
+  "basis": {
+    "precision": "exact",
+    "calcVersion": "chart-0.1.0-experimental+swiss-ephemeris-2.10.03+sepl_18.se1+semo_18.se1+orbs-v1",
+    "houseSystem": "placidus",
+    "zodiac": "tropical",
+    "rulership": "traditional"
+  }
+}

@@ -8,7 +8,7 @@ import { swissEphemeris } from "../astrology/engine/swiss-ephemeris";
 import type { BirthDataInput } from "../birth-data/contract";
 import { normalizeBirthData } from "../birth-data/normalize";
 import type { PlaceRecord } from "../places/types";
-import { buildChartView, longitudeRange } from "./build-chart";
+import { buildChartView, longitudeRangeFromSamples } from "./build-chart";
 
 const ARCSEC = 1 / 3600;
 const ref = (id: string) => reference.cases.find((c) => c.id === id)!;
@@ -162,29 +162,54 @@ describe("latitude polar", () => {
   });
 });
 
-describe("longitudeRange", () => {
-  it("segue o sentido do movimento e detecta mudança de signo", () => {
-    expect(longitudeRange(10, 12)).toMatchObject({
-      start: 10,
-      end: 12,
-      width: 2,
-      crossesSign: false,
+describe("intervalos por amostragem (correção da auditoria 02E)", () => {
+  it("contém a referência e funciona em qualquer sentido, inclusive atravessando 0°", () => {
+    const check = (
+      ref: number,
+      samples: number[],
+      start: number,
+      end: number,
+      width: number,
+      crosses: boolean,
+    ) => {
+      const r = longitudeRangeFromSamples(ref, samples);
+      expect(angularSeparation(r.start, start)).toBeLessThan(1e-9);
+      expect(angularSeparation(r.end, end)).toBeLessThan(1e-9);
+      expect(r.width).toBeCloseTo(width, 9);
+      expect(r.crossesSign).toBe(crosses);
+    };
+    check(11, [10, 11, 12], 10, 12, 2, false);
+    check(30.5, [29, 33], 29, 33, 4, true);
+    check(0.2, [359, 1], 359, 1, 2, true);
+    check(11, [12, 10], 10, 12, 2, false); // retrógrado
+  });
+
+  it("estação de Mercúrio (30/08/2016, 13:04 UT): o intervalo cobre a volta e contém a posição exibida", () => {
+    // Antes da correção (só extremos): largura ≈ 0,6″ e a posição ficava fora do intervalo.
+    const chart = chartFor({
+      date: "30/08/2016",
+      time: { precision: "unknown" },
+      placeId: "t:sp",
     });
-    expect(longitudeRange(28, 33)).toMatchObject({
-      width: 5,
-      crossesSign: true,
+    const mercury = chart.bodies.find((b) => b.body === "mercury")!;
+    expect(mercury.range!.width * 3600).toBeGreaterThan(40);
+    const into = (mercury.longitude - mercury.range!.start + 360) % 360;
+    expect(into).toBeLessThanOrEqual(mercury.range!.width + 1e-9);
+  });
+
+  it("lista todas as casas visitadas na janela e não afirma nenhuma", () => {
+    const chart = chartFor({
+      ...sp1990,
+      time: { precision: "approximate", value: "14:30", marginMinutes: 120 },
     });
-    expect(longitudeRange(359, 1)).toMatchObject({
-      start: 359,
-      end: 1,
-      width: 2,
-      crossesSign: true,
-    });
-    // Retrógrado: de 12 para 10 → arco de 10 a 12.
-    expect(longitudeRange(12, 10)).toMatchObject({
-      start: 10,
-      end: 12,
-      width: 2,
-    });
+    const moving = chart.bodies.filter((b) => b.houseVaries);
+    expect(moving.length).toBeGreaterThan(0);
+    for (const b of moving) {
+      expect(b.house).toBeNull();
+      // Casas consecutivas (sem lacunas), como a rotação diária implica.
+      const hs = b.houseVaries!;
+      expect(hs.length).toBeGreaterThanOrEqual(2);
+    }
+    expect(moving.some((b) => b.houseVaries!.length >= 3)).toBe(true);
   });
 });

@@ -144,7 +144,7 @@ Capturas: `docs/capturas/15` a `20`.
 ## 9. Limitações
 
 - **Licença:** nenhum deploy público com o motor antes da decisão de licenciamento.
-- **Intervalos:** calculados pelos extremos e pelo centro da janela. Se um planeta mudar de direção (estação) dentro da janela, o extremo real pode ficar no meio. Isso é irrelevante para janelas de até um dia, exceto em estações exatas.
+- **Intervalos:** ~~calculados pelos extremos e pelo centro da janela~~. **Corrigido na Fase 02E:** a janela passou a ser amostrada a cada 30 min; estações planetárias e todas as casas visitadas entram no intervalo (ver `docs/fase-02e-motor-de-interpretacao.md`, §1).
 - **Orientação no horário aproximado:** usa o centro da janela; os ângulos são mostrados como faixas e identificados com "≈".
 - **Rótulos de grau:** ocultos em telas estreitas (< 448 px); a informação continua no toque e na tabela.
 - **Desktop:** a mandala fica limitada à largura da coluna do formulário (~470 px).

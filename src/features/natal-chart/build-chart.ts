@@ -16,21 +16,30 @@ import type {
   LongitudeRange,
 } from "./contract";
 
-/** Arco de `a` (início da janela) a `b` (fim), no sentido do movimento. */
-export function longitudeRange(a: number, b: number): LongitudeRange {
-  const forward = normalizeDegrees(b - a);
-  // Movimento retrógrado: o arco mais curto é no sentido inverso.
-  const [start, end, width] =
-    forward <= 180 ? [a, b, forward] : [b, a, 360 - forward];
-  const startSign = Math.floor(normalizeDegrees(start) / 30);
+/** Intervalo entre amostras da janela de incerteza. */
+export const SAMPLE_STEP_MINUTES = 30;
+
+/**
+ * Menor arco que contém todas as longitudes amostradas, medido em torno da
+ * longitude de referência (que fica sempre dentro do intervalo). Funciona
+ * mesmo quando o planeta muda de direção (estação) dentro da janela.
+ */
+export function longitudeRangeFromSamples(
+  reference: number,
+  samples: readonly number[],
+): LongitudeRange {
+  let min = 0;
+  let max = 0;
+  for (const lon of samples) {
+    const delta = ((normalizeDegrees(lon - reference) + 180) % 360) - 180;
+    min = Math.min(min, delta);
+    max = Math.max(max, delta);
+  }
+  const start = normalizeDegrees(reference + min);
+  const width = max - min;
   const crossesSign =
-    Math.floor((normalizeDegrees(start) + width) / 30) !== startSign;
-  return {
-    start: normalizeDegrees(start),
-    end: normalizeDegrees(end),
-    width,
-    crossesSign,
-  };
+    Math.floor(start / 30) !== Math.floor((start + width) / 30);
+  return { start, end: normalizeDegrees(reference + max), width, crossesSign };
 }
 
 const aspectKey = (a: Aspect) => `${a.a}|${a.b}|${a.type}`;
@@ -51,23 +60,40 @@ function chartAt(
   );
 }
 
+const atEpoch = (base: ResolvedInstant, epochMs: number): ResolvedInstant => ({
+  ...base,
+  epochMs,
+  utc: new Date(epochMs).toISOString().replace(".000Z", "Z"),
+});
+
 /** Um segundo antes do fim exclusivo do dia (último instante do dia local). */
 function lastInstantOf(end: ResolvedInstant): ResolvedInstant {
-  const epochMs = end.epochMs - 1000;
-  return {
-    ...end,
-    epochMs,
-    utc: new Date(epochMs).toISOString().replace(".000Z", "Z"),
-  };
+  return atEpoch(end, end.epochMs - 1000);
+}
+
+/** Instantes da janela a cada SAMPLE_STEP_MINUTES, incluindo os extremos. */
+function sampleWindow(
+  start: ResolvedInstant,
+  end: ResolvedInstant,
+): ResolvedInstant[] {
+  const step = SAMPLE_STEP_MINUTES * 60_000;
+  const out: ResolvedInstant[] = [];
+  for (let t = start.epochMs; t < end.epochMs; t += step)
+    out.push(atEpoch(start, t));
+  out.push(end);
+  return out;
 }
 
 /**
  * Monta o mapa a partir do nascimento normalizado.
  * - exato: um cálculo, com ângulos e casas;
- * - aproximado: centro + extremos da janela; ângulos como intervalos e
- *   casas NÃO determinadas (as cúspides variam com o Ascendente);
- * - desconhecido: meio-dia local de referência + extremos do dia; sem
- *   ângulos nem casas.
+ * - aproximado: instante informado + amostras da janela (a cada 30 min);
+ *   ângulos como intervalos e casas NÃO determinadas (as cúspides variam
+ *   com o Ascendente);
+ * - desconhecido: meio-dia local de referência + amostras do dia inteiro;
+ *   sem ângulos nem casas.
+ * A amostragem densa (e não só os extremos) capta estações planetárias e
+ * todas as casas por onde um corpo passa dentro da janela.
  */
 export function buildChartView(
   birth: NormalizedBirth,
@@ -85,38 +111,41 @@ export function buildChartView(
 
   const enginePrecision = time.precision === "unknown" ? "unknown" : "exact";
   const center = chartAt(reference, birth, enginePrecision, provider);
-  const ends = window
-    ? [
-        chartAt(window.start, birth, enginePrecision, provider),
-        chartAt(window.end, birth, enginePrecision, provider),
-      ]
+  const samples = window
+    ? sampleWindow(window.start, window.end).map((i) =>
+        chartAt(i, birth, enginePrecision, provider),
+      )
     : null;
 
   const bodies: ChartBody[] = center.bodies.map((body, i) => {
-    if (!ends) return { ...body, range: null, houseVaries: null };
-    const [first, last] = ends.map((c) => c.bodies[i]);
-    const range = longitudeRange(first.longitude, last.longitude);
-    const housesDiffer =
-      first.house !== null && last.house !== null && first.house !== last.house;
-    // Com horário aproximado, a casa só é afirmada se for a mesma nos dois
-    // extremos da janela; sem horário, nunca há casa.
+    if (!samples)
+      return { ...body, range: null, houseVaries: null, motionVaries: false };
+    const range = longitudeRangeFromSamples(
+      body.longitude,
+      samples.map((c) => c.bodies[i].longitude),
+    );
+    // Com horário aproximado, a casa só é afirmada se for a mesma em todas as
+    // amostras da janela; sem horário, nunca há casa.
+    const visited = [...new Set(samples.map((c) => c.bodies[i].house))];
+    const stable = visited.length === 1 && visited[0] !== null;
     const house =
-      time.precision === "approximate" && !housesDiffer ? first.house : null;
-    return {
-      ...body,
-      house,
-      range,
-      houseVaries: housesDiffer ? [first.house!, last.house!] : null,
-    };
+      time.precision === "approximate" && stable ? visited[0] : null;
+    const houseVaries =
+      time.precision === "approximate" && !stable
+        ? visited.filter((h): h is number => h !== null).sort((a, b) => a - b)
+        : null;
+    const motionVaries =
+      new Set(samples.map((c) => c.bodies[i].retrograde)).size > 1;
+    return { ...body, house, range, houseVaries, motionVaries };
   });
 
   let angles: ChartView["angles"] = null;
   if (center.angles) {
     const angleRange = (key: "asc" | "mc") =>
-      ends?.[0].angles && ends[1].angles
-        ? longitudeRange(
-            ends[0].angles[key].longitude,
-            ends[1].angles[key].longitude,
+      samples && samples.every((c) => c.angles)
+        ? longitudeRangeFromSamples(
+            center.angles![key].longitude,
+            samples.map((c) => c.angles![key].longitude),
           )
         : null;
     angles = {
@@ -125,8 +154,8 @@ export function buildChartView(
     };
   }
 
-  // Aspectos: com janela, considera os três instantes. Os que não aparecem
-  // nos três são marcados como incertos. Com horário aproximado, aspectos
+  // Aspectos: com janela, considera todas as amostras. Os que não aparecem
+  // em todas são marcados como incertos. Com horário aproximado, aspectos
   // com ASC/MC são omitidos (os ângulos não estão determinados).
   const involvesAngle = (a: Aspect) =>
     ["asc", "mc"].includes(a.a) || ["asc", "mc"].includes(a.b);
@@ -135,14 +164,13 @@ export function buildChartView(
       ? list.filter((a) => !involvesAngle(a))
       : list;
   let aspects: ChartAspect[];
-  if (!ends) {
+  if (!samples) {
     aspects = center.aspects.map((a) => ({ ...a, uncertain: false }));
   } else {
-    const sets = [center, ...ends].map(
-      (c) => new Set(allowed(c.aspects).map(aspectKey)),
-    );
+    const all = [center, ...samples];
+    const sets = all.map((c) => new Set(allowed(c.aspects).map(aspectKey)));
     const union = new Map<string, Aspect>();
-    for (const c of [center, ...ends])
+    for (const c of all)
       for (const a of allowed(c.aspects))
         if (!union.has(aspectKey(a))) union.set(aspectKey(a), a);
     const centerByKey = new Map(

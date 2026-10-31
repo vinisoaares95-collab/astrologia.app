@@ -27,8 +27,10 @@ export type LongitudeRange = {
 export type ChartBody = BodyPosition & {
   /** Presente quando o horário é aproximado ou desconhecido. */
   range: LongitudeRange | null;
-  /** Casas nos extremos da janela, quando diferem (horário aproximado). */
-  houseVaries: [number, number] | null;
+  /** Casas visitadas na janela, quando o corpo muda de casa (horário aproximado). */
+  houseVaries: number[] | null;
+  /** O movimento muda de direção (estação) dentro da janela de incerteza. */
+  motionVaries: boolean;
 };
 
 export type ChartAngle = ZodiacPosition & { range: LongitudeRange | null };
