@@ -26,7 +26,7 @@ export type MockScenario =
 
 type ChapterInput = {
   chapter: { title: string };
-  items: { id: string; interpretation: string; caveat: string | null }[];
+  items: { id: string; interpretation: string }[];
 };
 
 const approxTokens = (s: string) => Math.ceil(s.length / 4);
@@ -41,19 +41,13 @@ function parseInput(request: AiRequest): ChapterInput {
 
 /** Capítulo válido feito só com o material autorizado da requisição. */
 function validDraft(input: ChapterInput) {
-  let seenCaveat = false;
+  // Ressalvas e intervalos são notas do sistema: o texto não os repete.
   return {
     introduction: `Este capítulo, "${input.chapter.title}", articula os elementos selecionados do seu mapa.`,
-    sections: input.items.map((i) => {
-      // Ressalva completa só na primeira vez; depois, uma variação curta.
-      const caveat =
-        i.caveat && (seenCaveat ? "Aqui também vale a reserva." : i.caveat);
-      if (i.caveat) seenCaveat = true;
-      return {
-        text: [i.interpretation, caveat].filter(Boolean).join(" "),
-        itemIds: [i.id],
-      };
-    }),
+    sections: input.items.map((i) => ({
+      text: i.interpretation,
+      itemIds: [i.id],
+    })),
     synthesis:
       "Em conjunto, esses temas formam uma leitura simbólica para ser confrontada com a sua experiência.",
     reflectionQuestions: [

@@ -38,6 +38,9 @@ verificados**.
 
 ### Recomendação: Claude Sonnet 5.5 (`claude-sonnet-5-5`), esforço `medium`
 
+> **Substituída na Fase 02F.2:** após a avaliação cega da 02F.1, o padrão do
+> MVP passou a ser Claude Haiku 5.5 (ver `fase-02f2-ajustes-do-motor.md`).
+
 - **Econômica:** mesmo no pior cenário estimado (com uma nova tentativa por
   capítulo), o custo fica em torno de 3% do preço de R$ 39,90 (§ 9).
   Opus 5.5 custa o dobro por token sem ganho medido para textos curtos.

@@ -1,5 +1,5 @@
 {
-  "version": "02e.1+02f.1",
+  "version": "02e.1+02f.2",
   "disclaimer": "As posições astronômicas deste relatório são calculadas. Os significados atribuídos a elas são interpretações simbólicas da tradição da astrologia ocidental tropical — não são fatos científicos, diagnósticos nem previsões.",
   "basis": {
     "precision": "unknown",
@@ -22,6 +22,9 @@
           ],
           "factIds": [
             "body-sign:sun"
+          ],
+          "notes": [
+            "Sem o horário de nascimento, a posição do Sol varia ao longo do dia, entre 21°08′ de Touro e 22°06′ de Touro; a leitura usa a posição calculada para o meio-dia (21°37′ de Touro)."
           ]
         },
         {
@@ -31,7 +34,8 @@
           ],
           "factIds": [
             "element-dominant:earth"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Sol em aspecto harmonioso com Saturno é associado à capacidade de dar forma às metas: disciplina e paciência podem trabalhar a favor da sua expressão.",
@@ -40,7 +44,8 @@
           ],
           "factIds": [
             "aspect:saturn-sun:trine"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Sol em aspecto tenso com Plutão é associado, na tradição, a experiências de poder e transformação: crises podem se tornar oportunidades de renovação pessoal.",
@@ -49,7 +54,8 @@
           ],
           "factIds": [
             "aspect:pluto-sun:opposition"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Sol em aspecto harmonioso com Marte é associado a vontade e ação bem articuladas: você pode transformar intenção em iniciativa com relativa facilidade.",
@@ -58,7 +64,8 @@
           ],
           "factIds": [
             "aspect:mars-sun:sextile"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Em conjunto, esses elementos descrevem facetas simbólicas da identidade; vale observar quais delas fazem sentido na sua experiência.",
@@ -86,24 +93,33 @@
           ],
           "factIds": [
             "body-sign:moon"
+          ],
+          "notes": [
+            "Sem o horário de nascimento, a posição da Lua varia ao longo do dia, entre 16°22′ de Sagitário e 28°19′ de Sagitário; a leitura usa a posição calculada para o meio-dia (22°20′ de Sagitário)."
           ]
         },
         {
-          "text": "Lua em aspecto tenso com Marte é associada a reações emocionais intensas: reconhecer a irritação cedo pode ajudar você a transformá-la em ação construtiva. Este aspecto não se mantém em toda a janela de horário informada; considere-o com reserva.",
+          "text": "Lua em aspecto tenso com Marte é associada a reações emocionais intensas: reconhecer a irritação cedo pode ajudar você a transformá-la em ação construtiva.",
           "itemIds": [
             "emocional:aspect:mars-moon:square"
           ],
           "factIds": [
             "aspect:mars-moon:square"
+          ],
+          "notes": [
+            "Este aspecto não se mantém em toda a janela de horário informada; considere-o com reserva."
           ]
         },
         {
-          "text": "Na tradição, o trígono entre a Lua e Vênus sugere que as emoções e os afetos fluem com naturalidade, como um talento que se exerce com facilidade. Vale a mesma reserva: este aspecto também depende do horário de nascimento.",
+          "text": "Na tradição, o trígono entre a Lua e Vênus sugere que as emoções e os afetos fluem com naturalidade, como um talento que se exerce com facilidade.",
           "itemIds": [
             "emocional:aspect:moon-venus:trine"
           ],
           "factIds": [
             "aspect:moon-venus:trine"
+          ],
+          "notes": [
+            "Vale a mesma reserva: este aspecto também depende do horário de nascimento."
           ]
         }
       ],
@@ -131,6 +147,9 @@
           ],
           "factIds": [
             "body-sign:mercury"
+          ],
+          "notes": [
+            "Sem o horário de nascimento, a posição de Mercúrio varia ao longo do dia, entre 8°30′ de Touro e 8°49′ de Touro; a leitura usa a posição calculada para o meio-dia (8°39′ de Touro)."
           ]
         },
         {
@@ -140,7 +159,8 @@
           ],
           "factIds": [
             "body-retrograde:mercury"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Mercúrio em aspecto harmonioso com Júpiter é associado a uma mente que gosta de ampliar horizontes: aprender e ensinar podem ser atividades naturais para você.",
@@ -149,7 +169,8 @@
           ],
           "factIds": [
             "aspect:jupiter-mercury:sextile"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Na tradição, o trígono entre Mercúrio e Urano sugere que a mente e a liberdade fluem com naturalidade, como um talento que se exerce com facilidade.",
@@ -158,7 +179,8 @@
           ],
           "factIds": [
             "aspect:mercury-uranus:trine"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Em conjunto, esses elementos sugerem um estilo de pensar e se comunicar que você pode reconhecer, ajustar ou questionar.",
@@ -185,6 +207,9 @@
           ],
           "factIds": [
             "body-sign:venus"
+          ],
+          "notes": [
+            "Sem o horário de nascimento, a posição de Vênus varia ao longo do dia, entre 8°58′ de Áries e 10°06′ de Áries; a leitura usa a posição calculada para o meio-dia (9°32′ de Áries)."
           ]
         },
         {
@@ -194,6 +219,9 @@
           ],
           "factIds": [
             "body-sign:mars"
+          ],
+          "notes": [
+            "Sem o horário de nascimento, a posição de Marte varia ao longo do dia, entre 15°49′ de Peixes e 16°34′ de Peixes; a leitura usa a posição calculada para o meio-dia (16°11′ de Peixes)."
           ]
         },
         {
@@ -203,7 +231,8 @@
           ],
           "factIds": [
             "aspect:mars-pluto:trine"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Vênus em aspecto tenso com Urano é tradicionalmente ligada à tensão entre proximidade e liberdade: relações que acolham a sua independência podem ser mais sustentáveis.",
@@ -212,7 +241,8 @@
           ],
           "factIds": [
             "aspect:uranus-venus:square"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Vênus em aspecto tenso com Júpiter é associada a grandes expectativas afetivas: o desafio pode ser equilibrar generosidade e medida nos vínculos.",
@@ -221,7 +251,8 @@
           ],
           "factIds": [
             "aspect:jupiter-venus:square"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Na tradição, o sextil entre Marte e Netuno sugere que a ação e a imaginação se apoiam e abrem oportunidades quando há iniciativa.",
@@ -230,7 +261,8 @@
           ],
           "factIds": [
             "aspect:mars-neptune:sextile"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Juntos, esses temas compõem uma leitura simbólica dos vínculos, como ponto de partida para reflexão e não como regra.",
@@ -257,7 +289,8 @@
           ],
           "factIds": [
             "body-sign:saturn"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Com Júpiter em Câncer, a tradição associa a expansão, a confiança e a busca de sentido a temas como cuidado, memória afetiva e proteção.",
@@ -266,6 +299,9 @@
           ],
           "factIds": [
             "body-sign:jupiter"
+          ],
+          "notes": [
+            "Sem o horário de nascimento, a posição de Júpiter varia ao longo do dia, entre 8°54′ de Câncer e 9°05′ de Câncer; a leitura usa a posição calculada para o meio-dia (9°00′ de Câncer)."
           ]
         },
         {
@@ -275,7 +311,8 @@
           ],
           "factIds": [
             "element-absent:air"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Na tradição, a oposição entre Júpiter e Urano sugere que a expansão e a liberdade puxam em direções opostas e pedem integração e equilíbrio.",
@@ -284,7 +321,8 @@
           ],
           "factIds": [
             "aspect:jupiter-uranus:opposition"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Saturno retrógrado é tradicionalmente ligado a uma relação muito pessoal com regras e limites: a autoridade interna pode se construir aos poucos.",
@@ -293,7 +331,8 @@
           ],
           "factIds": [
             "body-retrograde:saturn"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Na tradição, a quadratura entre Vênus e Netuno sugere que os afetos e a imaginação geram atrito, um desafio que costuma impulsionar crescimento.",
@@ -302,7 +341,8 @@
           ],
           "factIds": [
             "aspect:neptune-venus:square"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Em conjunto, talentos e desafios aparecem aqui como possibilidades simbólicas, que ganham forma com escolhas e experiência.",

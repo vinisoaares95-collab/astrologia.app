@@ -130,6 +130,16 @@ Versões verificadas no npm em 30/10/2026.
 | Avaliação              | Cega (rótulos sorteados, chave separada), 10 critérios, tamanho não conta | Evitar viés de marca e de extensão                      |
 | Artefatos              | Sem prompts; só textos gerados, IDs e métricas                            | Não registrar prompts em arquivos persistentes          |
 
+## Ajustes do motor (Fase 02F.2)
+
+| Tema                  | Decisão                                                                                                                             | Motivo                                                                |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Modelo padrão         | Claude Haiku 5.5, esforço `medium`; Sonnet 5.5 suportado por `SIDERA_AI_MODEL`                                                      | Avaliação cega 02F.1: média 36 × 32, R$ 0,06 × R$ 0,55 por relatório  |
+| Fallback pago         | Fallback do servidor entre modelos desligado por padrão (`SIDERA_AI_REFUSAL_FALLBACK=1` liga)                                       | Sem custo automático; a alternativa segura é a biblioteca             |
+| Referência cruzada    | `CROSS_REFERENCE` com o itemId sugerido e instrução objetiva; correção automática só na última tentativa e com revalidação completa | Menções legítimas a outro item derrubavam capítulos (Relatório F)     |
+| Precisão e intervalos | Texto do sistema (`notes`), a partir dos fatos; o modelo não descreve horário, janelas nem margens                                  | Descrições de incerteza do modelo saíram vagas ou incorretas na 02F.1 |
+| Fallback no relatório | Sem rótulo técnico para o cliente; origem e motivo só na trilha de auditoria                                                        | Experiência de leitura consistente                                    |
+
 ## Limitações conhecidas
 
 - **HEIC** é aceito, mas só tem pré-visualização no Safari; em outros

@@ -1,5 +1,5 @@
 {
-  "version": "02e.1+02f.1",
+  "version": "02e.1+02f.2",
   "disclaimer": "As posições astronômicas deste relatório são calculadas. Os significados atribuídos a elas são interpretações simbólicas da tradição da astrologia ocidental tropical — não são fatos científicos, diagnósticos nem previsões.",
   "basis": {
     "precision": "approximate",
@@ -22,6 +22,9 @@
           ],
           "factIds": [
             "body-sign:sun"
+          ],
+          "notes": [
+            "Com o horário de nascimento aproximado, a posição do Sol pode estar entre 21°38′ de Touro e 21°48′ de Touro; a leitura usa a posição calculada para o horário informado (21°43′ de Touro)."
           ]
         },
         {
@@ -31,7 +34,8 @@
           ],
           "factIds": [
             "element-dominant:earth"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Sol em aspecto harmonioso com Saturno é associado à capacidade de dar forma às metas: disciplina e paciência podem trabalhar a favor da sua expressão.",
@@ -40,7 +44,8 @@
           ],
           "factIds": [
             "aspect:saturn-sun:trine"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Sol em aspecto harmonioso com Marte é associado a vontade e ação bem articuladas: você pode transformar intenção em iniciativa com relativa facilidade.",
@@ -49,7 +54,8 @@
           ],
           "factIds": [
             "aspect:mars-sun:sextile"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Sol em aspecto tenso com Plutão é associado, na tradição, a experiências de poder e transformação: crises podem se tornar oportunidades de renovação pessoal.",
@@ -58,7 +64,8 @@
           ],
           "factIds": [
             "aspect:pluto-sun:opposition"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Em conjunto, esses elementos descrevem facetas simbólicas da identidade; vale observar quais delas fazem sentido na sua experiência.",
@@ -88,6 +95,9 @@
           ],
           "factIds": [
             "body-sign:moon"
+          ],
+          "notes": [
+            "Com o horário de nascimento aproximado, a posição da Lua pode estar entre 22°35′ de Sagitário e 24°35′ de Sagitário; a leitura usa a posição calculada para o horário informado (23°35′ de Sagitário)."
           ]
         },
         {
@@ -97,7 +107,8 @@
           ],
           "factIds": [
             "aspect:mars-moon:square"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Juntos, esses temas oferecem uma leitura simbólica da vida emocional, para ser confrontada com o que você reconhece em si.",
@@ -125,6 +136,9 @@
           ],
           "factIds": [
             "body-sign:mercury"
+          ],
+          "notes": [
+            "Com o horário de nascimento aproximado, a posição de Mercúrio pode estar entre 8°36′ de Touro e 8°39′ de Touro; a leitura usa a posição calculada para o horário informado (8°37′ de Touro)."
           ]
         },
         {
@@ -134,7 +148,8 @@
           ],
           "factIds": [
             "body-retrograde:mercury"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Mercúrio em aspecto harmonioso com Júpiter é associado a uma mente que gosta de ampliar horizontes: aprender e ensinar podem ser atividades naturais para você.",
@@ -143,7 +158,8 @@
           ],
           "factIds": [
             "aspect:jupiter-mercury:sextile"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Na tradição, o trígono entre Mercúrio e Urano sugere que a mente e a liberdade fluem com naturalidade, como um talento que se exerce com facilidade.",
@@ -152,7 +168,8 @@
           ],
           "factIds": [
             "aspect:mercury-uranus:trine"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Em conjunto, esses elementos sugerem um estilo de pensar e se comunicar que você pode reconhecer, ajustar ou questionar.",
@@ -180,6 +197,9 @@
           ],
           "factIds": [
             "body-sign:venus"
+          ],
+          "notes": [
+            "Com o horário de nascimento aproximado, a posição de Vênus pode estar entre 9°34′ de Áries e 9°45′ de Áries; a leitura usa a posição calculada para o horário informado (9°39′ de Áries)."
           ]
         },
         {
@@ -189,6 +209,9 @@
           ],
           "factIds": [
             "body-sign:mars"
+          ],
+          "notes": [
+            "Com o horário de nascimento aproximado, a posição de Marte pode estar entre 16°12′ de Peixes e 16°20′ de Peixes; a leitura usa a posição calculada para o horário informado (16°16′ de Peixes)."
           ]
         },
         {
@@ -198,7 +221,8 @@
           ],
           "factIds": [
             "aspect:mars-pluto:trine"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Vênus em aspecto tenso com Urano é tradicionalmente ligada à tensão entre proximidade e liberdade: relações que acolham a sua independência podem ser mais sustentáveis.",
@@ -207,7 +231,8 @@
           ],
           "factIds": [
             "aspect:uranus-venus:square"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Vênus em aspecto tenso com Júpiter é associada a grandes expectativas afetivas: o desafio pode ser equilibrar generosidade e medida nos vínculos.",
@@ -216,7 +241,8 @@
           ],
           "factIds": [
             "aspect:jupiter-venus:square"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Na tradição, o sextil entre Marte e Netuno sugere que a ação e a imaginação se apoiam e abrem oportunidades quando há iniciativa.",
@@ -225,7 +251,8 @@
           ],
           "factIds": [
             "aspect:mars-neptune:sextile"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Juntos, esses temas compõem uma leitura simbólica dos vínculos, como ponto de partida para reflexão e não como regra.",
@@ -253,7 +280,8 @@
           ],
           "factIds": [
             "body-sign:saturn"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Com Júpiter em Câncer, a tradição associa a expansão, a confiança e a busca de sentido a temas como cuidado, memória afetiva e proteção.",
@@ -262,6 +290,9 @@
           ],
           "factIds": [
             "body-sign:jupiter"
+          ],
+          "notes": [
+            "Com o horário de nascimento aproximado, a posição de Júpiter pode estar entre 9°00′ de Câncer e 9°02′ de Câncer; a leitura usa a posição calculada para o horário informado (9°01′ de Câncer)."
           ]
         },
         {
@@ -271,7 +302,8 @@
           ],
           "factIds": [
             "element-absent:air"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Na tradição, a oposição entre Júpiter e Urano sugere que a expansão e a liberdade puxam em direções opostas e pedem integração e equilíbrio.",
@@ -280,7 +312,8 @@
           ],
           "factIds": [
             "aspect:jupiter-uranus:opposition"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Na tradição, a quadratura entre Vênus e Netuno sugere que os afetos e a imaginação geram atrito, um desafio que costuma impulsionar crescimento.",
@@ -289,7 +322,8 @@
           ],
           "factIds": [
             "aspect:neptune-venus:square"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Saturno retrógrado é tradicionalmente ligado a uma relação muito pessoal com regras e limites: a autoridade interna pode se construir aos poucos.",
@@ -298,7 +332,8 @@
           ],
           "factIds": [
             "body-retrograde:saturn"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Em conjunto, talentos e desafios aparecem aqui como possibilidades simbólicas, que ganham forma com escolhas e experiência.",

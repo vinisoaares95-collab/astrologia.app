@@ -6,9 +6,9 @@ import "server-only";
  * - Saída estruturada: output_config.format com JSON Schema por capítulo.
  * - System prompt com cache_control (prefixo estável entre capítulos).
  * - Fallback do servidor em caso de recusa por classificador
- *   (fallbacks: "default"), opcional: desligado na avaliação comparativa,
- *   para que cada resposta venha do modelo pedido. O modelo efetivo é
- *   sempre lido de response.model.
+ *   (fallbacks: "default"): só com pedido explícito (refusalFallback), pois
+ *   é uma chamada paga a outro modelo; desligado por padrão desde a 02F.2.
+ *   O modelo efetivo é sempre lido de response.model.
  * - Sem novas tentativas no SDK (maxRetries: 0): quem decide é generate.ts,
  *   com limite fixo.
  * A chave vem só do servidor (SIDERA_ANTHROPIC_API_KEY, ver api-key.ts),
@@ -43,7 +43,7 @@ export function createAnthropicProvider(config: {
   model: string;
   effort: AnthropicEffort;
   apiKey?: string;
-  /** Fallback do servidor para outro modelo em caso de recusa (padrão: sim, quando suportado). */
+  /** Fallback do servidor para outro modelo em caso de recusa (padrão: não; só quando pedido e suportado). */
   refusalFallback?: boolean;
   /** Injetável para testes (sem rede). */
   create?: CreateFn;
@@ -56,7 +56,7 @@ export function createAnthropicProvider(config: {
     })();
 
   const fallback =
-    (config.refusalFallback ?? true) &&
+    (config.refusalFallback ?? false) &&
     SERVER_FALLBACK_MODELS.includes(config.model);
 
   return {

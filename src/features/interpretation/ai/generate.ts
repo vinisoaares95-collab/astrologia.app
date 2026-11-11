@@ -18,9 +18,39 @@ import {
 import { libraryDraft, toGeneratedChapter } from "./library-chapter";
 import { estimateCostUsd } from "./pricing";
 import { buildChapterRequest, PROMPT_VERSION } from "./prompt";
-import { repetitionIssues, validateChapterDraft } from "./validate";
+import {
+  describePart,
+  repairCrossReferences,
+  repetitionIssues,
+  validateChapterDraft,
+  type AiValidationError,
+} from "./validate";
 
 export const MAX_ATTEMPTS = 2;
+
+/**
+ * Instruções da nova tentativa: local legível + correção objetiva
+ * (ex.: "Na seção 4, inclua o item referente à Lua (…) nos itemIds
+ * utilizados ou remova essa referência.").
+ */
+export function correctionFeedback(errors: AiValidationError[]): string {
+  const lines = [
+    ...new Set(
+      errors.map((e) => {
+        const where = describePart(e.part);
+        if (e.fix)
+          return e.fix.startsWith(where) ? e.fix : `${where}: ${e.fix}`;
+        if (e.code === "REPETITION")
+          return `${where}: reescreva para não repetir (${e.message})`;
+        return `${where}: ${e.message}`;
+      }),
+    ),
+  ];
+  return `A versão anterior foi reprovada pela revisão automática. Corrija estes pontos e mantenha o restante:\n${lines
+    .slice(0, 8)
+    .map((l) => `- ${l}`)
+    .join("\n")}`;
+}
 
 export type GenerateOptions = {
   maxAttempts?: number;
@@ -119,7 +149,22 @@ async function generateChapter(
       continue;
     }
 
-    const result = validateChapterDraft(draft, chapter, report);
+    let result = validateChapterDraft(draft, chapter, report);
+    let repairs: string[] | undefined;
+    // Última tentativa: referências cruzadas legítimas (e SÓ elas) são
+    // corrigidas acrescentando o itemId sugerido; o rascunho corrigido passa
+    // de novo pela validação completa.
+    if (!result.ok && attempt === opts.maxAttempts) {
+      const repaired = repairCrossReferences(draft, result.errors);
+      if (repaired) {
+        const again = validateChapterDraft(repaired.draft, chapter, report);
+        if (again.ok) {
+          draft = repaired.draft;
+          result = again;
+          repairs = repaired.repairs;
+        }
+      }
+    }
     if (!result.ok) {
       record({
         ...base,
@@ -127,14 +172,11 @@ async function generateChapter(
         errors: result.errors.map((e) => `${e.code}: ${e.message}`),
       });
       lastReason = `Reprovado na validação (${[...new Set(result.errors.map((e) => e.code))].join(", ")}).`;
-      feedback = `A versão anterior foi reprovada pela revisão automática. Corrija estes pontos:\n${result.errors
-        .slice(0, 8)
-        .map((e) => `- ${e.part ?? "capítulo"}: ${e.message}`)
-        .join("\n")}`;
+      feedback = correctionFeedback(result.errors);
       continue;
     }
 
-    record({ ...base, outcome: "ok", errors: [] });
+    record({ ...base, outcome: "ok", errors: [], ...(repairs && { repairs }) });
     return toGeneratedChapter(
       report,
       id,

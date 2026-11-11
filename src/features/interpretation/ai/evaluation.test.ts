@@ -117,23 +117,24 @@ describe("fallback entre modelos", () => {
     );
   });
 
-  it("produção com Sonnet 5.5 mantém o padrão (ligado)", async () => {
-    expect(await bodyFor("claude-sonnet-5-5")).toMatchObject({
+  it("Sonnet 5.5: fallback pago só com pedido explícito (02F.2)", async () => {
+    expect(await bodyFor("claude-sonnet-5-5")).not.toHaveProperty("fallbacks");
+    expect(await bodyFor("claude-sonnet-5-5", true)).toMatchObject({
       fallbacks: "default",
     });
   });
 
-  it("a avaliação desliga o fallback e o produto permite desligar por variável", () => {
+  it("a avaliação e o produto deixam o fallback pago desligado (liga só com variável)", () => {
     expect(EVAL_CONDITIONS.refusalFallback).toBe(false);
     const env = {
       SIDERA_AI_ENABLED: "1",
       SIDERA_AI_PROVIDER: "anthropic",
       ANTHROPIC_API_KEY: "x",
     };
-    expect(readAiConfig(env).refusalFallback).toBe(true);
+    expect(readAiConfig(env).refusalFallback).toBe(false);
     expect(
-      readAiConfig({ ...env, SIDERA_AI_REFUSAL_FALLBACK: "0" }).refusalFallback,
-    ).toBe(false);
+      readAiConfig({ ...env, SIDERA_AI_REFUSAL_FALLBACK: "1" }).refusalFallback,
+    ).toBe(true);
   });
 
   it("registra o modelo pedido e o que respondeu", async () => {

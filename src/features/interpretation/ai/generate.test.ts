@@ -319,19 +319,20 @@ describe("validador de capítulo (02F)", () => {
     ).toEqual(["UNSUPPORTED_ASPECT"]);
   });
 
-  it("sem horário, só cita Ascendente e casas para explicar a limitação", () => {
+  it("sem horário, não cita Ascendente nem casas — nem para explicar (02F.2)", () => {
     const u = reports.unknown;
     expect(
       codesFor(u, "identidade", (d) => {
         d.synthesis = "O Ascendente completa esse retrato.";
       }),
     ).toEqual(["UNSUPPORTED_POINT"]);
+    // A explicação da limitação é texto do sistema (limitations), não do modelo.
     expect(
       codesFor(u, "identidade", (d) => {
         d.synthesis =
           "Sem o horário de nascimento, o Ascendente e as casas não puderam ser calculados.";
-      }),
-    ).toEqual([]);
+      }).sort(),
+    ).toEqual(["PRECISION_CLAIM", "UNSUPPORTED_POINT"]);
   });
 
   it("recusa saúde, finanças, decisões de relacionamento e determinismo", () => {
@@ -353,17 +354,23 @@ describe("validador de capítulo (02F)", () => {
     ]);
   });
 
-  it("exige ressalva em itens incertos", () => {
+  it("a ressalva de itens incertos é nota do sistema, sempre presente (02F.2)", async () => {
     const u = reports.unknown;
     const ch = u.chapters.find((c) =>
       c.items.some((i) => i.certainty === "uncertain"),
     )!;
-    const idx = ch.items.findIndex((i) => i.certainty === "uncertain");
+    const item = ch.items.find((i) => i.certainty === "uncertain")!;
+    // O texto do modelo não precisa repetir a ressalva…
     expect(
       codesFor(u, ch.id, (d) => {
-        d.sections[idx].text = ch.items[idx].symbolic;
+        d.sections.forEach((s, i) => (s.text = ch.items[i].symbolic));
       }),
-    ).toEqual(["MISSING_CAVEAT"]);
+    ).toEqual([]);
+    // …porque o sistema a anexa à seção que usa o item incerto.
+    const out = await generateReport(u, createMockProvider());
+    const gen = out.chapters.find((c) => c.id === ch.id)!;
+    const sec = gen.sections.find((s) => s.itemIds.includes(item.id))!;
+    expect(sec.notes).toContain(item.caveat);
   });
 
   it("recusa repetição, excesso de tamanho e perguntas malformadas", () => {
@@ -416,6 +423,7 @@ describe("adaptador Anthropic (sem rede)", () => {
     const provider = createAnthropicProvider({
       model: "claude-sonnet-5-5",
       effort: "medium",
+      refusalFallback: true,
       create: async (body, opts) => {
         bodies.push({ body, opts });
         return message();
@@ -519,8 +527,9 @@ describe("configuração e custos", () => {
     };
     expect(readAiConfig(full)).toMatchObject({
       mode: "anthropic",
-      model: "claude-sonnet-5-5",
+      model: "claude-haiku-5-5",
       effort: "medium",
+      refusalFallback: false,
     });
     expect(readAiConfig({ ...full, SIDERA_AI_ENABLED: "0" }).mode).toBe("mock");
     expect(readAiConfig({ ...full, ANTHROPIC_API_KEY: "" }).mode).toBe("mock");
@@ -535,8 +544,8 @@ describe("configuração e custos", () => {
       "mock",
     );
     expect(
-      readAiConfig({ ...full, SIDERA_AI_MODEL: "claude-haiku-5-5" }).model,
-    ).toBe("claude-haiku-5-5");
+      readAiConfig({ ...full, SIDERA_AI_MODEL: "claude-sonnet-5-5" }).model,
+    ).toBe("claude-sonnet-5-5");
   });
 
   it("estima custo com os preços oficiais e o consumo informado", () => {

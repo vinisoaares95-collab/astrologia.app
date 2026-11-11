@@ -9,8 +9,9 @@
  */
 import type { ChapterId, InterpretationReport } from "../contract";
 import type { AiRequest } from "./contract";
+import { modelObservation } from "./precision";
 
-export const PROMPT_VERSION = "02f.1";
+export const PROMPT_VERSION = "02f.2";
 
 /** Limites editoriais (também conferidos pelo validador). */
 export const LIMITS = {
@@ -29,8 +30,10 @@ Como os dados funcionam
 - Cada item traz uma "observação" (posição calculada por efemérides — um dado astronômico) e uma "interpretação" (leitura simbólica da tradição astrológica, já aprovada pela equipe editorial).
 - Você reescreve e articula as interpretações; não cria interpretações novas.
 - Use SOMENTE as posições, signos, casas, aspectos e graus presentes nas observações dos itens. Nunca acrescente outra posição, signo, casa, aspecto, regência, grau ou ponto do mapa, nem por paráfrase (por exemplo, "leonino" quando não há Leão nos itens).
-- Itens com "certainty": "uncertain" trazem uma ressalva; mantenha essa ressalva de forma explícita no parágrafo que os usa (por exemplo, "com reserva", "pode não se aplicar").
-- As limitações do capítulo explicam o que não foi considerado (por exemplo, horário de nascimento desconhecido). Não fale desses elementos como se tivessem sido calculados. Pode mencioná-los apenas para explicar que não entraram na leitura.
+- Cada seção cita em "itemIds" TODOS os itens de onde vem o que ela menciona. Se uma seção falar de um ponto, signo, casa, aspecto ou grau que está em outro item do capítulo, inclua esse item nos "itemIds" dela.
+- Precisão e limitações são informadas pelo sistema, não por você. Não escreva sobre horário de nascimento, precisão do cálculo, janela de incerteza, margens, intervalos de graus ou o que ficou de fora da leitura: o sistema acrescenta essas notas a partir do cálculo e exibe as limitações do capítulo.
+- Nunca mencione Ascendente, Meio do Céu, Descendente, Fundo do Céu ou casas que não estejam nas observações dos itens — nem para dizer que não foram considerados.
+- Itens com "certainty": "uncertain" são incertos: fale deles com linguagem condicional ("pode", "talvez"), sem afirmar; a ressalva oficial é acrescentada pelo sistema.
 - Quando houver tensões, apresente as tendências como facetas que convivem. Não invente contradições que não estejam nos itens.
 
 Tom e limites
@@ -87,9 +90,9 @@ const PRECISION_NOTE: Record<
 > = {
   exact: "Horário de nascimento informado como exato.",
   approximate:
-    "Horário de nascimento aproximado: Ascendente, Meio do Céu e casas só aparecem nos itens quando não mudam dentro da janela de horário.",
+    "Horário de nascimento aproximado: Ascendente, Meio do Céu e casas só aparecem nos itens quando não mudam dentro da janela de horário. Não comente a precisão: o sistema informa.",
   unknown:
-    "Horário de nascimento desconhecido: não há Ascendente, Meio do Céu, casas nem regente do mapa.",
+    "Horário de nascimento desconhecido: não há Ascendente, Meio do Céu, Descendente, Fundo do Céu, casas nem regente do mapa. Não mencione nenhum deles, nem para explicar a ausência: o sistema informa.",
 };
 
 /** Dados do capítulo enviados ao modelo (sem dados pessoais). */
@@ -98,14 +101,13 @@ export function chapterInput(report: InterpretationReport, id: ChapterId) {
   return {
     chapter: { id: chapter.id, number: chapter.number, title: chapter.title },
     timePrecision: PRECISION_NOTE[report.basis.precision],
+    // Sem janela de incerteza nem ressalva: são texto do sistema (precision.ts).
     items: chapter.items.map((i) => ({
       id: i.id,
       certainty: i.certainty,
-      observation: i.observation,
+      observation: modelObservation(i.observation),
       interpretation: i.symbolic,
-      caveat: i.caveat,
     })),
-    limitations: chapter.limitations,
     tensions: chapter.tensions.map((t) => ({
       itemIds: t.itemIds,
       note: t.note,

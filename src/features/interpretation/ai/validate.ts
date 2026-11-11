@@ -22,6 +22,7 @@ import type {
   InterpretationItem,
   InterpretationReport,
 } from "../contract";
+import { modelObservation } from "./precision";
 import { LIMITS } from "./prompt";
 
 export type AiValidationError = {
@@ -42,13 +43,21 @@ export type AiValidationError = {
     | "HEALTH_FINANCE_RELATIONSHIP"
     | "MISSING_CAVEAT"
     | "REPETITION"
-    | "TOO_LONG";
+    | "TOO_LONG"
+    /** Menção legítima a outro item do capítulo, sem o itemId na seção (02F.2). */
+    | "CROSS_REFERENCE"
+    /** O modelo descreveu horário, precisão ou intervalos (texto do sistema, 02F.2). */
+    | "PRECISION_CLAIM";
   chapter?: ChapterId;
   /** Parte do capítulo: "introduction", "sections.N", "synthesis", "reflectionQuestions.N". */
   part?: string;
   /** Índice do parágrafo (formato 02E). */
   paragraph?: number;
   message: string;
+  /** Instrução objetiva de correção, enviada na tentativa seguinte. */
+  fix?: string;
+  /** CROSS_REFERENCE: itens do capítulo que sustentam a menção. */
+  suggestedItemIds?: string[];
 };
 
 export type AiChapterOutput = {
@@ -141,6 +150,9 @@ const POINT_LABEL: Record<string, Point> = {
   Descendente: "desc",
   "Fundo do Céu": "ic",
 };
+const POINT_NAME_OF = Object.fromEntries(
+  Object.entries(POINT_LABEL).map(([name, p]) => [p, name]),
+) as Record<Point, string>;
 const HOUSE_WORDS_ALT = Object.keys(HOUSE_WORDS)
   .sort((a, b) => b.length - a.length)
   .join("|");
@@ -149,7 +161,16 @@ const HOUSE_RE = new RegExp(
   "giu",
 );
 const ASPECT_RE = new RegExp(word(Object.keys(ASPECT_BY_NAME)), "giu");
-const DEGREE_RE = /\d{1,2}°(?:\s?\d{1,2}′)?/gu;
+/** Graus ("21°43′", "90°") e orbes ("7,32°"); não casa dentro de outro número. */
+const DEGREE_RE = /(?<![\d,.])\d{1,3}(?:,\d+)?°(?:\s?\d{1,2}′)?/gu;
+/** Ângulo que define cada aspecto (graus usados para explicar o conceito). */
+const ASPECT_ANGLE: Record<AspectType, string> = {
+  conjunction: "0°",
+  sextile: "60°",
+  square: "90°",
+  trine: "120°",
+  opposition: "180°",
+};
 
 /** Linguagem determinista, de certeza científica ou de previsão. */
 export const FORBIDDEN_PATTERNS: readonly RegExp[] = [
@@ -162,7 +183,8 @@ export const FORBIDDEN_PATTERNS: readonly RegExp[] = [
   /(?<!\p{L})seu destino(?!\p{L})/iu,
   /(?<!\p{L})você (?:vai|irá)(?!\p{L})/iu,
   /(?<!\p{L})(?:sempre|nunca) (?:será|vai|irá)(?!\p{L})/iu,
-  /(?<!\p{L})determina(?:m|do|da|nte)?(?!\p{L})/iu,
+  // "uma determinada área" é adjetivo, não determinismo.
+  /(?<!\p{L})(?<!(?:uma|um|numa|num|em|certa|certo) )determina(?:m|do|da|nte)?(?!\p{L})/iu,
   /(?<!\p{L})predestin\p{L}*/iu,
   /(?<!\p{L})inevit[aá]ve(?:l|is)(?!\p{L})/iu,
   /(?<!\p{L})fatalmente(?!\p{L})/iu,
@@ -185,7 +207,9 @@ export const SENSITIVE_PATTERNS: readonly RegExp[] = [
   /(?<!\p{L})invista(?!\p{L})/iu,
   /(?<!\p{L})(?:bolsa de valores|criptomoeda\p{L}*|empréstimo\p{L}*|lucro\p{L}*)/iu,
   /(?<!\p{L})ficar ric[oa](?!\p{L})/iu,
-  /(?<!\p{L})enriquec\p{L}*/iu,
+  // Sentido financeiro. "Enriquecer a experiência" (com objeto não
+  // financeiro) e "enriquecedor" são figurados e passam.
+  /(?<!\p{L})enriquec(?!edor)\p{L}*(?!\p{L})(?!\s+(?:a|o|as|os|um|uma|sua|seu|suas|seus|essa|esse|essas|esses|esta|este|estas|estes|cada|nossa|nosso)\s+(?!(?:patrim|conta|bolso|finan|renda|carteira|investiment|ben[s ]|salári|poupan|dinheir|negóci|empresa|lucr)\p{L}*)\p{L})/iu,
   /(?<!\p{L})d[íi]vidas?(?!\p{L})/iu,
   /(?<!\p{L})divórcio|divorciar\p{L}*/iu,
   /(?<!\p{L})(?:se separar|terminar (?:o|seu|sua|a|um|uma) (?:relacionamento|namoro|casamento))/iu,
@@ -193,9 +217,44 @@ export const SENSITIVE_PATTERNS: readonly RegExp[] = [
 ];
 
 const CAVEAT_RE = /reserva|incert|não se mantém|pode não|com cautela/iu;
-/** Frases que explicam uma limitação podem citar pontos/casas ausentes. */
+/** Frases que explicam uma limitação podem citar pontos/casas ausentes (só no formato 02E). */
 const HEDGE_RE =
   /não (?:foi|foram|pôde|puderam|pode|podem|entra|entram|entrou|entraram|é possível|são considerad|foi considerad)|sem (?:o )?horário|horário (?:de nascimento )?(?:desconhecido|aproximado)|desconhecid|não considerad|ficou de fora|ficaram de fora/iu;
+
+/**
+ * Explicações sobre horário de nascimento, precisão do cálculo, janelas e
+ * intervalos de posição (02F.2). Esse conteúdo é montado pelo sistema a
+ * partir do cálculo (precision.ts) e copiado das limitações do motor; o
+ * modelo não o escreve.
+ */
+export const PRECISION_PATTERNS: readonly RegExp[] = [
+  /(?<!\p{L})janelas? (?:de|do|da) (?:incerteza|horário|tempo|nascimento)/iu,
+  /(?<!\p{L})(?:dentro|fora) (?:da|dessa|desta) janela/iu,
+  /(?<!\p{L})(?:margem|faixa|intervalo)s? (?:de|do) (?:incerteza|horário|erro|tempo|graus)/iu,
+  /(?<!\p{L})(?:horário|hora) (?:de nascimento|do nascimento|aproximad[oa]|desconhecid[oa]|exat[oa]|informad[oa])/iu,
+  /(?<!\p{L})sem (?:o |a )?(?:horário|hora)(?!\p{L})/iu,
+  /(?<!\p{L})calculad[oa]s? com precisão|com precisão astronômica/iu,
+  /(?<!\p{L})posição (?:exata|aproximada|incerta|central)/iu,
+  /(?<!\p{L})entre \d{1,3}°[^.;]*? e \d{1,3}°/iu,
+  /(?<!\p{L})não (?:foi|foram|pôde|puderam|pode|podem) ser (?:calculad|considerad|interpretad|determinad)\p{L}*/iu,
+  /(?<!\p{L})não (?:foi|foram) (?:calculad|considerad|interpretad|determinad)\p{L}*/iu,
+  /(?<!\p{L})(?:ficou|ficaram) de fora/iu,
+  /(?<!\p{L})não entr(?:a|am|ou|aram) (?:nesta|na|desta|da) leitura/iu,
+];
+
+/** Termos deterministas que, negados, viram ressalva ("sem garantias", "não determina"). */
+const NEGATABLE =
+  /^(?:garant|comprovad|cientific|determina|diagn|predestin|inevit|está escrito)/iu;
+/** Negação até três palavras antes do termo ("nada aqui é cientificamente comprovado"). */
+const NEGATION_BEFORE =
+  /(?:^|[^\p{L}])(?:sem|não|nem|nenhum|nenhuma|nada|jamais)(?:\s+[\p{L}-]+[,;:]?){0,3}\s+$/iu;
+/** "não só determina" / "não apenas garante" não são negações. */
+const NOT_ONLY = /(?:não|nem) (?:só|apenas|somente)(?:\s+[\p{L}-]+){0,1}\s+$/iu;
+
+/** Ascendente, Meio do Céu e ângulos derivados dependem do horário. */
+const TIME_POINTS = new Set<Point>(["asc", "mc", "desc", "ic"]);
+const UNKNOWN_TIME_NOTE =
+  "com horário de nascimento desconhecido, Ascendente, Meio do Céu, Descendente, Fundo do Céu e casas não são calculados";
 
 type Support = {
   positions: Set<string>;
@@ -203,19 +262,31 @@ type Support = {
   points: Set<Point>;
   houses: Set<number>;
   aspects: Set<AspectType>;
-  observations: string;
+  /** Observação de cada item citado e os pontos envolvidos nela. */
+  observations: { text: string; points: Set<Point> }[];
   uncertain: boolean;
 };
 
-/** O que os itens citados sustentam (e nada além disso). */
-function supportOf(items: InterpretationItem[], factById: Map<string, Fact>) {
+/**
+ * O que os itens citados sustentam (e nada além disso). Com
+ * `systemPrecision`, a janela de incerteza sai das observações: seus graus
+ * são texto do sistema, não do modelo.
+ */
+function supportOf(
+  items: InterpretationItem[],
+  factById: Map<string, Fact>,
+  systemPrecision = false,
+) {
   const s: Support = {
     positions: new Set(),
     signs: new Set(),
     points: new Set(),
     houses: new Set(),
     aspects: new Set(),
-    observations: items.map((i) => i.observation).join(" "),
+    observations: items.map((i) => ({
+      text: systemPrecision ? modelObservation(i.observation) : i.observation,
+      points: new Set(i.factIds.flatMap((id) => factById.get(id)!.bodies)),
+    })),
     uncertain: items.some((i) => i.certainty === "uncertain"),
   };
   for (const f of items.flatMap((i) =>
@@ -243,56 +314,173 @@ function supportOf(items: InterpretationItem[], factById: Map<string, Fact>) {
   return s;
 }
 
-type Issue = Omit<AiValidationError, "chapter" | "part" | "paragraph">;
+/**
+ * Problema encontrado num trecho. `probe` diz se outro conjunto de itens
+ * sustentaria a menção (usado para detectar referências cruzadas).
+ */
+type Issue = Omit<AiValidationError, "chapter" | "part" | "paragraph"> & {
+  probe?: (s: Support) => boolean;
+};
+
+/** Remove o `probe` (interno) antes de expor o problema. */
+function publicIssue(issue: Issue): Omit<Issue, "probe"> {
+  const out = { ...issue };
+  delete out.probe;
+  return out;
+}
 
 const sentencesOf = (text: string) =>
   text.split(/(?<=[.!?…])\s+/u).filter((x) => x.trim());
 
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** O grau aparece na observação como número inteiro (não "3°" dentro de "23°"). */
+const hasDegree = (observation: string, degree: string) =>
+  new RegExp(`(?<![\\d,.])${escapeRe(degree)}`, "u").test(observation);
+
+type CheckOptions = {
+  /** Exige a ressalva no próprio texto (formato 02E). */
+  requireCaveat: boolean;
+  /** Aceita pontos/casas ausentes em frases que explicam limitações (02E). */
+  allowHedge: boolean;
+  /** Recusa explicações de horário/precisão/intervalo escritas pelo modelo (02F.2). */
+  precisionClaims: boolean;
+  precision?: InterpretationReport["basis"]["precision"];
+};
+
 /** Verificações de conteúdo de um trecho de texto contra o que o sustenta. */
-function checkText(
-  text: string,
-  s: Support,
-  options: { requireCaveat: boolean },
-): Issue[] {
+function checkText(text: string, s: Support, options: CheckOptions): Issue[] {
   const out: Issue[] = [];
-  const add = (code: Issue["code"], message: string) =>
-    out.push({ code, message });
+  const add = (
+    code: Issue["code"],
+    message: string,
+    extra: Pick<Issue, "fix" | "probe"> = {},
+  ) => out.push({ code, message, ...extra });
+  const unknownTime = options.precision === "unknown";
 
   for (const m of text.matchAll(POSITION_RE)) {
     const point = POINT_BY_NAME[m[1].toLowerCase()];
     const sign = SIGN_BY_NAME[m[2].toLowerCase()];
-    if (!s.positions.has(`${point}:${sign}`))
-      add("UNSUPPORTED_POSITION", `"${m[0]}" não consta nos itens citados.`);
+    const key = `${point}:${sign}`;
+    if (!s.positions.has(key))
+      add("UNSUPPORTED_POSITION", `"${m[0]}" não consta nos itens citados.`, {
+        fix: `Remova "${m[0]}" ou use a posição exatamente como está na observação.`,
+        probe: (x) => x.positions.has(key),
+      });
   }
-  for (const m of text.matchAll(SIGN_RE))
-    if (!s.signs.has(SIGN_BY_NAME[m[1].toLowerCase()]))
-      add("UNSUPPORTED_SIGN", `Signo "${m[0]}" não consta nos itens citados.`);
-  for (const m of text.matchAll(SIGN_ADJ_RE))
-    if (!s.signs.has(SIGN_ADJECTIVES[m[1].toLowerCase()]))
-      add("UNSUPPORTED_SIGN", `"${m[0]}" remete a um signo ausente dos itens.`);
+  for (const m of text.matchAll(SIGN_RE)) {
+    const sign = SIGN_BY_NAME[m[1].toLowerCase()];
+    if (!s.signs.has(sign))
+      add("UNSUPPORTED_SIGN", `Signo "${m[0]}" não consta nos itens citados.`, {
+        fix: `Remova a menção a ${m[0]}.`,
+        probe: (x) => x.signs.has(sign),
+      });
+  }
+  for (const m of text.matchAll(SIGN_ADJ_RE)) {
+    const sign = SIGN_ADJECTIVES[m[1].toLowerCase()];
+    if (!s.signs.has(sign))
+      add(
+        "UNSUPPORTED_SIGN",
+        `"${m[0]}" remete a um signo ausente dos itens.`,
+        {
+          fix: `Remova "${m[0]}".`,
+          probe: (x) => x.signs.has(sign),
+        },
+      );
+  }
 
   for (const sentence of sentencesOf(text)) {
-    const hedged = HEDGE_RE.test(sentence);
-    for (const m of sentence.matchAll(POINT_RE))
-      if (!s.points.has(POINT_LABEL[m[1]]) && !hedged)
-        add("UNSUPPORTED_POINT", `"${m[0]}" não consta nos itens citados.`);
+    const hedged = options.allowHedge && HEDGE_RE.test(sentence);
+    const named: Point[] = [];
+    for (const m of sentence.matchAll(POINT_RE)) {
+      const point = POINT_LABEL[m[1]];
+      named.push(point);
+      if (s.points.has(point) || hedged) continue;
+      if (unknownTime && TIME_POINTS.has(point))
+        add(
+          "UNSUPPORTED_POINT",
+          `"${m[0]}" não pode ser citado: ${UNKNOWN_TIME_NOTE}.`,
+          { fix: `Remova a menção a "${m[0]}".` },
+        );
+      else
+        add("UNSUPPORTED_POINT", `"${m[0]}" não consta nos itens citados.`, {
+          fix: `Remova a menção a "${m[0]}".`,
+          probe: (x) => x.points.has(point),
+        });
+    }
     for (const m of sentence.matchAll(HOUSE_RE)) {
       const raw = (m[1] ?? m[2]).toLowerCase();
       const n = /^\d+$/.test(raw) ? Number(raw) : HOUSE_WORDS[raw];
-      if (!s.houses.has(n) && !hedged)
-        add("UNSUPPORTED_HOUSE", `"${m[0]}" não consta nos itens citados.`);
+      if (s.houses.has(n) || hedged) continue;
+      if (unknownTime)
+        add(
+          "UNSUPPORTED_HOUSE",
+          `"${m[0]}" não pode ser citada: ${UNKNOWN_TIME_NOTE}.`,
+          { fix: `Remova a menção a "${m[0]}".` },
+        );
+      else
+        add("UNSUPPORTED_HOUSE", `"${m[0]}" não consta nos itens citados.`, {
+          fix: `Remova a menção a "${m[0]}".`,
+          probe: (x) => x.houses.has(n),
+        });
+    }
+
+    // Graus: precisam estar na observação de um item citado e, se a frase
+    // nomeia pontos, na observação de um desses pontos. O ângulo que define
+    // um aspecto nomeado na frase ("quadratura, 90°") é explicação do
+    // conceito, não posição do mapa.
+    const aspectsNamed = [...sentence.matchAll(ASPECT_RE)].map(
+      (m) => ASPECT_BY_NAME[m[1].toLowerCase()],
+    );
+    for (const m of sentence.matchAll(DEGREE_RE)) {
+      const degree = m[0].replace(/\s/g, "");
+      if (aspectsNamed.some((a) => ASPECT_ANGLE[a] === degree)) continue;
+      const holders = s.observations.filter((o) => hasDegree(o.text, degree));
+      if (!holders.length) {
+        add(
+          "UNSUPPORTED_DEGREE",
+          `Grau "${m[0]}" não consta nas observações.`,
+          {
+            fix: `Remova o grau "${m[0]}" ou use o grau exatamente como está na observação.`,
+            probe: (x) => x.observations.some((o) => hasDegree(o.text, degree)),
+          },
+        );
+        continue;
+      }
+      if (
+        named.length &&
+        !holders.some((o) => named.some((p) => o.points.has(p)))
+      )
+        add(
+          "UNSUPPORTED_DEGREE",
+          `Grau "${m[0]}" não pertence a ${[...new Set(named)].map((p) => POINT_NAME_OF[p]).join(", ")} nas observações citadas.`,
+          {
+            fix: `Associe "${m[0]}" ao ponto da observação de onde ele vem, ou remova o grau.`,
+          },
+        );
     }
   }
-  for (const m of text.matchAll(ASPECT_RE))
-    if (!s.aspects.has(ASPECT_BY_NAME[m[1].toLowerCase()]))
-      add("UNSUPPORTED_ASPECT", `"${m[0]}" não consta nos itens citados.`);
-  for (const m of text.matchAll(DEGREE_RE))
-    if (!s.observations.includes(m[0].replace(/\s/g, "")))
-      add("UNSUPPORTED_DEGREE", `Grau "${m[0]}" não consta nas observações.`);
+  for (const m of text.matchAll(ASPECT_RE)) {
+    const type = ASPECT_BY_NAME[m[1].toLowerCase()];
+    if (!s.aspects.has(type))
+      add("UNSUPPORTED_ASPECT", `"${m[0]}" não consta nos itens citados.`, {
+        fix: `Remova a menção a "${m[0]}".`,
+        probe: (x) => x.aspects.has(type),
+      });
+  }
 
   for (const re of FORBIDDEN_PATTERNS) {
-    const m = text.match(re);
-    if (m) add("FORBIDDEN_LANGUAGE", `Linguagem determinista: "${m[0]}".`);
+    for (const m of text.matchAll(new RegExp(re.source, `${re.flags}g`))) {
+      const before = text.slice(Math.max(0, m.index - 60), m.index);
+      const negated =
+        NEGATABLE.test(m[0]) &&
+        NEGATION_BEFORE.test(before) &&
+        !NOT_ONLY.test(before);
+      if (negated) continue;
+      add("FORBIDDEN_LANGUAGE", `Linguagem determinista: "${m[0]}".`, {
+        fix: `Reescreva sem "${m[0]}", com linguagem de possibilidade ("pode", "tende", "costuma").`,
+      });
+      break;
+    }
   }
   for (const re of SENSITIVE_PATTERNS) {
     const m = text.match(re);
@@ -300,7 +488,26 @@ function checkText(
       add(
         "HEALTH_FINANCE_RELATIONSHIP",
         `Tema de saúde, finanças ou decisão de relacionamento: "${m[0]}".`,
+        {
+          fix: `Remova "${m[0]}": o texto não trata de saúde, finanças nem decisões de relacionamento.`,
+        },
       );
+  }
+  if (options.precisionClaims) {
+    // Um problema por trecho, com todos os fragmentos encontrados.
+    const found = PRECISION_PATTERNS.map((re) => text.match(re)?.[0]).filter(
+      (x): x is string => Boolean(x),
+    );
+    if (found.length) {
+      const quoted = found.map((f) => `"${f}"`).join(", ");
+      add(
+        "PRECISION_CLAIM",
+        `${quoted}: horário, precisão e intervalos são informados pelo sistema.`,
+        {
+          fix: `Remova a explicação sobre horário de nascimento, precisão ou intervalos (${quoted}); o sistema acrescenta essas notas a partir do cálculo.`,
+        },
+      );
+    }
   }
   if (options.requireCaveat && s.uncertain && !CAVEAT_RE.test(text))
     add("MISSING_CAVEAT", "Texto cita item incerto sem manter a ressalva.");
@@ -364,9 +571,61 @@ export function repetitionIssues(texts: string[]): Issue[] {
 
 // ── Fase 02F: um capítulo estruturado ─────────────────────────────────────
 
+/** Como cada ponto é citado numa instrução ("à Lua", "ao Sol"). */
+const POINT_WITH_ARTICLE: Record<Point, string> = {
+  sun: "ao Sol",
+  moon: "à Lua",
+  mercury: "a Mercúrio",
+  venus: "a Vênus",
+  mars: "a Marte",
+  jupiter: "a Júpiter",
+  saturn: "a Saturno",
+  uranus: "a Urano",
+  neptune: "a Netuno",
+  pluto: "a Plutão",
+  asc: "ao Ascendente",
+  mc: "ao Meio do Céu",
+  desc: "ao Descendente",
+  ic: "ao Fundo do Céu",
+};
+
+/** Localização legível para a instrução de correção. */
+export function describePart(part: string | undefined): string {
+  if (!part) return "No capítulo";
+  if (part === "introduction") return "Na introdução";
+  if (part === "synthesis") return "Na síntese";
+  const [kind, n] = part.split(".");
+  if (kind === "sections" && n !== undefined)
+    return `Na seção ${Number(n) + 1}`;
+  if (kind === "reflectionQuestions" && n !== undefined)
+    return `Na pergunta ${Number(n) + 1}`;
+  return `Em ${part}`;
+}
+
+/** Itens do capítulo que sozinhos sustentam a menção (o mais específico primeiro). */
+function supportingItems(
+  probe: (s: Support) => boolean,
+  items: InterpretationItem[],
+  factById: Map<string, Fact>,
+  systemPrecision: boolean,
+): InterpretationItem[] {
+  return items
+    .filter((i) => probe(supportOf([i], factById, systemPrecision)))
+    .sort(
+      (a, b) =>
+        a.factIds.flatMap((id) => factById.get(id)!.bodies).length -
+        b.factIds.flatMap((id) => factById.get(id)!.bodies).length,
+    );
+}
+
 /**
  * Valida o rascunho de UM capítulo devolvido pelo modelo.
  * `draft` é `unknown` de propósito: a resposta da API não é confiável.
+ *
+ * 02F.2: precisão, intervalos e ressalvas são texto do sistema (o modelo
+ * não os escreve); uma seção que menciona algo sustentado por OUTRO item
+ * do capítulo recebe CROSS_REFERENCE com o itemId a incluir — continua
+ * reprovada até a referência ser explícita.
  */
 export function validateChapterDraft(
   draft: unknown,
@@ -375,7 +634,9 @@ export function validateChapterDraft(
 ): { ok: boolean; errors: AiValidationError[] } {
   const errors: AiValidationError[] = [];
   const push = (part: string | undefined, issues: Issue[]) =>
-    issues.forEach((i) => errors.push({ ...i, chapter: chapter.id, part }));
+    issues.forEach((i) =>
+      errors.push({ ...publicIssue(i), chapter: chapter.id, part }),
+    );
   const shape = (part: string | undefined, message: string) =>
     push(part, [{ code: "INVALID_SHAPE", message }]);
 
@@ -408,13 +669,20 @@ export function validateChapterDraft(
 
   const factById = new Map(report.facts.map((f) => [f.id, f]));
   const items = new Map(chapter.items.map((i) => [i.id, i]));
-  const whole = supportOf(chapter.items, factById);
+  const whole = supportOf(chapter.items, factById, true);
+  const options: CheckOptions = {
+    requireCaveat: false,
+    allowHedge: false,
+    precisionClaims: true,
+    precision: report.basis.precision,
+  };
   const tooLong = (part: string, text: string, max: number) => {
     if (text.length > max)
       push(part, [
         {
           code: "TOO_LONG",
           message: `${text.length} caracteres (máximo ${max}).`,
+          fix: `Encurte para no máximo ${max} caracteres.`,
         },
       ]);
   };
@@ -423,8 +691,8 @@ export function validateChapterDraft(
   const synthesis = d.synthesis as string;
   tooLong("introduction", intro, LIMITS.introductionChars);
   tooLong("synthesis", synthesis, LIMITS.synthesisChars);
-  push("introduction", checkText(intro, whole, { requireCaveat: false }));
-  push("synthesis", checkText(synthesis, whole, { requireCaveat: false }));
+  push("introduction", checkText(intro, whole, options));
+  push("synthesis", checkText(synthesis, whole, options));
 
   const cited = new Set<string>();
   sections!.forEach((raw, index) => {
@@ -444,6 +712,7 @@ export function validateChapterDraft(
           {
             code: "UNKNOWN_ITEM",
             message: `Item ${String(id)} não pertence ao capítulo ${chapter.id}.`,
+            fix: `Use apenas itemIds deste capítulo.`,
           },
         ]);
       else {
@@ -452,10 +721,35 @@ export function validateChapterDraft(
       }
     }
     tooLong(part, sec.text, LIMITS.sectionChars);
-    push(
-      part,
-      checkText(sec.text, supportOf(found, factById), { requireCaveat: true }),
-    );
+    const where = describePart(part);
+    const issues = checkText(
+      sec.text,
+      supportOf(found, factById, true),
+      options,
+    ).map((issue): Issue => {
+      // Sustentado por outro item do capítulo: referência cruzada legítima,
+      // que precisa ficar explícita nos itemIds da seção.
+      if (!issue.probe || !issue.probe(whole)) return issue;
+      const candidates = supportingItems(
+        issue.probe,
+        chapter.items.filter((i) => !found.includes(i)),
+        factById,
+        true,
+      );
+      if (!candidates.length) return issue;
+      const point = /"(.+?)"/.exec(issue.message)?.[1];
+      const label = point && POINT_LABEL[point];
+      const about = label
+        ? `referente ${POINT_WITH_ARTICLE[label]}`
+        : `que sustenta ${point ? `"${point}"` : "essa menção"}`;
+      return {
+        code: "CROSS_REFERENCE",
+        message: `${issue.message.replace(/ não consta nos itens citados\.$| não consta nas observações\.$/u, "")} pertence a outro item do capítulo (${candidates[0].id}), ausente dos itemIds desta seção.`,
+        fix: `${where}, inclua o item ${about} (${candidates[0].id}) nos itemIds utilizados ou remova essa referência.`,
+        suggestedItemIds: candidates.map((c) => c.id),
+      };
+    });
+    push(part, issues);
   });
 
   (questions as string[]).forEach((q, i) => {
@@ -463,7 +757,7 @@ export function validateChapterDraft(
     tooLong(part, q, LIMITS.questionChars);
     if (!q.trim().endsWith("?"))
       shape(part, "A pergunta de reflexão deve terminar com '?'.");
-    push(part, checkText(q, whole, { requireCaveat: false }));
+    push(part, checkText(q, whole, options));
   });
 
   for (const item of chapter.items)
@@ -472,6 +766,7 @@ export function validateChapterDraft(
         {
           code: "MISSING_ITEM",
           message: `O item ${item.id} não foi usado em nenhuma seção.`,
+          fix: `Use o item ${item.id} em pelo menos uma seção.`,
         },
       ]);
 
@@ -484,6 +779,35 @@ export function validateChapterDraft(
     ]),
   );
   return { ok: errors.length === 0, errors };
+}
+
+/**
+ * Correção determinística de referências cruzadas: acrescenta à seção o
+ * item sugerido (o mais específico). Só se aplica quando TODOS os problemas
+ * são CROSS_REFERENCE; o resultado precisa passar de novo pela validação
+ * completa antes de ser aceito. Devolve null se não houver o que corrigir.
+ */
+export function repairCrossReferences(
+  draft: unknown,
+  errors: AiValidationError[],
+): { draft: unknown; repairs: string[] } | null {
+  if (!errors.length || errors.some((e) => e.code !== "CROSS_REFERENCE"))
+    return null;
+  const copy = structuredClone(draft) as {
+    sections: { itemIds: string[] }[];
+  };
+  const repairs: string[] = [];
+  for (const e of errors) {
+    const index = Number(e.part?.split(".")[1]);
+    const add = e.suggestedItemIds?.[0];
+    const section = copy.sections[index];
+    if (!section || !add) return null;
+    if (!section.itemIds.includes(add)) {
+      section.itemIds.push(add);
+      repairs.push(`${e.part}: +${add}`);
+    }
+  }
+  return repairs.length ? { draft: copy, repairs } : null;
 }
 
 // ── Fase 02E: relatório inteiro em parágrafos ─────────────────────────────
@@ -556,8 +880,10 @@ export function validateAiOutput(
       const valid = cited.filter((x) => x !== undefined);
       for (const issue of checkText(p.text, supportOf(valid, factById), {
         requireCaveat: true,
+        allowHedge: true,
+        precisionClaims: false,
       }))
-        errors.push({ ...issue, ...at });
+        errors.push({ ...publicIssue(issue), ...at });
     });
   });
 

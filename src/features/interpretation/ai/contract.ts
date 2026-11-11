@@ -22,6 +22,11 @@ export type GeneratedSection = {
   itemIds: string[];
   /** Fatos calculados por trás desses itens (rastreabilidade até o ChartView). */
   factIds: string[];
+  /**
+   * Notas de precisão montadas pelo SISTEMA a partir do cálculo (intervalos
+   * de posição e ressalvas oficiais). Nunca vêm do modelo.
+   */
+  notes: string[];
 };
 
 export type GeneratedChapter = {
@@ -35,9 +40,13 @@ export type GeneratedChapter = {
   reflectionQuestions: string[];
   /** Limitações calculadas pelo motor, copiadas literalmente. */
   limitations: string[];
-  /** "ai": texto do modelo, validado; "library": texto determinístico. */
+  /**
+   * Origem interna (auditoria): "ai" = texto do modelo, validado;
+   * "library" = texto determinístico. Não é exibida ao cliente
+   * (ver presentation.ts).
+   */
   source: "ai" | "library";
-  /** Por que a biblioteca foi usada (null quando source = "ai"). */
+  /** Por que a biblioteca foi usada (null quando source = "ai"). Interno. */
   fallbackReason: string | null;
 };
 
@@ -138,6 +147,11 @@ export type AttemptMetrics = {
     | "refusal"
     | `error:${AiErrorKind}`;
   errors: string[];
+  /**
+   * Correções determinísticas aplicadas antes da aprovação (só referências
+   * cruzadas: itemId acrescentado à seção, com nova validação completa).
+   */
+  repairs?: string[];
 };
 
 export type GenerationMetrics = {

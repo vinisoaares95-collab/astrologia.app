@@ -1,5 +1,5 @@
 {
-  "version": "02e.1+02f.1",
+  "version": "02e.1+02f.2",
   "disclaimer": "As posições astronômicas deste relatório são calculadas. Os significados atribuídos a elas são interpretações simbólicas da tradição da astrologia ocidental tropical — não são fatos científicos, diagnósticos nem previsões.",
   "basis": {
     "precision": "exact",
@@ -22,7 +22,8 @@
           ],
           "factIds": [
             "body-sign:sun"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Com o Ascendente em Virgem, a aproximação ao mundo é tradicionalmente analítica e cuidadosa: você pode perceber detalhes e oferecer ajuda prática.",
@@ -31,7 +32,8 @@
           ],
           "factIds": [
             "angle-sign:asc"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "O Sol na casa 8 é tradicionalmente associado a buscar identidade nas experiências de profundidade: crises, intimidade e transformações podem ser momentos de autodescoberta.",
@@ -40,7 +42,8 @@
           ],
           "factIds": [
             "body-house:sun"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Com o Ascendente em Virgem, o regente tradicional do mapa é Mercúrio. A tradição sugere que o modo de pensar, aprender e se comunicar — aqui em Touro, na casa 8 — ganha peso especial na condução da sua trajetória.",
@@ -49,7 +52,8 @@
           ],
           "factIds": [
             "chart-ruler:mercury"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Na tradição, o trígono entre o Sol e o Ascendente sugere que a identidade e a forma de se apresentar fluem com naturalidade, como um talento que se exerce com facilidade.",
@@ -58,7 +62,8 @@
           ],
           "factIds": [
             "aspect:asc-sun:trine"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Muitos corpos em signos de Terra são associados a senso prático e constância: construir com as próprias mãos pode trazer satisfação.",
@@ -67,7 +72,8 @@
           ],
           "factIds": [
             "element-dominant:earth"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Em conjunto, esses elementos descrevem facetas simbólicas da identidade; vale observar quais delas fazem sentido na sua experiência.",
@@ -92,7 +98,8 @@
           ],
           "factIds": [
             "body-sign:moon"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "A Lua na casa 3 é associada a emoções que circulam pela comunicação: conversas, escrita e o convívio com o entorno próximo podem acalmar você.",
@@ -101,7 +108,8 @@
           ],
           "factIds": [
             "body-house:moon"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Na tradição, a quadratura entre a Lua e o Ascendente sugere que as emoções e a forma de se apresentar geram atrito, um desafio que costuma impulsionar crescimento.",
@@ -110,7 +118,8 @@
           ],
           "factIds": [
             "aspect:asc-moon:square"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Na tradição, a oposição entre a Lua e o Meio do Céu sugere que as emoções e a vocação puxam em direções opostas e pedem integração e equilíbrio.",
@@ -119,7 +128,8 @@
           ],
           "factIds": [
             "aspect:mc-moon:opposition"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Com a cúspide da casa 4 (Fundo do Céu) em Sagitário, a tradição associa as raízes, o lar e a vida íntima a temas como busca de sentido, entusiasmo e amplitude de horizontes.",
@@ -128,7 +138,8 @@
           ],
           "factIds": [
             "cusp-sign:4"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Juntos, esses temas oferecem uma leitura simbólica da vida emocional, para ser confrontada com o que você reconhece em si.",
@@ -153,7 +164,8 @@
           ],
           "factIds": [
             "body-sign:mercury"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Mercúrio na casa 8 é tradicionalmente ligado a uma mente que investiga: temas profundos, psicologia e o que está por trás das aparências podem atrair a sua atenção.",
@@ -162,7 +174,8 @@
           ],
           "factIds": [
             "body-house:mercury"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Mercúrio retrógrado no nascimento é associado, na tradição, a um pensamento que revisa e reelabora: você pode preferir refletir antes de falar e voltar às ideias para aprofundá-las.",
@@ -171,7 +184,8 @@
           ],
           "factIds": [
             "body-retrograde:mercury"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Mercúrio em aspecto harmonioso com Júpiter é associado a uma mente que gosta de ampliar horizontes: aprender e ensinar podem ser atividades naturais para você.",
@@ -180,7 +194,8 @@
           ],
           "factIds": [
             "aspect:jupiter-mercury:sextile"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Com a cúspide da casa 3 em Sagitário, a tradição associa a comunicação, o aprendizado e o entorno próximo a temas como busca de sentido, entusiasmo e amplitude de horizontes.",
@@ -189,7 +204,8 @@
           ],
           "factIds": [
             "cusp-sign:3"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Em conjunto, esses elementos sugerem um estilo de pensar e se comunicar que você pode reconhecer, ajustar ou questionar.",
@@ -214,7 +230,8 @@
           ],
           "factIds": [
             "body-sign:venus"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Com Marte em Peixes, a tradição associa a iniciativa, o desejo e a maneira de agir a temas como sensibilidade, imaginação e empatia.",
@@ -223,7 +240,8 @@
           ],
           "factIds": [
             "body-sign:mars"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Com a cúspide da casa 7 (Descendente) em Peixes, a tradição associa as parcerias e os encontros com o outro a temas como sensibilidade, imaginação e empatia.",
@@ -232,7 +250,8 @@
           ],
           "factIds": [
             "cusp-sign:7"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Vênus na casa 7 é associada à importância das parcerias: o encontro com o outro pode ser um campo central de aprendizado e prazer.",
@@ -241,7 +260,8 @@
           ],
           "factIds": [
             "body-house:venus"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Na tradição, o trígono entre Marte e Plutão sugere que a ação e a intensidade fluem com naturalidade, como um talento que se exerce com facilidade.",
@@ -250,7 +270,8 @@
           ],
           "factIds": [
             "aspect:mars-pluto:trine"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Vênus em aspecto tenso com Urano é tradicionalmente ligada à tensão entre proximidade e liberdade: relações que acolham a sua independência podem ser mais sustentáveis.",
@@ -259,7 +280,8 @@
           ],
           "factIds": [
             "aspect:uranus-venus:square"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Juntos, esses temas compõem uma leitura simbólica dos vínculos, como ponto de partida para reflexão e não como regra.",
@@ -284,7 +306,8 @@
           ],
           "factIds": [
             "body-sign:saturn"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Com Júpiter em Câncer, a tradição associa a expansão, a confiança e a busca de sentido a temas como cuidado, memória afetiva e proteção.",
@@ -293,7 +316,8 @@
           ],
           "factIds": [
             "body-sign:jupiter"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Júpiter na casa 10 é tradicionalmente ligado à expansão pela vocação: a vida profissional pode ser um campo de crescimento e de sentido.",
@@ -302,7 +326,8 @@
           ],
           "factIds": [
             "body-house:jupiter"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Saturno na casa 5 é associado a levar a sério a autoexpressão: a criatividade pode amadurecer com disciplina e ganhar consistência com o tempo.",
@@ -311,7 +336,8 @@
           ],
           "factIds": [
             "body-house:saturn"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "Com o Meio do Céu em Gêmeos, a tradição associa a vocação e a imagem pública a temas como curiosidade, versatilidade e troca de ideias.",
@@ -320,7 +346,8 @@
           ],
           "factIds": [
             "angle-sign:mc"
-          ]
+          ],
+          "notes": []
         },
         {
           "text": "A ausência de corpos em signos de Ar é lida como um convite a dar palavras ao que sente e a buscar outras perspectivas.",
@@ -329,7 +356,8 @@
           ],
           "factIds": [
             "element-absent:air"
-          ]
+          ],
+          "notes": []
         }
       ],
       "synthesis": "Em conjunto, talentos e desafios aparecem aqui como possibilidades simbólicas, que ganham forma com escolhas e experiência.",

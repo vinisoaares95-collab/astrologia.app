@@ -122,10 +122,15 @@ mexer em componentes.
 
 - `src/features/interpretation/ai/`: um capítulo por chamada → provedor
   (`AiProvider`: Anthropic ou simulado) → validação → `GeneratedReport`.
-  Falhou? O capítulo usa a biblioteca (`source: "library"`).
+  Falhou? O capítulo usa a biblioteca (`source: "library"`, só na trilha
+  interna; o cliente lê o mesmo formato em `presentation.ts`).
+- Precisão (intervalos de posição, ressalvas) é texto do sistema
+  (`precision.ts`), anexado às seções como `notes`; o modelo não a escreve.
+- Modelo padrão: Haiku 5.5 (Fase 02F.1); Sonnet 5.5 por `SIDERA_AI_MODEL`.
 - Chave só no servidor (`SIDERA_ANTHROPIC_API_KEY`); IA real só com
   `SIDERA_AI_ENABLED=1` + `SIDERA_AI_PROVIDER=anthropic`. Nenhuma rota pública.
-- Detalhes em `docs/fase-02f-geracao-com-ia.md`.
+- Detalhes em `docs/fase-02f-geracao-com-ia.md` e
+  `docs/fase-02f2-ajustes-do-motor.md`.
 
 ## Segurança
 

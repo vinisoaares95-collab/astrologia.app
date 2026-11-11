@@ -10,6 +10,7 @@ import type {
   GeneratedChapter,
   GeneratedSection,
 } from "./contract";
+import { precisionNotes } from "./precision";
 
 const INTRODUCTIONS: Record<ChapterId, string> = {
   identidade:
@@ -60,18 +61,6 @@ const QUESTIONS: Record<ChapterId, string[]> = {
   ],
 };
 
-/** A partir do segundo item incerto, a ressalva é dita de outro jeito. */
-function caveatFor(
-  caveat: string,
-  items: InterpretationReport["chapters"][number]["items"],
-  id: string,
-) {
-  const uncertain = items.filter((i) => i.caveat).map((i) => i.id);
-  return uncertain.indexOf(id) === 0
-    ? caveat
-    : "Vale a mesma reserva: este aspecto também depende do horário de nascimento.";
-}
-
 /** Rascunho determinístico no mesmo formato que o modelo deve devolver. */
 export function libraryDraft(
   report: InterpretationReport,
@@ -80,18 +69,18 @@ export function libraryDraft(
   const chapter = report.chapters.find((c) => c.id === id)!;
   return {
     introduction: INTRODUCTIONS[id],
-    sections: chapter.items.map((i) => ({
-      text: [i.symbolic, i.caveat && caveatFor(i.caveat, chapter.items, i.id)]
-        .filter(Boolean)
-        .join(" "),
-      itemIds: [i.id],
-    })),
+    // Ressalvas e intervalos não entram no texto: são notas do sistema,
+    // acrescentadas a qualquer capítulo em toGeneratedChapter.
+    sections: chapter.items.map((i) => ({ text: i.symbolic, itemIds: [i.id] })),
     synthesis: SYNTHESES[id],
     reflectionQuestions: QUESTIONS[id],
   };
 }
 
-/** Converte um rascunho (já validado) no capítulo final rastreável. */
+/**
+ * Converte um rascunho (já validado) no capítulo final rastreável. As notas
+ * de precisão saem do cálculo (precision.ts), nunca do rascunho.
+ */
 export function toGeneratedChapter(
   report: InterpretationReport,
   id: ChapterId,
@@ -101,10 +90,12 @@ export function toGeneratedChapter(
 ): GeneratedChapter {
   const chapter = report.chapters.find((c) => c.id === id)!;
   const items = new Map(chapter.items.map((i) => [i.id, i]));
-  const sections: GeneratedSection[] = draft.sections.map((s) => ({
+  const notes = precisionNotes(report, chapter, draft.sections);
+  const sections: GeneratedSection[] = draft.sections.map((s, i) => ({
     text: s.text.trim(),
     itemIds: s.itemIds,
     factIds: [...new Set(s.itemIds.flatMap((i) => items.get(i)!.factIds))],
+    notes: notes[i],
   }));
   return {
     id,

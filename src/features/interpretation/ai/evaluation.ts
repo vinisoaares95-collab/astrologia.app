@@ -15,6 +15,7 @@ import {
   generateReport,
   type GenerateOptions,
 } from "./generate";
+import { renderClientChapter, toClientChapter } from "./presentation";
 
 export const QUALITY_CRITERIA = [
   {
@@ -191,16 +192,19 @@ export function blindRuns(
   return { reports, key };
 }
 
+/**
+ * O corpo usa o MESMO layout que o cliente lê (presentation.ts), sem
+ * marcar capítulos da biblioteca; a rastreabilidade (itens e fatos) e as
+ * verificações automáticas ficam em anotações separadas, para o avaliador.
+ */
 export function renderBlindReport(b: BlindReport): string {
   let md = `# ${b.label} — ${b.caseLabel}\n\n_${b.disclaimer}_\n`;
-  for (const ch of b.chapters) {
-    md += `\n## ${ch.number}. ${ch.title}${ch.source === "library" ? " · texto da biblioteca (geração reprovada)" : ""}\n\n${ch.introduction}\n`;
-    for (const s of ch.sections)
-      md += `\n${s.text}\n<sub>Itens: ${s.itemIds.join(", ")} · Fatos: ${s.factIds.join(", ")}</sub>\n`;
-    md += `\n**Síntese.** ${ch.synthesis}\n\n**Para refletir.**\n${ch.reflectionQuestions.map((q) => `- ${q}`).join("\n")}\n`;
-    if (ch.limitations.length)
-      md += `\n**Limitações.** ${ch.limitations.join(" ")}\n`;
-  }
+  for (const ch of b.chapters)
+    md += renderClientChapter(
+      toClientChapter(ch),
+      (i) =>
+        `<sub>Itens: ${ch.sections[i].itemIds.join(", ")} · Fatos: ${ch.sections[i].factIds.join(", ")}</sub>\n`,
+    );
   const lib = b.checks.chaptersFromLibrary;
   md += `\n---\n\n**Verificações automáticas.** Capítulos aprovados: ${b.checks.chaptersFromAi} de ${b.chapters.length}.`;
   if (lib.length)

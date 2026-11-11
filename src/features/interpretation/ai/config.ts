@@ -16,8 +16,17 @@ import { anthropicApiKey } from "./api-key";
 import type { AiProvider } from "./contract";
 import { createMockProvider } from "./mock-provider";
 
-/** Recomendação da Fase 02F (ver docs/fase-02f-geracao-com-ia.md). */
-export const DEFAULT_MODEL = "claude-sonnet-5-5";
+/**
+ * Padrão do MVP: Haiku 5.5, escolhido na avaliação cega da Fase 02F.1
+ * (docs/fase-02f1-avaliacao-comparativa.md). Sonnet 5.5 continua suportado
+ * por SIDERA_AI_MODEL, para novas comparações.
+ */
+export const DEFAULT_MODEL = "claude-haiku-5-5";
+/** Modelos com preço, adaptador e testes mantidos. */
+export const SUPPORTED_MODELS = [
+  "claude-haiku-5-5",
+  "claude-sonnet-5-5",
+] as const;
 export const DEFAULT_EFFORT: AnthropicEffort = "medium";
 
 type Env = Record<string, string | undefined>;
@@ -26,7 +35,11 @@ export type AiConfig = {
   mode: "anthropic" | "mock";
   model: string;
   effort: AnthropicEffort;
-  /** SIDERA_AI_REFUSAL_FALLBACK=0 desliga o fallback entre modelos. */
+  /**
+   * Fallback do servidor para outro modelo (pago) em caso de recusa.
+   * Desligado por padrão (02F.2); SIDERA_AI_REFUSAL_FALLBACK=1 liga.
+   * A alternativa sem custo é sempre a biblioteca.
+   */
   refusalFallback: boolean;
   /** Motivo de estar no modo simulado (para logs internos). */
   reason: string | null;
@@ -51,7 +64,7 @@ export function readAiConfig(env: Env = process.env): AiConfig {
     mode: reason ? "mock" : "anthropic",
     model,
     effort,
-    refusalFallback: env.SIDERA_AI_REFUSAL_FALLBACK !== "0",
+    refusalFallback: env.SIDERA_AI_REFUSAL_FALLBACK === "1",
     reason,
   };
 }
