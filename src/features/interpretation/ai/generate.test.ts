@@ -524,6 +524,13 @@ describe("configuração e custos", () => {
     });
     expect(readAiConfig({ ...full, SIDERA_AI_ENABLED: "0" }).mode).toBe("mock");
     expect(readAiConfig({ ...full, ANTHROPIC_API_KEY: "" }).mode).toBe("mock");
+    expect(
+      readAiConfig({
+        ...full,
+        ANTHROPIC_API_KEY: undefined,
+        SIDERA_ANTHROPIC_API_KEY: "chave",
+      }).mode,
+    ).toBe("anthropic");
     expect(readAiConfig({ ...full, SIDERA_AI_PROVIDER: "openai" }).mode).toBe(
       "mock",
     );

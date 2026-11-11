@@ -4,7 +4,7 @@ import "server-only";
  * Seleção do provedor (somente servidor).
  *
  * A IA real só é usada com TRÊS condições: SIDERA_AI_ENABLED=1,
- * SIDERA_AI_PROVIDER=anthropic e ANTHROPIC_API_KEY definida no ambiente do
+ * SIDERA_AI_PROVIDER=anthropic e SIDERA_ANTHROPIC_API_KEY (ou ANTHROPIC_API_KEY) definida no ambiente do
  * servidor. Em qualquer outro caso, usa o provedor simulado (sem rede).
  * Nenhuma rota pública chama este módulo nesta fase.
  */
@@ -12,6 +12,7 @@ import {
   createAnthropicProvider,
   type AnthropicEffort,
 } from "./anthropic-provider";
+import { anthropicApiKey } from "./api-key";
 import type { AiProvider } from "./contract";
 import { createMockProvider } from "./mock-provider";
 
@@ -43,8 +44,8 @@ export function readAiConfig(env: Env = process.env): AiConfig {
       ? "SIDERA_AI_ENABLED não está ativo."
       : env.SIDERA_AI_PROVIDER !== "anthropic"
         ? "SIDERA_AI_PROVIDER não é 'anthropic'."
-        : !env.ANTHROPIC_API_KEY
-          ? "ANTHROPIC_API_KEY ausente."
+        : !anthropicApiKey(env)
+          ? "SIDERA_ANTHROPIC_API_KEY ausente."
           : null;
   return {
     mode: reason ? "mock" : "anthropic",
@@ -66,7 +67,7 @@ export function providerFromEnv(env: Env = process.env): {
           model: config.model,
           effort: config.effort,
           refusalFallback: config.refusalFallback,
-          apiKey: env.ANTHROPIC_API_KEY,
+          apiKey: anthropicApiKey(env),
         })
       : createMockProvider();
   return { provider, config };

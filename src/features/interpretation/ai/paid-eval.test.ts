@@ -3,7 +3,7 @@
  * Avaliação comparativa PAGA: Sonnet 5.5 × Haiku 5.5 (Fase 02F.1).
  * Desligada por padrão. Só roda com autorização explícita e credencial:
  *
- *   SIDERA_AI_PAID_TESTS=1 ANTHROPIC_API_KEY=... npm test -- paid-eval
+ *   SIDERA_AI_PAID_TESTS=1 SIDERA_ANTHROPIC_API_KEY=... npm test -- paid-eval
  *
  * (ou SIDERA_AI_KEY_VIA_PROXY=1 quando a chave é um segredo de rede da
  * sessão, injetado pelo proxy no cabeçalho x-api-key.)
@@ -24,6 +24,7 @@ import { describe, expect, it } from "vitest";
 import { buildInterpretation } from "../engine";
 import { TEST_TIMES, testChart } from "../test-support";
 import { createAnthropicProvider } from "./anthropic-provider";
+import { anthropicApiKey } from "./api-key";
 import { createBudget, withBudget } from "./budget";
 import {
   budgetBrlFrom,
@@ -86,9 +87,7 @@ describe.runIf(gate.allowed)("avaliação comparativa paga", () => {
           effort: EVAL_CONDITIONS.effort,
           refusalFallback: EVAL_CONDITIONS.refusalFallback,
           // Com o proxy, o SDK precisa de um valor; o proxy o substitui.
-          apiKey: gate.keyViaProxy
-            ? "injetada-pelo-proxy"
-            : process.env.ANTHROPIC_API_KEY,
+          apiKey: gate.keyViaProxy ? "injetada-pelo-proxy" : anthropicApiKey(),
         }),
         budget,
       ),

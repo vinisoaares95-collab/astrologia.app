@@ -6,6 +6,7 @@
  * chamada em budget.ts). Sem autorização explícita, nada é chamado.
  */
 import type { ChapterId, InterpretationReport } from "../contract";
+import { anthropicApiKey } from "./api-key";
 import { worstCaseUsd } from "./budget";
 import { MODEL_PRICES } from "./pricing";
 import { buildChapterRequest } from "./prompt";
@@ -98,11 +99,11 @@ export function paidRunGate(env: Record<string, string | undefined>) {
     reasons.push(
       "Sem autorização explícita para chamadas pagas (SIDERA_AI_PAID_TESTS=1).",
     );
-  const keyInEnv = Boolean(env.ANTHROPIC_API_KEY);
+  const keyInEnv = Boolean(anthropicApiKey(env));
   const keyViaProxy = env.SIDERA_AI_KEY_VIA_PROXY === "1";
   if (!keyInEnv && !keyViaProxy)
     reasons.push(
-      "Credencial ausente (ANTHROPIC_API_KEY no servidor ou SIDERA_AI_KEY_VIA_PROXY=1).",
+      "Credencial ausente (SIDERA_ANTHROPIC_API_KEY no servidor ou SIDERA_AI_KEY_VIA_PROXY=1).",
     );
   return { allowed: reasons.length === 0, reasons, keyViaProxy };
 }

@@ -86,11 +86,15 @@ nesta sessão.
 
 1. Criar a chave num workspace com limite de gasto (recomendado).
 2. Configurar a chave **fora do repositório e do chat**, como variável de
-   ambiente `ANTHROPIC_API_KEY` do ambiente de nuvem `astrologia.app`
+   ambiente `SIDERA_ANTHROPIC_API_KEY` do ambiente de nuvem `astrologia.app`
    (menu do ambiente na barra de título da sessão → Editar → variáveis de
    ambiente). Nesta plataforma, a API da Anthropic **não aceita** segredo de
    rede da sessão (verificado em 11/11/2026), por isso a variável de
    ambiente é o caminho. A variável vale a partir da próxima sessão.
+   O nome `ANTHROPIC_API_KEY` não serve na nuvem: é reservado à autenticação
+   do próprio Claude Code e não chega ao processo. O adaptador lê
+   `SIDERA_ANTHROPIC_API_KEY` (ver `src/features/interpretation/ai/api-key.ts`)
+   e passa a chave explicitamente ao SDK.
 3. Autorizar explicitamente e rodar numa sessão nova desse ambiente:
 
 ```bash

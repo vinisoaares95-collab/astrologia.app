@@ -11,7 +11,8 @@ import "server-only";
  *   sempre lido de response.model.
  * - Sem novas tentativas no SDK (maxRetries: 0): quem decide é generate.ts,
  *   com limite fixo.
- * A chave vem só de ANTHROPIC_API_KEY no servidor; nunca do cliente.
+ * A chave vem só do servidor (SIDERA_ANTHROPIC_API_KEY, ver api-key.ts),
+ * passada explicitamente ao SDK; nunca do cliente.
  */
 import Anthropic from "@anthropic-ai/sdk";
 

@@ -316,6 +316,12 @@ describe("planejamento da avaliação paga", () => {
     });
     expect(ok.allowed).toBe(true);
     expect(JSON.stringify(ok)).not.toContain("segredo");
+    const sidera = paidRunGate({
+      SIDERA_AI_PAID_TESTS: "1",
+      SIDERA_ANTHROPIC_API_KEY: "segredo",
+    });
+    expect(sidera.allowed).toBe(true);
+    expect(JSON.stringify(sidera)).not.toContain("segredo");
     expect(
       paidRunGate({ SIDERA_AI_PAID_TESTS: "1", SIDERA_AI_KEY_VIA_PROXY: "1" })
         .allowed,

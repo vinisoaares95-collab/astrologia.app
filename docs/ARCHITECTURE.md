@@ -123,7 +123,7 @@ mexer em componentes.
 - `src/features/interpretation/ai/`: um capítulo por chamada → provedor
   (`AiProvider`: Anthropic ou simulado) → validação → `GeneratedReport`.
   Falhou? O capítulo usa a biblioteca (`source: "library"`).
-- Chave só no servidor (`ANTHROPIC_API_KEY`); IA real só com
+- Chave só no servidor (`SIDERA_ANTHROPIC_API_KEY`); IA real só com
   `SIDERA_AI_ENABLED=1` + `SIDERA_AI_PROVIDER=anthropic`. Nenhuma rota pública.
 - Detalhes em `docs/fase-02f-geracao-com-ia.md`.
 
