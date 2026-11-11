@@ -18,6 +18,7 @@ import { reportParts } from "@/content/report-chapters";
 
 import { HAND_LABELS } from "../consent";
 import { usePalmPhoto } from "../palm-photo-context";
+import type { PalmAnalysisResult } from "../vision/analyze";
 
 /**
  * Descrições gerais da tradição — iguais para todas as pessoas.
@@ -36,7 +37,7 @@ const lockedChapters = reportParts
 
 export function DemoPreview() {
   const router = useRouter();
-  const { photo, hand, withdraw } = usePalmPhoto();
+  const { photo, hand, withdraw, analysis } = usePalmPhoto();
 
   if (!photo) {
     return (
@@ -122,6 +123,8 @@ export function DemoPreview() {
         ))}
       </ul>
 
+      {analysis && <ObservedFeatures analysis={analysis} />}
+
       {/* O que o relatório completo adiciona */}
       <section className="space-y-3" aria-labelledby="no-relatorio">
         <div className="flex items-center justify-between">
@@ -175,5 +178,55 @@ export function DemoPreview() {
         </Button>
       </ActionDock>
     </div>
+  );
+}
+
+/**
+ * O que a análise observou (Fase 03D): só as frases do sistema e as
+ * limitações. A interpretação simbólica e a redação dos capítulos 6 e 7
+ * chegam na Fase 03E.
+ */
+function ObservedFeatures({ analysis }: { analysis: PalmAnalysisResult }) {
+  const limitations = [
+    ...new Set([...analysis.limitations.maos, ...analysis.limitations.linhas]),
+  ];
+  return (
+    <section className="space-y-3" aria-labelledby="observado">
+      <h2 id="observado" className="text-lg font-semibold text-fg">
+        O que foi observado na foto
+      </h2>
+      {analysis.simulated && (
+        <Callout tone="demo" title="Resultado simulado">
+          Estas observações são fictícias, geradas por um simulador para testar
+          o fluxo. Elas não descrevem a sua foto.
+        </Callout>
+      )}
+      {analysis.status === "partial" && (
+        <Callout tone="info" title="Leitura parcial">
+          Algumas características não ficaram visíveis na foto e não serão
+          interpretadas. Uma nova foto pode completar a leitura.
+        </Callout>
+      )}
+      {analysis.observations.length > 0 && (
+        <ul className="divide-y divide-line-soft rounded-2xl bg-surface/80 edge-light">
+          {analysis.observations.map((o) => (
+            <li
+              key={o.feature}
+              className="flex items-start justify-between gap-3 px-4 py-3 text-sm text-fg-muted"
+            >
+              <span>{o.text}</span>
+              {o.partial && <Badge>Parcial</Badge>}
+            </li>
+          ))}
+        </ul>
+      )}
+      {limitations.length > 0 && (
+        <ul className="space-y-1.5 text-xs leading-relaxed text-fg-subtle">
+          {limitations.map((l) => (
+            <li key={l}>{l}</li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

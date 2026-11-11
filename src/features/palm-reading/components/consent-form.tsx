@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Hand } from "lucide-react";
+import { ArrowRight, Hand, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -15,6 +15,8 @@ import {
   createConsent,
   type PalmHand,
 } from "../consent";
+import { requestConsentReceipt } from "../lib/analysis-client";
+import { useAnalysisAvailability } from "../lib/use-analysis-availability";
 import { usePalmPhoto } from "../palm-photo-context";
 
 const HANDS: PalmHand[] = ["right", "left"];
@@ -25,7 +27,16 @@ const HANDS: PalmHand[] = ["right", "left"];
  */
 export function ConsentForm() {
   const router = useRouter();
-  const { consent, hand: savedHand, accept, withdraw } = usePalmPhoto();
+  const {
+    consent,
+    hand: savedHand,
+    accept,
+    withdraw,
+    setReceipt,
+  } = usePalmPhoto();
+  const availability = useAnalysisAvailability();
+  const [sending, setSending] = useState(false);
+  const [receiptFailed, setReceiptFailed] = useState(false);
   const [adult, setAdult] = useState(Boolean(consent));
   const [analysis, setAnalysis] = useState(Boolean(consent));
   const [hand, setHand] = useState<PalmHand | null>(savedHand);
@@ -37,11 +48,23 @@ export function ConsentForm() {
     !hand && "escolha a mão",
   ].filter(Boolean) as string[];
 
-  function submit() {
+  async function submit() {
     setTried(true);
     const next = createConsent({ adult, analysis });
     if (!next || !hand) return;
     accept(next, hand);
+    // Com a análise habilitada, o servidor confere o aceite e emite um
+    // recibo assinado; sem ele, a foto continua só no aparelho.
+    if (availability.status === "ready" && availability.enabled) {
+      setSending(true);
+      const r = await requestConsentReceipt(next, hand);
+      setSending(false);
+      setReceipt(r.ok ? r.receipt : null);
+      if (!r.ok) {
+        setReceiptFailed(true);
+        return;
+      }
+    }
     router.push(routes.palmPhoto);
   }
 
@@ -125,11 +148,37 @@ export function ConsentForm() {
         </Callout>
       )}
 
+      {receiptFailed && (
+        <Callout
+          tone="danger"
+          title="Não conseguimos registrar o consentimento"
+        >
+          Tente de novo em instantes. Se preferir, continue: a foto será só
+          preparada neste aparelho, sem análise.
+        </Callout>
+      )}
+
       <ActionDock>
-        <Button size="lg" fullWidth onClick={submit}>
+        <Button
+          size="lg"
+          fullWidth
+          onClick={() => void submit()}
+          disabled={sending}
+        >
+          {sending ? (
+            <LoaderCircle aria-hidden className="size-4 animate-spin" />
+          ) : null}
           Continuar para a foto
-          <ArrowRight aria-hidden className="size-4" />
+          {!sending && <ArrowRight aria-hidden className="size-4" />}
         </Button>
+        {receiptFailed && (
+          <Button
+            variant="secondary"
+            onClick={() => router.push(routes.palmPhoto)}
+          >
+            Continuar sem análise
+          </Button>
+        )}
         {consent && (
           <Button
             variant="ghost"

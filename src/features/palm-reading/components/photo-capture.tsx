@@ -36,9 +36,22 @@ import { cn } from "@/lib/cn";
 import { formatFileSize } from "@/lib/format";
 
 import { HAND_LABELS } from "../consent";
+import {
+  ANALYSIS_ERROR_MESSAGES,
+  requestPalmAnalysis,
+  type AnalysisErrorCode,
+} from "../lib/analysis-client";
+import { useAnalysisAvailability } from "../lib/use-analysis-availability";
+import type { PalmAnalysisResult } from "../vision/analyze";
 import { ACCEPT_ATTRIBUTE } from "../lib/image-validation";
 import { loadLocalPhoto } from "../lib/load-image";
 import { usePalmPhoto } from "../palm-photo-context";
+
+type Run =
+  | { kind: "idle" }
+  | { kind: "running" }
+  | { kind: "needs-decision"; result: PalmAnalysisResult }
+  | { kind: "error"; code: AnalysisErrorCode };
 
 type Status =
   | { kind: "idle" }
@@ -80,8 +93,30 @@ function ConsentRequired() {
 
 function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
   const router = useRouter();
-  const { photo, setPhoto, clearPhoto } = usePalmPhoto();
+  const { photo, setPhoto, clearPhoto, receipt, setAnalysis } = usePalmPhoto();
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const availability = useAnalysisAvailability();
+  const canAnalyze = availability.status === "ready" && availability.enabled;
+  const simulated = canAnalyze && availability.simulated;
+  const [run, setRun] = useState<Run>({ kind: "idle" });
+
+  async function analyze() {
+    if (!photo) return;
+    if (!receipt) {
+      setRun({ kind: "error", code: "consent_required" });
+      return;
+    }
+    setRun({ kind: "running" });
+    const r = await requestPalmAnalysis(photo.blob, receipt);
+    if (!r.ok) {
+      setRun({ kind: "error", code: r.error });
+      return;
+    }
+    setAnalysis(r.result);
+    if (r.result.status === "insufficient" || r.result.retakeRecommended)
+      setRun({ kind: "needs-decision", result: r.result });
+    else router.push(routes.palmPreview);
+  }
   const [dragging, setDragging] = useState(false);
   const cameraInput = useRef<HTMLInputElement>(null);
   const galleryInput = useRef<HTMLInputElement>(null);
@@ -106,6 +141,7 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
       if (result.ok) {
         setPhoto(result.photo);
         setStatus({ kind: "idle" });
+        setRun({ kind: "idle" });
       } else {
         setStatus({ kind: "error", message: result.message });
       }
@@ -301,16 +337,51 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
         </Callout>
       )}
 
+      {photo && <AnalysisFeedback run={run} simulated={simulated} />}
+
       <ActionDock>
         {photo ? (
           <>
-            <Button
-              size="lg"
-              fullWidth
-              onClick={() => router.push(routes.palmPreview)}
-            >
-              Usar esta foto
-            </Button>
+            {canAnalyze ? (
+              run.kind === "needs-decision" &&
+              run.result.status !== "insufficient" ? (
+                <Button
+                  size="lg"
+                  fullWidth
+                  onClick={() => router.push(routes.palmPreview)}
+                >
+                  Seguir com esta análise
+                </Button>
+              ) : (
+                <Button
+                  size="lg"
+                  fullWidth
+                  onClick={() => void analyze()}
+                  disabled={
+                    run.kind === "running" ||
+                    (run.kind === "needs-decision" &&
+                      run.result.status === "insufficient")
+                  }
+                >
+                  {run.kind === "running" && (
+                    <LoaderCircle aria-hidden className="size-4 animate-spin" />
+                  )}
+                  {run.kind === "running"
+                    ? "Analisando a foto…"
+                    : simulated
+                      ? "Analisar a foto (simulação)"
+                      : "Analisar a foto"}
+                </Button>
+              )
+            ) : (
+              <Button
+                size="lg"
+                fullWidth
+                onClick={() => router.push(routes.palmPreview)}
+              >
+                Usar esta foto
+              </Button>
+            )}
             <div className="grid grid-cols-2 gap-2.5">
               <Button
                 variant="secondary"
@@ -335,6 +406,7 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
                 onClick={() => {
                   clearPhoto();
                   setStatus({ kind: "idle" });
+                  setRun({ kind: "idle" });
                 }}
               >
                 <Trash2 aria-hidden className="size-4" />
@@ -369,5 +441,70 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
         )}
       </ActionDock>
     </div>
+  );
+}
+
+/** Mensagens da análise: andamento, resultado parcial/insuficiente, erros. */
+function AnalysisFeedback({
+  run,
+  simulated,
+}: {
+  run: Run;
+  simulated: boolean;
+}) {
+  if (run.kind === "idle")
+    return simulated ? (
+      <Callout tone="demo" title="Análise simulada">
+        Nesta versão interna, a análise usa um simulador: a foto é conferida
+        pelo servidor, mas nenhuma inteligência artificial a observa e o
+        resultado é fictício.
+      </Callout>
+    ) : null;
+  if (run.kind === "running")
+    return (
+      <div aria-live="polite">
+        <Callout tone="info" title="Analisando a foto">
+          Isso pode levar alguns segundos. A foto não é guardada pelo Sidera.
+        </Callout>
+      </div>
+    );
+  if (run.kind === "error") {
+    const m = ANALYSIS_ERROR_MESSAGES[run.code];
+    return (
+      <Callout tone="danger" title={m.title}>
+        {m.body}
+        {m.reconsent && (
+          <>
+            {" "}
+            <Link
+              href={routes.palmConsent}
+              className="underline underline-offset-2"
+            >
+              Confirmar consentimento
+            </Link>
+          </>
+        )}
+        {m.retake && (
+          <span className="mt-1 block">
+            Use &quot;Tirar outra&quot; ou &quot;Trocar foto&quot; abaixo.
+          </span>
+        )}
+      </Callout>
+    );
+  }
+  const { result } = run;
+  if (result.status === "insufficient")
+    return (
+      <Callout tone="danger" title="A foto não permitiu a análise">
+        Não foi possível observar a palma com segurança. Tire outra foto: palma
+        aberta e de frente, mão inteira no quadro, com luz natural e sem
+        reflexos.
+      </Callout>
+    );
+  return (
+    <Callout tone="info" title="Só parte da palma pôde ser observada">
+      Algumas características não ficaram visíveis e não serão interpretadas.
+      Recomendamos tirar outra foto, mas você pode seguir com esta análise.
+    </Callout>
   );
 }

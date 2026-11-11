@@ -59,33 +59,7 @@ export function targetDimensions(width: number, height: number) {
   return { width: w, height: h, scaled: w !== width || h !== height };
 }
 
-/**
- * Procura metadados num JPEG: segmentos APP1 (EXIF ou XMP), APP13
- * (IPTC/Photoshop) e APP2 (FlashPix/MPF, que pode guardar outra imagem).
- * Usado para conferir o arquivo preparado.
- */
-export function jpegMetadataSegments(bytes: Uint8Array): string[] {
-  const found: string[] = [];
-  if (bytes[0] !== 0xff || bytes[1] !== 0xd8) return found;
-  let i = 2;
-  while (i + 4 <= bytes.length) {
-    if (bytes[i] !== 0xff) break;
-    const marker = bytes[i + 1];
-    // Início dos dados da imagem: não há mais segmentos de metadados.
-    if (marker === 0xda || marker === 0xd9) break;
-    const length = (bytes[i + 2] << 8) | bytes[i + 3];
-    const payload = bytes.subarray(i + 4, i + 2 + length);
-    const head = String.fromCharCode(...payload.subarray(0, 28));
-    if (marker === 0xe1 && head.startsWith("Exif")) found.push("EXIF");
-    else if (marker === 0xe1 && head.startsWith("http://ns.adobe.com/xap"))
-      found.push("XMP");
-    else if (marker === 0xed) found.push("IPTC");
-    else if (marker === 0xe2 && !head.startsWith("ICC_PROFILE"))
-      found.push("APP2");
-    i += 2 + length;
-  }
-  return found;
-}
+export { jpegMetadataSegments } from "./jpeg";
 
 export type Encoder = (quality: number) => Promise<Blob | null>;
 

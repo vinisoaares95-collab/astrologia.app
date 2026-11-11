@@ -6,7 +6,9 @@ Status:
 - **03B (preparação da foto no navegador): concluída**; ver seção 16.
 - **03C (observações, validação e biblioteca): concluída**; ver seção 17 e
   `docs/fase-03c-observacoes-e-biblioteca.md`.
-- 03D em diante: aguardando aprovação.
+- **03D (integração com IA visual): concluída com provedor simulado**; ver
+  seção 18 e `docs/fase-03d-integracao-visual.md`.
+- 03E em diante: aguardando aprovação.
 
 Nenhuma chamada paga foi feita na Fase 03. A integração com o mapa astral
 (capítulos 8–9) fica para a Fase 04.
@@ -444,16 +446,16 @@ Preços oficiais da Anthropic (USD por 1 M tokens, tabela da API consultada em
 
 ## 14. Etapas da Fase 03
 
-| Etapa   | Entrega                                                                                                                                                                | Chamadas pagas              |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| **03A** | Este plano (aprovação)                                                                                                                                                 | Não                         |
-| **03B** | ✅ Concluída: consentimento específico, escolha da mão, reprocessamento sem EXIF, checagens de luz/nitidez, textos de nova foto (só navegador)                         | Não                         |
-| **03C** | ✅ Concluída: contrato `PalmObservation`, validador, biblioteca autoral da quiromancia, motor observações → itens, fixtures                                            | Não                         |
-| **03D** | Adaptador com imagem, provedor simulado de visão, Route Handler `POST` atrás de flag (consentimento e arquivo conferidos no servidor), sem persistência, teto e dedupe | Não (só simulado)           |
-| **03E** | Capítulos 6 e 7 no pipeline da 02F: validador da quiromancia, biblioteca alternativa, apresentação                                                                     | Não                         |
-| **03F** | Conjunto de fotos de teste consentidas e avaliação cega Haiku × Sonnet (teto próprio, autorização separada)                                                            | **Sim, autorizada à parte** |
-| **03G** | Revisão de privacidade: textos de consentimento, retenção, exclusão, documentação                                                                                      | Não                         |
-| (spike) | MediaPipe no navegador: **adiado** (decisão 2)                                                                                                                         | Não                         |
+| Etapa   | Entrega                                                                                                                                                                              | Chamadas pagas              |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
+| **03A** | Este plano (aprovação)                                                                                                                                                               | Não                         |
+| **03B** | ✅ Concluída: consentimento específico, escolha da mão, reprocessamento sem EXIF, checagens de luz/nitidez, textos de nova foto (só navegador)                                       | Não                         |
+| **03C** | ✅ Concluída: contrato `PalmObservation`, validador, biblioteca autoral da quiromancia, motor observações → itens, fixtures                                                          | Não                         |
+| **03D** | ✅ Concluída: adaptador com imagem, provedor simulado de visão, Route Handler `POST` atrás de flag (consentimento e arquivo conferidos no servidor), sem persistência, teto e dedupe | Não (só simulado)           |
+| **03E** | Capítulos 6 e 7 no pipeline da 02F: validador da quiromancia, biblioteca alternativa, apresentação                                                                                   | Não                         |
+| **03F** | Piloto com **8 fotos** autorizadas de voluntários, Haiku × Sonnet (orçamento definido e autorizado à parte)                                                                          | **Sim, autorizada à parte** |
+| **03G** | Revisão de privacidade: textos de consentimento, retenção, exclusão, documentação                                                                                                    | Não                         |
+| (spike) | MediaPipe no navegador: **adiado** (decisão 2)                                                                                                                                       | Não                         |
 
 Cada etapa termina com testes, lint e tipos, como na Fase 02.
 
@@ -505,11 +507,28 @@ As decisões da 03A estão na seção 0. Diretrizes registradas na aprovação d
 4. **O texto definitivo do consentimento e a transferência internacional**
    (provedor nos EUA) **exigem revisão jurídica** antes da operação pública.
 
+Decisões da aprovação da 03D (11/11/2026):
+
+1. O piloto da 03F terá **8 fotos autorizadas**, comparando Haiku e Sonnet; o
+   orçamento será definido e autorizado separadamente.
+2. As definições visuais das categorias são **provisórias**. Não são usadas
+   como medições anatômicas: o prompt pede critério visual aproximado.
+3. As evidências visuais são produzidas em **português do Brasil**.
+4. O que não puder ser identificado com segurança é **não visível**.
+5. **Sem MediaPipe** por enquanto.
+
 Continuam pendentes:
 
-1. Tamanho exato da amostra piloto da 03F.
+1. Orçamento e autorização da 03F (8 fotos × 2 modelos; pior caso com 2
+   tentativas por foto, calculado com `visionWorstCaseUsd`: US$ 0,0032 por
+   chamada no Haiku e US$ 0,064 no Sonnet, ≈ US$ 1,08 ≈ R$ 6 no total, que
+   passa dos R$ 5 citados na 03A; o custo esperado é bem menor).
 2. Calibração dos limiares de luz e foco com as fotos dos voluntários.
 3. Revisão das categorias visuais da 03C depois da 03F.
+4. Armazenamento compartilhado para limites, deduplicação e teto diário
+   antes de qualquer uso público (hoje, em memória por processo).
+5. Registro jurídico do consentimento (o recibo assinado da 03D não é prova
+   jurídica).
 
 ## 16. Conclusão da Fase 03B (11/11/2026)
 
@@ -635,3 +654,49 @@ chamadas pagas**. Detalhes em `docs/fase-03c-observacoes-e-biblioteca.md`.
   só na auditoria.
 - 56 testes novos com cenários fictícios; suíte completa, lint, tipos e build
   passando.
+
+## 18. Conclusão da Fase 03D (11/11/2026)
+
+Integração técnica entre a foto preparada (03B), um endpoint seguro, um
+provedor visual desacoplado e o contrato, o validador e o motor da 03C.
+Funciona de ponta a ponta com o **provedor simulado**. Detalhes em
+`docs/fase-03d-integracao-visual.md`.
+
+- **Endpoints internos** (Route Handlers `POST`):
+  - `/api/leitura-das-maos/consentimento` emite um recibo assinado;
+  - `/api/leitura-das-maos/analise` analisa a foto.
+
+  Os dois ficam desligados por padrão (404) e restritos à mesma origem.
+
+- **O servidor confere:**
+  - o recibo (versão, maioridade e autorização declaradas, mão, validade);
+  - o tipo, o tamanho e o **conteúdo real** do JPEG (assinatura, dimensões,
+    ausência de EXIF);
+  - os limites por recibo, cliente e global;
+  - a deduplicação.
+
+  Respostas só com códigos genéricos.
+
+- **Provedor:**
+  - interface `VisionProvider`, com simulador e adaptador Anthropic (imagem
+    - saída estruturada com o schema do contrato);
+  - modelo, esforço e teto próprios;
+  - timeout de 45 s, até 2 tentativas, sem fallback;
+  - chamadas reais exigem várias flags e são bloqueadas em produção.
+- **Prompt:** só observação, evidência em português localizável, "na dúvida,
+  não visível". Proíbe atributos pessoais, previsões e instruções vindas do
+  texto da imagem.
+- **Jornada:** recibo no consentimento, "Analisar a foto (simulação)" e
+  mensagens para insuficiente, parcial, falha temporária, limites, nova foto
+  e consentimento. A prévia mostra as observações do sistema, sem
+  interpretação (03E).
+- **Privacidade:**
+  - nada gravado e nada no console;
+  - imagem zerada após o uso;
+  - nada de servidor no bundle do cliente.
+
+  A retenção externa (provedor) continua a verificar antes do lançamento.
+
+- **Verificação:**
+  - 852 testes, lint, tipos e build de produção passando;
+  - jornada conferida no Chromium com o simulador.
