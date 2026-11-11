@@ -1,8 +1,26 @@
-# Fase 03 — Leitura das mãos por IA: planejamento técnico (03A)
+# Fase 03 — Leitura das mãos por IA: planejamento técnico
 
-Status: **proposta para aprovação**. Nenhum código foi implementado e nenhuma
-chamada paga foi feita nesta etapa. A integração com o mapa astral (capítulos
-8–9) fica para a Fase 04.
+Status:
+
+- **03A (planejamento): aprovada** em 11/11/2026, com as decisões da seção 0.
+- **03B (preparação da foto no navegador): concluída**; ver seção 16.
+- 03C em diante: aguardando aprovação.
+
+Nenhuma chamada paga foi feita na Fase 03. A integração com o mapa astral
+(capítulos 8–9) fica para a Fase 04.
+
+## 0. Decisões aprovadas (MVP)
+
+| #   | Decisão                                                                                                   |
+| --- | --------------------------------------------------------------------------------------------------------- |
+| 1   | **Uma foto**: palma da mão dominante                                                                      |
+| 2   | **Sem MediaPipe** por enquanto (sem detector de mão no aparelho)                                          |
+| 3   | Testes com **fotos reais de voluntários adultos autorizados** (termo assinado)                            |
+| 4   | **Nenhum armazenamento persistente de fotos no Sidera**                                                   |
+| 5   | **Somente maiores de 18 anos**                                                                            |
+| 6   | **Revisão jurídica de privacidade e LGPD obrigatória** antes do lançamento público                        |
+| 7   | Primeira comparação visual (03F) planejada com **teto de R$ 5**; chamadas pagas ainda **não autorizadas** |
+| 8   | **Linha do destino só quando claramente identificável** (`clear`); caso contrário, omitida                |
 
 Escopo: capítulos **6 (características das mãos)** e **7 (linhas da palma)**
 do relatório Sidera (`src/content/report-chapters.ts`, parte "Suas Mãos").
@@ -29,10 +47,20 @@ simbólica da quiromancia; validador da quiromancia; avaliação de qualidade.
 
 Restrições técnicas relevantes:
 
-- Server Actions aceitam **1 MB** de corpo por padrão
-  (`node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/serverActions.md`).
-  Uma foto reprocessada no navegador (JPEG, 1 536 px no lado maior, qualidade
-  ~0,85) fica em ~300–600 KB, dentro do limite sem mudar configuração.
+- **Limites de envio do Next.js 16.4.3** (versão instalada; documentação em
+  `node_modules/next/dist/docs/`):
+  - Server Actions: **1 MB** de corpo por padrão, configurável em
+    `experimental.serverActions.bodySizeLimit`. O limite conta o corpo HTTP
+    bruto, incluindo o envelope `multipart/form-data` (a doc sugere folga de
+    10–20 KB) (`…/05-config/01-next-config-js/serverActions.md`).
+  - Requisições que passam pelo `proxy` (antigo middleware): o corpo é
+    armazenado até **10 MB** por padrão (`proxyClientMaxBodySize`). Acima
+    disso é truncado com aviso (`…/proxyClientMaxBodySize.md`).
+  - Consequência (revisada na 03B): para preservar as linhas, a foto
+    preparada é um JPEG de alta qualidade de ~1 600 × 2 200 px. Em fotos
+    reais isso pode passar de 1 MB. A 03D deve configurar
+    `bodySizeLimit: "3mb"` só para a ação de análise, ou usar um Route
+    Handler. O teto do arquivo preparado é 2,5 MB (`MAX_PREPARED_BYTES`).
 - Visão no Claude: JPEG/PNG/WebP/GIF; custo de
   `⌈largura/28⌉ × ⌈altura/28⌉` tokens visuais; modelos 4.7 e posteriores
   (inclui Haiku 5.5) até 2 576 px e 4 784 tokens por imagem. A doc oficial
@@ -102,10 +130,10 @@ Navegador                                   Servidor (Next.js, flag interna)
 ─────────                                   ──────────────────────────────
 captura → reprocessa (canvas):              ação analyzePalmAction(imagem, mão)
   orientação, sem EXIF/GPS,                   ├─ checa flag, tamanho, assinatura
-  1 536 px, JPEG                              │  JPEG (bytes mágicos) e dimensões
+  ≤ 2 576 px / 4 784 tokens, JPEG 0,92        │  JPEG (bytes mágicos) e dimensões
 → checagens locais (luz, nitidez)             ├─ dedupe por SHA-256 (sessão)
 → consentimento registrado                    ├─ provedor de visão (AiProvider +
-→ envia (≤ 1 MB)                              │  imagem) com withBudget
+→ envia (≤ 2,5 MB; bodySizeLimit 3 MB)        │  imagem) com withBudget
                                               ├─ validatePalmObservation → fatos
                                               ├─ palm engine (biblioteca) → itens
                                               ├─ generateReport (caps. 6–7, texto)
@@ -138,18 +166,18 @@ Novos módulos (nomes indicativos), no padrão atual:
 
 ### 5.1 Quantas mãos e fotos (MVP)
 
-- **Recomendado: 1 foto obrigatória da palma da mão dominante.** Cobre os
-  capítulos 6 e 7 e é a prática tradicional citada no próprio guia do app.
-- **Opcional: palma da mão não dominante** (a tradição compara "potencial" e
-  "desenvolvimento"). Dobra o custo de visão (ainda centavos) e o atrito.
-  Decisão do produto.
+- **Decidido: 1 foto obrigatória da palma da mão dominante.** A pessoa
+  informa qual mão fotografa (direita ou esquerda). Cobre os capítulos 6 e 7
+  e é a prática tradicional citada no guia do app.
+- A palma da mão não dominante fica fora do MVP.
 - **Fora do MVP:** dorso da mão, unhas, perfil do polegar e close das linhas
   menores. Mais fotos, mais atrito e baixa confiabilidade.
 
 ### 5.2 Camada 1: navegador (grátis, instantânea)
 
 - Já existe: formato, tamanho de 15 MB, ≥ 600 px, HEIC.
-- Novo, calculado num canvas reduzido (~256 px):
+- Novo (implementado na 03B), calculado numa cópia em cinza de ~512 px no
+  lado maior:
   - **luz**: luminância média e % de pixels estourados ou escuros (mão
     escura, flash ou reflexo);
   - **contraste**: desvio-padrão da luminância;
@@ -158,7 +186,7 @@ Novos módulos (nomes indicativos), no padrão atual:
     horizontal gera aviso (já existe).
 - Os limiares são calibrados com fotos de teste. Começam como **aviso**, não
   bloqueio, para não barrar fotos boas.
-- **Opcional (decisão):** detector de mão no próprio aparelho (MediaPipe Hand
+- **Adiado (decisão 2):** detector de mão no próprio aparelho (MediaPipe Hand
   Landmarker, Apache-2.0, rodando no navegador). Confirma que há uma mão, que
   a palma está voltada para a câmera, a mão inteira no quadro e os dedos
   abertos. Os 21 pontos dariam **proporções dos dedos de forma
@@ -233,8 +261,20 @@ type PalmObservation = {
 };
 ```
 
-- Valores livres só na `evidence`, limitada (~160 caracteres) e checada:
-  não pode conter interpretação, diagnóstico nem termos proibidos.
+- **Evidência visual obrigatória para cada característica identificada.**
+  Todo valor diferente de `not_visible` precisa de `evidence` não vazia,
+  concreta e localizável na imagem (onde começa ou termina, por onde passa,
+  em relação a quais dedos), por exemplo "termina abaixo do espaço entre o
+  indicador e o médio".
+  - Sem evidência, ou com evidência genérica ("a linha é visível"), o
+    validador rebaixa a característica para `not_visible` e ela não gera
+    item.
+  - `partial` também exige evidência e vira item incerto.
+  - A linha do destino só é aceita com `visibility: "clear"` e evidência de
+    início e fim (decisão 8).
+  - A `evidence` é limitada (~160 caracteres) e checada: não pode conter
+    interpretação, diagnóstico nem termos proibidos. Serve à auditoria e
+    nunca é mostrada ao cliente.
 - Cada valor aceito vira um `Fact` (`palm-shape`, `palm-line:heart`…) com
   `observation` gerada pelo **sistema** a partir dos enums. O texto do modelo
   não vai ao cliente.
@@ -281,7 +321,7 @@ type PalmObservation = {
   jurídica.
 - **Minimização:**
   - reprocessar no navegador (remove EXIF/GPS e modelo do aparelho);
-  - reduzir para 1 536 px;
+  - reduzir ao limite útil do provedor (≤ 2 576 px, ≤ 4 784 tokens);
   - pedir só a palma (sem rosto e sem fundo identificável);
   - não pedir nome junto da foto.
 - **Armazenamento: nenhum no MVP.**
@@ -292,11 +332,22 @@ type PalmObservation = {
     permitem reconstruir a imagem.
   - Se um dia for preciso guardar a foto, cria-se armazenamento cifrado com
     expiração curta e uma decisão própria.
-- **Provedor:**
-  - os dados da API não são usados para treino por padrão;
-  - a retenção de logs e a ZDR (retenção zero) precisam ser confirmadas na
-    conta, antes do uso público;
-  - ver `docs/fase-02f-geracao-com-ia.md` §3.
+- **Retenção externa (provedor de IA): é diferente de armazenamento no
+  Sidera.** Não guardar a foto no Sidera não significa que ninguém a retém.
+  Pela documentação oficial da Anthropic (consultada em 11/11/2026):
+  - na API comercial padrão, entradas e saídas (inclusive imagens) são
+    apagadas em até **30 dias**
+    ([commercial data retention](https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data));
+  - os dados não são usados para treino sem permissão expressa;
+  - com **ZDR** (retenção zero, habilitada por organização via contato
+    comercial), prompts e respostas não ficam armazenados depois da
+    resposta, mas conteúdo sinalizado pelos sistemas de segurança pode ser
+    retido por até **2 anos** em qualquer arranjo
+    ([API and data retention](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention));
+  - Batches e Files API retêm dados (não usar para fotos).
+  - Decisão pendente para a revisão jurídica: pedir ZDR antes do lançamento
+    ou declarar os 30 dias no consentimento. O texto provisório da 03B já
+    informa os 30 dias e os 2 anos.
 - **Exclusão:**
   - "apagar minha leitura" remove observações e capítulos;
   - a foto, por não ser guardada, não precisa de exclusão;
@@ -316,26 +367,36 @@ type PalmObservation = {
 
 ## 12. Modelos com visão: candidatos e custos
 
-Premissas da estimativa, por foto:
+Cálculo revisado segundo a
+[documentação oficial de visão](https://platform.claude.com/docs/en/build-with-claude/vision).
+A imagem custa `⌈largura/28⌉ × ⌈altura/28⌉` tokens visuais, cobrados como
+tokens de **entrada**. Nos modelos 4.7 e posteriores o máximo é 2 576 px no
+lado maior e 4 784 tokens; acima disso o provedor reduz a imagem sozinho. Por
+foto:
 
-- imagem de 1 536 × 2 048 px → ⌈1536/28⌉ × ⌈2048/28⌉ = 55 × 74 = **4 070
-  tokens visuais**;
-- instruções e schema: ~2 300 tokens;
-- entrada total: **~6 400 tokens**;
-- saída (JSON com raciocínio, esforço baixo ou médio): **~3 000 tokens** de
-  pior caso típico.
+| Componente                       | Tokens (estimativa)    | Origem do número                                                                                  |
+| -------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------- |
+| **Imagem**                       | **4 661** (máx. 4 784) | Foto preparada de 12 MP em retrato: 1 643 × 2 191 px → 59 × 79 blocos (medido na 03B)             |
+| **Instruções** (system + schema) | ~2 300                 | Estimativa; medir com `count_tokens` na 03D. Na 1ª chamada, gravar no cache custa 1,25× a entrada |
+| **Resposta** (JSON + raciocínio) | ~3 000                 | JSON ~800 + raciocínio em esforço baixo/médio; a confirmar na 03F                                 |
 
-Preços oficiais da Anthropic (USD por 1 M tokens, consultados em 11/11/2026
-na tabela de modelos da API e na
-[página de Vision](https://platform.claude.com/docs/en/build-with-claude/vision)):
+Preços oficiais da Anthropic (USD por 1 M tokens, tabela da API consultada em
+11/11/2026). Custo por foto, por componente:
 
-| Modelo                            | Entrada / saída | Visão (por foto)          | Uso sugerido                                                                       |
-| --------------------------------- | --------------- | ------------------------- | ---------------------------------------------------------------------------------- |
-| **Claude Haiku 5.5**              | 0,10 / 0,50     | ≈ US$ 0,0021 (≈ R$ 0,012) | **Candidato padrão** (adaptador, teto e preço já no projeto)                       |
-| Claude Sonnet 5.5                 | 2 / 10          | ≈ US$ 0,043 (≈ R$ 0,24)   | Comparação cega na avaliação                                                       |
-| Claude Opus 5.5                   | 4 / 20          | ≈ US$ 0,086 (≈ R$ 0,47)   | Referência de qualidade só na avaliação                                            |
-| Google Gemini Flash (família)     | não verificado  | —                         | Exigiria novo adaptador, novo contrato de dados e nova transferência internacional |
-| OpenAI (modelos "mini" com visão) | não verificado  | —                         | Idem                                                                               |
+| Modelo                            | Entrada / saída | Imagem      | Instruções  | Resposta   | **Total por foto**          | Uso sugerido                                                                       |
+| --------------------------------- | --------------- | ----------- | ----------- | ---------- | --------------------------- | ---------------------------------------------------------------------------------- |
+| **Claude Haiku 5.5**              | 0,10 / 0,50     | US$ 0,00047 | US$ 0,00023 | US$ 0,0015 | **≈ US$ 0,0022 (R$ 0,012)** | **Candidato padrão** (adaptador, teto e preço já no projeto)                       |
+| Claude Sonnet 5.5                 | 2 / 10          | US$ 0,0093  | US$ 0,0046  | US$ 0,030  | **≈ US$ 0,044 (R$ 0,24)**   | Comparação cega na 03F                                                             |
+| Claude Opus 5.5                   | 4 / 20          | US$ 0,019   | US$ 0,0092  | US$ 0,060  | **≈ US$ 0,088 (R$ 0,48)**   | Fora da 03F (teto de R$ 5)                                                         |
+| Google Gemini Flash (família)     | não verificado  | —           | —           | —          | —                           | Exigiria novo adaptador, novo contrato de dados e nova transferência internacional |
+| OpenAI (modelos "mini" com visão) | não verificado  | —           | —           | —          | —                           | Idem                                                                               |
+
+- Em todos os modelos a **resposta** é a maior parcela do custo. Limitar
+  `max_tokens` e o esforço na extração reduz mais o custo do que reduzir a
+  imagem, que piora a leitura das linhas.
+- A reserva do teto (`budget.ts`) usa o pior caso, não esta estimativa:
+  entrada a 2 caracteres por token, preço de escrita em cache e `max_tokens`
+  inteiro.
 
 - Os preços de Google e OpenAI **não foram verificados**: o site oficial do
   Google não estava acessível nesta sessão e as fontes secundárias divergem.
@@ -343,11 +404,16 @@ na tabela de modelos da API e na
   [Vertex AI pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing)
   e agregadores como
   [Finout](https://www.finout.io/blog/gemini-pricing-in-2026).
-- **Custo por leitura com Haiku 5.5:** visão (1 foto, ≈ US$ 0,002) mais os
-  capítulos 6 e 7 em texto (≈ US$ 0,002 cada, medido na 02F) dão **≈ US$
-  0,006 (≈ R$ 0,03)**.
-- **Pior caso com Haiku 5.5** (3 envios, 2 mãos, novas tentativas): ≈ US$
-  0,02 (≈ R$ 0,12).
+- **Custo por leitura com Haiku 5.5:** visão (1 foto, ≈ US$ 0,0022) mais os
+  capítulos 6 e 7 em texto (≈ US$ 0,0016 cada, medido na validação da 02F)
+  dão **≈ US$ 0,0054 (≈ R$ 0,03)**.
+- **Pior caso com Haiku 5.5** (decisão 1: uma mão; 3 envios, novas
+  tentativas): ≈ US$ 0,013 (≈ R$ 0,07).
+- **03F com teto de R$ 5** (decisão 7): ~US$ 0,046 por foto nos dois modelos.
+  Com 20 fotos seriam ~US$ 0,92 ≈ R$ 5,07, acima do teto antes de qualquer
+  nova tentativa. **Proposta: 15 fotos × 2 modelos ≈ US$ 0,69 ≈ R$ 3,80**,
+  com folga para novas tentativas. O pior caso conferido antes da execução
+  tem de caber em R$ 5.
 - Câmbio de referência: 5,5, o mesmo do projeto.
 - Recomendação: **Haiku 5.5 como hipótese**, a confirmar numa avaliação
   cega Haiku × Sonnet sobre fotos de teste consentidas (03F). Sem essa
@@ -358,7 +424,9 @@ na tabela de modelos da API e na
 1. Checagens no navegador antes de qualquer envio (grátis).
 2. Uma única chamada de visão por foto aceita; a avaliação de adequação vem
    na mesma resposta.
-3. Imagem reduzida a ~1 536 px (≈ 4 070 tokens), sem pagar o teto de 4 784.
+3. Imagem preparada no limite útil do provedor (≤ 2 576 px e ≤ 4 784
+   tokens; ~4 661 numa foto de 12 MP), sem enviar bytes que seriam
+   descartados.
 4. Os capítulos usam só texto, sem reenviar a imagem.
 5. Dedupe por hash na sessão, para não reanalisar a mesma foto.
 6. Limite de envios por sessão e por dia.
@@ -371,16 +439,16 @@ na tabela de modelos da API e na
 
 ## 14. Etapas da Fase 03
 
-| Etapa   | Entrega                                                                                                                          | Chamadas pagas              |
-| ------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| **03A** | Este plano (aprovação)                                                                                                           | Não                         |
-| **03B** | Consentimento específico, escolha da mão, reprocessamento sem EXIF, checagens de luz/nitidez, textos de nova foto (só navegador) | Não                         |
-| **03C** | Contrato `PalmObservation`, validador, biblioteca autoral da quiromancia, motor observações → itens, fixtures                    | Não                         |
-| **03D** | Adaptador com imagem, provedor simulado de visão, ação de servidor atrás de flag, sem persistência, teto e dedupe                | Não (só simulado)           |
-| **03E** | Capítulos 6 e 7 no pipeline da 02F: validador da quiromancia, biblioteca alternativa, apresentação                               | Não                         |
-| **03F** | Conjunto de fotos de teste consentidas e avaliação cega Haiku × Sonnet (teto próprio, autorização separada)                      | **Sim, autorizada à parte** |
-| **03G** | Revisão de privacidade: textos de consentimento, retenção, exclusão, documentação                                                | Não                         |
-| (spike) | MediaPipe no navegador: viabilidade, peso, precisão das proporções                                                               | Não                         |
+| Etapa   | Entrega                                                                                                                                        | Chamadas pagas              |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| **03A** | Este plano (aprovação)                                                                                                                         | Não                         |
+| **03B** | ✅ Concluída: consentimento específico, escolha da mão, reprocessamento sem EXIF, checagens de luz/nitidez, textos de nova foto (só navegador) | Não                         |
+| **03C** | Contrato `PalmObservation`, validador, biblioteca autoral da quiromancia, motor observações → itens, fixtures                                  | Não                         |
+| **03D** | Adaptador com imagem, provedor simulado de visão, ação de servidor atrás de flag, sem persistência, teto e dedupe                              | Não (só simulado)           |
+| **03E** | Capítulos 6 e 7 no pipeline da 02F: validador da quiromancia, biblioteca alternativa, apresentação                                             | Não                         |
+| **03F** | Conjunto de fotos de teste consentidas e avaliação cega Haiku × Sonnet (teto próprio, autorização separada)                                    | **Sim, autorizada à parte** |
+| **03G** | Revisão de privacidade: textos de consentimento, retenção, exclusão, documentação                                                              | Não                         |
+| (spike) | MediaPipe no navegador: **adiado** (decisão 2)                                                                                                 | Não                         |
 
 Cada etapa termina com testes, lint e tipos, como na Fase 02.
 
@@ -394,9 +462,10 @@ Riscos técnicos:
   com fotos variadas.
 - **Viés:** a qualidade pode variar com o tom de pele e a iluminação. A
   avaliação precisa de amostra diversa e consentida.
-- **Fotos de teste:** não podemos usar fotos reais sem consentimento. Fontes
-  possíveis: voluntários com termo assinado, banco licenciado ou mãos
-  ilustradas e sintéticas (estas não medem o mundo real).
+- **Fotos de teste (decisão 3):** fotos reais de voluntários adultos com
+  termo assinado, mantidas fora do repositório e apagadas ao fim da
+  avaliação. A amostra precisa ser diversa (tons de pele, idades adultas,
+  luz).
 - **Reprodutibilidade:** a mesma foto pode gerar observações diferentes em
   chamadas diferentes. A medir na 03F; dá para exigir concordância em duas
   leituras, ao custo de dobrar a visão.
@@ -407,17 +476,113 @@ Riscos técnicos:
 - **Expectativa do usuário:** a quiromancia apresentada como leitura
   simbólica, com aviso no início dos capítulos, como na astrologia.
 
-Decisões necessárias:
+As decisões da 03A estão na seção 0. Continuam pendentes:
 
-1. Uma mão (dominante) ou duas no MVP?
-2. Spike do MediaPipe no navegador: sim ou não?
-3. Origem das fotos de teste da 03F (voluntários, banco licenciado,
-   sintéticas)?
-4. Confirmar **nenhum armazenamento de foto** no MVP.
-5. Idade mínima de 18 anos no MVP?
-6. Revisão jurídica da LGPD (dado sensível, transferência internacional)
-   antes do uso público?
-7. Orçamento e autorização da avaliação 03F (estimativa: ~20 fotos × 2
-   modelos ≈ US$ 0,90 ≈ R$ 5 sem novas tentativas, até ~R$ 10 no pior caso;
-   o Sonnet responde por ~95% do valor; a confirmar no planejamento da 03F).
-8. A linha do destino entra no MVP (só quando nítida) ou fica de fora?
+1. ZDR no provedor antes do lançamento, ou consentimento que declare a
+   retenção de até 30 dias (revisão jurídica).
+2. Configuração de envio da 03D: `bodySizeLimit` de 3 MB na ação de análise,
+   ou um Route Handler.
+3. Tamanho da amostra da 03F dentro de R$ 5 (proposta: 15 fotos × 2 modelos).
+4. Texto definitivo do consentimento, depois da revisão jurídica.
+5. Calibração dos limiares de luz e foco com as fotos dos voluntários.
+
+## 16. Conclusão da Fase 03B (11/11/2026)
+
+Preparação da foto **totalmente no navegador**: nada é enviado, armazenado
+ou analisado, e nenhuma chamada paga foi feita.
+
+### Comportamento implementado
+
+1. **Orientações** (tela inicial e guia): luz natural, palma aberta, mão
+   inteira, câmera paralela, mão dominante, o que evitar.
+2. **Consentimento** (`/leitura-das-maos/consentimento`):
+   - mostra finalidade, o que acontece nesta versão, a futura análise
+     (provedor nos EUA), a retenção externa (30 dias e até 2 anos se
+     sinalizado) e os direitos;
+   - duas caixas **desmarcadas** por padrão: "Tenho 18 anos ou mais" e
+     "Autorizo o uso da foto…";
+   - versão do texto (`CONSENT_VERSION = "03b.1"`) e data registradas só em
+     memória;
+   - opção de retirar o consentimento, que descarta foto, mão e aceite.
+3. **Mão**: direita ou esquerda (mão dominante), exibida na captura, na
+   pré-visualização e na prévia.
+4. **Captura**:
+   - câmera nativa (`capture="environment"`), galeria ou arrastar e soltar;
+   - a tela de foto **exige** consentimento e mão; sem eles, leva ao
+     consentimento.
+5. **Verificações locais:**
+   - bloqueiam: formato, arquivo vazio, 15 MB, ≥ 600 px no lado menor,
+     falha de decodificação (HEIC fora do Safari), falha do canvas e foto
+     preparada acima de 2,5 MB;
+   - só avisam, apresentadas como **aproximadas e sem garantia**: luz
+     (escura ou clara demais), reflexo, contraste e foco (variância do
+     Laplaciano).
+6. **Reprocessamento sem metadados:**
+   - redesenho em canvas com a orientação do EXIF aplicada;
+   - redução ao limite útil do provedor (≤ 2 576 px e ≤ 4 784 tokens, sem
+     ampliar) com suavização de alta qualidade;
+   - JPEG 0,92, descendo a 0,88 e 0,85 só se passar do teto;
+   - EXIF, GPS, XMP e IPTC descartados.
+7. **Pré-visualização** da imagem preparada, com mão, resolução, tamanho,
+   "EXIF/GPS: removidos" e autoconferência.
+8. **Descartar e tirar outra:** botões "Tirar outra" (celular), "Trocar
+   foto" (computador) e "Descartar".
+9. **Permissões e erros:**
+   - câmera ou galeria fechadas sem foto (evento `cancel`, que inclui
+     permissão negada) mostram orientação sobre a permissão e a galeria;
+   - erro inesperado no preparo vira mensagem, não tela quebrada;
+   - arquivos incompatíveis e pequenos têm mensagens próprias.
+
+### Verificação em navegador real (Chromium, emulação Pixel 7)
+
+- JPEG de 4 032 × 3 024 com orientação EXIF 6, GPS, fabricante e modelo
+  preparado como **1 643 × 2 191** (retrato, orientação aplicada, 4 661
+  tokens).
+- Arquivo preparado **sem** EXIF, GPS ou fabricante; só JFIF e perfil de
+  cor.
+- Nenhuma requisição com a imagem: as únicas requisições que não eram GET
+  foram internas do servidor de desenvolvimento.
+- Consentimento obrigatório, mensagens de PDF e de foto pequena conferidos.
+
+### Arquivos
+
+- Novos:
+  - `src/features/palm-reading/consent.ts`;
+  - `src/features/palm-reading/lib/prepare-image.ts`;
+  - `src/features/palm-reading/lib/quality.ts`;
+  - `src/features/palm-reading/components/consent-form.tsx`;
+  - `src/app/(jornada)/leitura-das-maos/consentimento/page.tsx`;
+  - `src/components/ui/checkbox.tsx`;
+  - testes `prepare-image.test.ts`, `quality.test.ts`,
+    `load-image.test.ts` e `consent-form.test.tsx`.
+- Alterados:
+  - `lib/load-image.ts` (pipeline com dependências injetáveis);
+  - `lib/image-validation.ts` (novos códigos de erro);
+  - `palm-photo-context.tsx` (consentimento e mão em memória);
+  - `components/photo-capture.tsx`, `photo-capture.test.tsx`,
+    `photo-guide.tsx` e `demo-preview.tsx`;
+  - página `leitura-das-maos/page.tsx`;
+  - `src/config/routes.ts` e `src/components/ui/index.ts`.
+- O motor astrológico não foi alterado.
+
+### Limitações restantes
+
+- Os limiares de qualidade são provisórios. Foram testados com imagens
+  sintéticas e serão calibrados com fotos dos voluntários; podem gerar
+  avisos falsos ou deixar passar fotos ruins.
+- Não há detecção de mão (decisão 2): nada confirma que a foto é uma palma
+  nem que é a mão escolhida. Isso fica para a autoconferência e para a
+  avaliação de adequação na chamada de visão (03D).
+- O evento `cancel` depende do navegador (Chrome 113+, Safari 16.4+, Firefox
+  91+). Em navegadores antigos, fechar a câmera simplesmente não mostra
+  mensagem.
+- HEIC só é decodificado no Safari; nos outros navegadores há orientação
+  para usar JPG.
+- Consentimento e foto vivem só na memória da aba: recarregar a página
+  descarta os dois, de propósito.
+- O texto do consentimento é **provisório** até a revisão jurídica
+  (decisão 6). A retenção do provedor ainda precisa ser confirmada na conta
+  (ZDR ou 30 dias).
+- O tamanho real dos arquivos preparados a partir de fotos de celular será
+  medido na 03F; o teto de 2,5 MB exige `bodySizeLimit` acima de 1 MB na
+  03D.

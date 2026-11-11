@@ -16,6 +16,7 @@ import { palmLines } from "@/components/visuals/palm-illustration";
 import { routes } from "@/config/routes";
 import { reportParts } from "@/content/report-chapters";
 
+import { HAND_LABELS } from "../consent";
 import { usePalmPhoto } from "../palm-photo-context";
 
 /**
@@ -35,7 +36,7 @@ const lockedChapters = reportParts
 
 export function DemoPreview() {
   const router = useRouter();
-  const { photo, clearPhoto } = usePalmPhoto();
+  const { photo, hand, withdraw } = usePalmPhoto();
 
   if (!photo) {
     return (
@@ -84,6 +85,7 @@ export function DemoPreview() {
           <div className="flex flex-wrap justify-center gap-2">
             <Badge tone="demo">Exemplo fixo</Badge>
             <Badge>Não personalizado</Badge>
+            {hand && <Badge>{HAND_LABELS[hand]}</Badge>}
           </div>
           <h2 className="text-2xl font-semibold text-fg">
             As três linhas principais
@@ -165,7 +167,7 @@ export function DemoPreview() {
         <Button
           variant="ghost"
           onClick={() => {
-            clearPhoto();
+            withdraw();
             router.push(routes.home);
           }}
         >

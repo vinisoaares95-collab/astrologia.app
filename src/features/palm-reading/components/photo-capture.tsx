@@ -3,19 +3,30 @@
 import {
   Camera,
   CheckCircle2,
+  Hand,
   ImageUp,
   LoaderCircle,
   RefreshCw,
+  ShieldCheck,
   Trash2,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+} from "react";
 
 import {
   ActionDock,
   Badge,
   Button,
+  ButtonLink,
   Callout,
+  Card,
   FrameCorners,
   Stat,
 } from "@/components/ui";
@@ -24,20 +35,50 @@ import { routes } from "@/config/routes";
 import { cn } from "@/lib/cn";
 import { formatFileSize } from "@/lib/format";
 
+import { HAND_LABELS } from "../consent";
 import { ACCEPT_ATTRIBUTE } from "../lib/image-validation";
 import { loadLocalPhoto } from "../lib/load-image";
 import { usePalmPhoto } from "../palm-photo-context";
 
 type Status =
-  { kind: "idle" } | { kind: "loading" } | { kind: "error"; message: string };
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "cancelled" }
+  | { kind: "error"; message: string };
 
 const selfCheck = [
+  "É a palma (não o dorso) da mão que você escolheu",
   "A palma inteira aparece, do pulso aos dedos",
   "As linhas estão nítidas, sem tremor",
   "A luz está uniforme, sem reflexos fortes",
 ];
 
 export function PhotoCapture() {
+  const { consent, hand } = usePalmPhoto();
+  // A foto só é pedida depois do consentimento e da escolha da mão.
+  if (!consent || !hand) return <ConsentRequired />;
+  return <PhotoCaptureSteps handLabel={HAND_LABELS[hand]} />;
+}
+
+function ConsentRequired() {
+  return (
+    <Card className="my-auto flex flex-col items-center gap-5 py-12 text-center">
+      <span className="flex size-14 items-center justify-center rounded-2xl bg-surface-bright">
+        <ShieldCheck aria-hidden className="size-6 text-fg-subtle" />
+      </span>
+      <div className="space-y-2">
+        <h2 className="text-xl font-semibold text-fg">Antes da foto</h2>
+        <p className="text-sm text-fg-muted">
+          Confirme sua idade, leia como a foto será usada e escolha a mão. Se
+          você recarregou a página, essas escolhas foram descartadas.
+        </p>
+      </div>
+      <ButtonLink href={routes.palmConsent}>Ir para o consentimento</ButtonLink>
+    </Card>
+  );
+}
+
+function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
   const router = useRouter();
   const { photo, setPhoto, clearPhoto } = usePalmPhoto();
   const [status, setStatus] = useState<Status>({ kind: "idle" });
@@ -45,15 +86,35 @@ export function PhotoCapture() {
   const cameraInput = useRef<HTMLInputElement>(null);
   const galleryInput = useRef<HTMLInputElement>(null);
 
+  // Câmera ou galeria fechadas sem foto (inclui permissão negada no aparelho).
+  useEffect(() => {
+    const inputs = [cameraInput.current, galleryInput.current];
+    const onCancel = () => setStatus({ kind: "cancelled" });
+    inputs.forEach((el) => el?.addEventListener("cancel", onCancel));
+    return () =>
+      inputs.forEach((el) => el?.removeEventListener("cancel", onCancel));
+  }, []);
+
   async function handleFile(file: File | undefined) {
-    if (!file) return;
+    if (!file) {
+      setStatus({ kind: "cancelled" });
+      return;
+    }
     setStatus({ kind: "loading" });
-    const result = await loadLocalPhoto(file);
-    if (result.ok) {
-      setPhoto(result.photo);
-      setStatus({ kind: "idle" });
-    } else {
-      setStatus({ kind: "error", message: result.message });
+    try {
+      const result = await loadLocalPhoto(file);
+      if (result.ok) {
+        setPhoto(result.photo);
+        setStatus({ kind: "idle" });
+      } else {
+        setStatus({ kind: "error", message: result.message });
+      }
+    } catch {
+      setStatus({
+        kind: "error",
+        message:
+          "Algo deu errado ao preparar a foto neste aparelho. Tente de novo ou escolha outra imagem.",
+      });
     }
   }
 
@@ -115,17 +176,38 @@ export function PhotoCapture() {
             </figcaption>
           </figure>
 
-          <div className="grid grid-cols-3 gap-3 rounded-2xl bg-surface/80 p-4 edge-light">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-4 rounded-2xl bg-surface/80 p-4 edge-light">
+            <Stat label="Mão" value={handLabel} />
             <Stat label="Resolução" value={`${photo.width}×${photo.height}`} />
             <Stat label="Tamanho" value={formatFileSize(photo.sizeBytes)} />
-            <Stat label="Destino" value="Só este aparelho" />
+            <Stat label="EXIF/GPS" value="Removidos" />
           </div>
+          <p className="-mt-2 px-1 text-xs leading-relaxed text-fg-subtle">
+            A foto foi redesenhada neste aparelho, sem dados de localização nem
+            do celular, e continua só aqui.
+          </p>
 
           {photo.hints.map((hint) => (
             <Callout key={hint} tone="info">
               {hint}
             </Callout>
           ))}
+
+          <Callout tone="info" title="Verificação automática (aproximada)">
+            {photo.quality.length > 0 ? (
+              <ul className="list-disc space-y-1.5 pl-4">
+                {photo.quality.map((q) => (
+                  <li key={q.code}>{q.message}</li>
+                ))}
+              </ul>
+            ) : (
+              "Não encontramos sinais evidentes de pouca luz, reflexo ou falta de foco."
+            )}{" "}
+            <span className="mt-2 block text-fg-subtle">
+              Esta verificação é aproximada e não garante que as linhas poderão
+              ser identificadas. Confira a foto você também.
+            </span>
+          </Callout>
 
           <div className="space-y-2">
             <p className="font-mono text-[0.65rem] tracking-[0.16em] text-fg-subtle uppercase">
@@ -183,8 +265,18 @@ export function PhotoCapture() {
           <div className="space-y-1" aria-live="polite">
             <p className="font-semibold text-fg">
               {loading
-                ? "Preparando a pré-visualização…"
+                ? "Preparando a foto neste aparelho…"
                 : "Adicione a foto da sua palma"}
+            </p>
+            <p className="flex items-center justify-center gap-1.5 text-xs text-fg-muted">
+              <Hand aria-hidden className="size-3.5 text-accent" />
+              Palma da {handLabel.toLowerCase()} ·{" "}
+              <Link
+                href={routes.palmConsent}
+                className="underline underline-offset-2 hover:text-fg"
+              >
+                trocar
+              </Link>
             </p>
             <p className="text-xs text-fg-muted">
               <span className="pointer-coarse:hidden">
@@ -201,6 +293,13 @@ export function PhotoCapture() {
           {status.message}
         </Callout>
       )}
+      {status.kind === "cancelled" && !photo && (
+        <Callout tone="info" title="Nenhuma foto recebida">
+          Se a câmera não abriu, confira se o navegador tem permissão para
+          usá-la nas configurações do aparelho. Você também pode escolher uma
+          foto da galeria.
+        </Callout>
+      )}
 
       <ActionDock>
         {photo ? (
@@ -215,8 +314,18 @@ export function PhotoCapture() {
             <div className="grid grid-cols-2 gap-2.5">
               <Button
                 variant="secondary"
+                onClick={openCamera}
+                disabled={loading}
+                className="pointer-fine:hidden"
+              >
+                <Camera aria-hidden className="size-4" />
+                Tirar outra
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={openGallery}
                 disabled={loading}
+                className="pointer-coarse:hidden"
               >
                 <RefreshCw aria-hidden className="size-4" />
                 Trocar foto
@@ -229,7 +338,7 @@ export function PhotoCapture() {
                 }}
               >
                 <Trash2 aria-hidden className="size-4" />
-                Remover
+                Descartar
               </Button>
             </div>
           </>

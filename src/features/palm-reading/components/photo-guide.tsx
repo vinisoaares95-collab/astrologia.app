@@ -65,8 +65,8 @@ export function PhotoGuide() {
         </ul>
       </div>
       <p className="text-xs leading-relaxed text-fg-subtle">
-        Na tradição da quiromancia, costuma-se ler primeiro a mão dominante —
-        aquela com que você escreve.
+        Fotografe a palma da sua mão dominante, aquela com que você escreve: na
+        tradição da quiromancia, é a primeira a ser lida.
       </p>
     </div>
   );

@@ -11,23 +11,41 @@ import {
   type ReactNode,
 } from "react";
 
+import type { PalmConsent, PalmHand } from "./consent";
 import type { LocalPhoto } from "./lib/load-image";
 
 type PalmPhotoContextValue = {
   photo: LocalPhoto | null;
   setPhoto: (photo: LocalPhoto) => void;
   clearPhoto: () => void;
+  consent: PalmConsent | null;
+  hand: PalmHand | null;
+  /** Registra consentimento e mão (só em memória). */
+  accept: (consent: PalmConsent, hand: PalmHand) => void;
+  /** Retira o consentimento: descarta foto, mão e aceite. */
+  withdraw: () => void;
 };
 
 const PalmPhotoContext = createContext<PalmPhotoContextValue | null>(null);
 
 /**
- * Mantém a foto apenas em memória enquanto a pessoa estiver nas telas de
- * leitura das mãos. Ao substituir, remover ou sair do fluxo, a URL local é
- * revogada e a imagem descartada.
+ * Mantém foto, consentimento e mão apenas em memória enquanto a pessoa
+ * estiver nas telas de leitura das mãos. Ao substituir, remover ou sair do
+ * fluxo, a URL local é revogada e tudo é descartado.
  */
-export function PalmPhotoProvider({ children }: { children: ReactNode }) {
+export function PalmPhotoProvider({
+  children,
+  initialConsent = null,
+  initialHand = null,
+}: {
+  children: ReactNode;
+  /** Só para testes e demonstração. */
+  initialConsent?: PalmConsent | null;
+  initialHand?: PalmHand | null;
+}) {
   const [photo, setPhotoState] = useState<LocalPhoto | null>(null);
+  const [consent, setConsent] = useState<PalmConsent | null>(initialConsent);
+  const [hand, setHand] = useState<PalmHand | null>(initialHand);
   const currentUrl = useRef<string | null>(null);
 
   const release = useCallback(() => {
@@ -51,11 +69,23 @@ export function PalmPhotoProvider({ children }: { children: ReactNode }) {
     setPhotoState(null);
   }, [release]);
 
+  const accept = useCallback((next: PalmConsent, nextHand: PalmHand) => {
+    setConsent(next);
+    setHand(nextHand);
+  }, []);
+
+  const withdraw = useCallback(() => {
+    release();
+    setPhotoState(null);
+    setConsent(null);
+    setHand(null);
+  }, [release]);
+
   useEffect(() => release, [release]);
 
   const value = useMemo(
-    () => ({ photo, setPhoto, clearPhoto }),
-    [photo, setPhoto, clearPhoto],
+    () => ({ photo, setPhoto, clearPhoto, consent, hand, accept, withdraw }),
+    [photo, setPhoto, clearPhoto, consent, hand, accept, withdraw],
   );
 
   return (

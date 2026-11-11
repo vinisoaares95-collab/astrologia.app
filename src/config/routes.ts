@@ -2,6 +2,7 @@ export const routes = {
   home: "/",
   howItWorks: "/como-funciona",
   palmIntro: "/leitura-das-maos",
+  palmConsent: "/leitura-das-maos/consentimento",
   palmPhoto: "/leitura-das-maos/foto",
   palmPreview: "/leitura-das-maos/previa",
   birthData: "/dados-de-nascimento",
@@ -34,10 +35,15 @@ export const journeyScreens: Record<
     title: "Leitura das mãos",
     back: routes.home,
   },
+  [routes.palmConsent]: {
+    step: "palm",
+    title: "Antes da foto",
+    back: routes.palmIntro,
+  },
   [routes.palmPhoto]: {
     step: "palm",
     title: "Foto da palma",
-    back: routes.palmIntro,
+    back: routes.palmConsent,
   },
   [routes.palmPreview]: {
     step: "preview",

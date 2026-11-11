@@ -26,7 +26,13 @@ export const ACCEPT_ATTRIBUTE = [
 ].join(",");
 
 export type ImageIssueCode =
-  "unsupported-type" | "too-large" | "empty" | "too-small" | "decode-failed";
+  | "unsupported-type"
+  | "too-large"
+  | "empty"
+  | "too-small"
+  | "decode-failed"
+  | "processing-failed"
+  | "prepared-too-large";
 
 export type ValidationResult =
   { ok: true } | { ok: false; code: ImageIssueCode; message: string };
@@ -40,6 +46,10 @@ export const issueMessages: Record<ImageIssueCode, string> = {
     "A resolução é baixa demais para enxergar as linhas. Use uma foto com pelo menos 600 px no lado menor.",
   "decode-failed":
     "Não conseguimos abrir esta imagem neste navegador. Se for HEIC, tente tirar a foto pela câmera ou exportá-la em JPG.",
+  "processing-failed":
+    "Não conseguimos preparar esta foto neste aparelho. Tente outra foto ou feche outros aplicativos e tente de novo.",
+  "prepared-too-large":
+    "Mesmo depois de preparada, esta foto ficou grande demais. Tente outra foto, de preferência sem filtros ou zoom digital.",
 };
 
 function fail(code: ImageIssueCode): ValidationResult {

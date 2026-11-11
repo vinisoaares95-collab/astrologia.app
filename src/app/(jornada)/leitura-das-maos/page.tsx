@@ -57,14 +57,19 @@ export default function PalmIntroPage() {
 
       <PhotoGuide />
 
-      <Callout tone="privacy" title="Sua foto não sai do seu aparelho">
-        Neste protótipo, a imagem é exibida apenas no seu navegador. Não é
-        enviada, armazenada nem analisada, e é descartada ao sair.
+      <Callout
+        tone="privacy"
+        title="Nesta versão, sua foto não sai do aparelho"
+      >
+        A imagem é preparada só no seu navegador, sem dados de localização
+        (EXIF/GPS). Não é enviada, armazenada nem analisada, e é descartada ao
+        sair. Antes da foto, explicamos como ela será usada quando a análise
+        estiver disponível.
       </Callout>
 
       <ActionDock>
-        <ButtonLink href={routes.palmPhoto} size="lg" fullWidth>
-          Estou pronto para fotografar
+        <ButtonLink href={routes.palmConsent} size="lg" fullWidth>
+          Começar
           <ArrowRight aria-hidden className="size-4" />
         </ButtonLink>
       </ActionDock>

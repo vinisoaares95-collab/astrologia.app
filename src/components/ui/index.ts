@@ -2,6 +2,7 @@ export { ActionDock } from "./action-dock";
 export { Badge } from "./badge";
 export { Button, ButtonLink, buttonStyles, IconButtonLink } from "./button";
 export { Callout } from "./callout";
+export { Checkbox } from "./checkbox";
 export { Card } from "./card";
 export { Container } from "./container";
 export { FrameCorners } from "./frame-corners";
