@@ -12,7 +12,7 @@
  * contém imagem, nome de arquivo, caminho, credencial ou prompt.
  */
 import { randomInt } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { access, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { anthropicApiKey } from "../../interpretation/ai/api-key";
@@ -89,6 +89,14 @@ async function write(dir: string, file: string, content: string) {
   await writeFile(path.join(dir, file), content, { mode: 0o600 });
 }
 
+async function writeIfAbsent(dir: string, file: string, content: string) {
+  try {
+    await access(path.join(dir, file));
+  } catch {
+    await write(dir, file, content);
+  }
+}
+
 export function realProviderFor(env: Env) {
   const gate = visionEvalGate(env, process.cwd());
   return (model: string): VisionProvider =>
@@ -137,7 +145,24 @@ export async function runEvaluationSession(input: {
   const stamp =
     input.stamp ?? new Date().toISOString().replace(/[:.]/gu, "-").slice(0, 19);
   const outDir = resolveOutDir(input.env, input.repoRoot, stamp);
-  await write(outDir, "plano.md", renderPlan(plan));
+  await write(
+    outDir,
+    "plano.md",
+    renderPlan(plan) +
+      (intake.rejected.length
+        ? `\n## Fotos recusadas (fora do plano)\n\n${intake.rejected.map((r) => `- ${r.id}: ${r.reason}`).join("\n")}\n`
+        : ""),
+  );
+  // A referência do revisor sai já no plano (sem nada dos modelos), para
+  // ser preenchida ANTES da execução; a execução nunca a sobrescreve.
+  await writeIfAbsent(
+    outDir,
+    "revisao/referencia.csv",
+    renderReferenceCsv(
+      intake.photos.map((p) => p.id),
+      FEATURE_VALUES,
+    ),
+  );
 
   const discard = () => intake.photos.forEach((p) => p.bytes.fill(0));
   if (!plan.withinBudget) {
@@ -160,11 +185,6 @@ export async function runEvaluationSession(input: {
   discard();
 
   const key = blindKey(run, input.coin ?? (() => randomInt(2) === 0));
-  await write(
-    outDir,
-    "revisao/referencia.csv",
-    renderReferenceCsv(run, FEATURE_VALUES),
-  );
   await write(outDir, "revisao/ficha.csv", renderReviewSheet(run, key));
   await write(
     outDir,

@@ -104,10 +104,9 @@ export const REFERENCE_HEADER = [
 
 /** Leitura de referência do revisor, preenchida ANTES de abrir a ficha. */
 export function renderReferenceCsv(
-  run: EvalRun,
+  photos: readonly string[],
   values: Record<FeatureId, readonly string[]>,
 ): string {
-  const photos = [...new Set(run.units.map((u) => u.photoId))];
   const rows: (string | null)[][] = [[...REFERENCE_HEADER]];
   for (const p of photos)
     for (const id of FEATURE_IDS)

@@ -43,6 +43,11 @@ describe.runIf(mode === "plan")(
         repoRoot: root,
       });
       expect(r.kind, JSON.stringify(r)).toMatch(/planned|over_budget/u);
+      // Foto recusada (ilegível, pequena, ausente): pedir outra antes de seguir.
+      if (r.kind === "planned")
+        expect(r.rejected, "fotos recusadas (identificador: motivo)").toEqual(
+          [],
+        );
     });
   },
 );

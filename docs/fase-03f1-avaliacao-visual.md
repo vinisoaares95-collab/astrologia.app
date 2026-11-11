@@ -195,6 +195,11 @@ autorização é só um código opaco (`AUT-03F-01`…), sem nome.
 6. Pedir ao provedor a exclusão, se o termo ou a política aplicável
    previr, sabendo que a retenção do provedor segue as regras dele.
 
+> Coleta das fotos, minuta do termo, transferência e referência humana:
+> `docs/fase-03f1-coleta-de-fotos.md`. O plano gratuito também gera
+> `revisao/referencia.csv` (sem nada dos modelos); com a mesma
+> `SIDERA_PALM_EVAL_OUT_DIR`, a execução não a sobrescreve.
+
 ## 5. Comandos
 
 Plano (grátis, sem chamadas; grava `plano.md`):

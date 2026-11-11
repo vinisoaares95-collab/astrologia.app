@@ -366,7 +366,7 @@ describe("relatórios e revisão humana", () => {
     expect(key.photos["foto-01"]).toEqual({ A: HAIKU, B: SONNET });
     expect(key.photos["foto-02"]).toEqual({ A: SONNET, B: HAIKU });
     const sheet = renderReviewSheet(run, key);
-    const ref = renderReferenceCsv(run, FEATURE_VALUES);
+    const ref = renderReferenceCsv(["foto-01", "foto-02"], FEATURE_VALUES);
     const guide = renderReviewGuide(key, FEATURE_VALUES);
     for (const text of [sheet, ref, guide]) {
       expect(text).not.toMatch(/haiku|sonnet|claude|mock|US\$|token/iu);
@@ -559,7 +559,27 @@ describe("sessão completa (pastas temporárias, simuladores)", () => {
     });
     expect(r.kind).toBe("planned");
     expect(created).toBe(0);
-    expect(await readdir(out)).toEqual(["plano.md"]);
+    expect((await readdir(out)).sort()).toEqual(["plano.md", "revisao"]);
+    expect(await readdir(path.join(out, "revisao"))).toEqual([
+      "referencia.csv",
+    ]);
+  });
+
+  it("foto recusada no plano aparece por identificador, sem nome de arquivo", async () => {
+    const dir = await photosDir(2);
+    await writeFile(path.join(dir, "voluntario-2.jpg"), "não é imagem");
+    const out = await tmp();
+    const r = await runEvaluationSession({
+      mode: "plan",
+      env: { SIDERA_PALM_EVAL_DIR: dir, SIDERA_PALM_EVAL_OUT_DIR: out },
+      repoRoot: ROOT,
+    });
+    expect(r.kind === "planned" && r.rejected).toEqual([
+      { id: "foto-02", reason: "Imagem ilegível." },
+    ]);
+    const md = await readFile(path.join(out, "plano.md"), "utf8");
+    expect(md).toContain("foto-02: Imagem ilegível.");
+    expect(md).not.toMatch(/voluntario-/u);
   });
 
   it("acima do orçamento: recusa antes de chamar", async () => {
@@ -612,6 +632,29 @@ describe("sessão completa (pastas temporárias, simuladores)", () => {
       await readFile(path.join(dir, PHOTO_MAP_FILE), "utf8"),
     );
     expect(map["foto-01"].arquivo).toBe("voluntario-1.jpg");
+  });
+
+  it("referência preenchida no plano não é sobrescrita pela execução", async () => {
+    const dir = await photosDir(1);
+    const out = await tmp();
+    const env = fullGateEnv(dir, { SIDERA_PALM_EVAL_OUT_DIR: out });
+    await runEvaluationSession({ mode: "plan", env, repoRoot: ROOT });
+    const file = path.join(out, "revisao/referencia.csv");
+    const filled = (await readFile(file, "utf8")).replace(
+      /(heart\.length,[^\n]*,)(,)$/mu,
+      "$1nitida,long",
+    );
+    expect(filled).toContain("nitida,long");
+    await writeFile(file, filled);
+    const { providerFor } = mocks();
+    const r = await runEvaluationSession({
+      mode: "run",
+      env,
+      repoRoot: ROOT,
+      providerFor,
+    });
+    expect(r.kind).toBe("ran");
+    expect(await readFile(file, "utf8")).toBe(filled);
   });
 
   it("relatórios dentro do repositório só em avaliacao-ia/", () => {
