@@ -94,7 +94,7 @@ falso visível** em linhas; depois comparar exatidão, custo e latência.
 ## 3. Custos (calculados com as funções reais)
 
 Comando de plano (grátis) aplicado a 8 imagens sintéticas de 3 024 × 4 032
-(preparadas para 1 638 × 2 184, perto do teto de tokens visuais), câmbio de
+(preparadas para 1 643 × 2 191, 4 661 tokens visuais, perto do teto), câmbio de
 R$ 5,50 (com folga sobre a PTAX):
 
 | Modelo     | Esperado por foto | Pior caso por chamada | Pior caso por foto (2 tentativas) | Esperado (8)           | Pior caso (8)          |
