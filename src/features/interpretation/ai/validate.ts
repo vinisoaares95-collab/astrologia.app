@@ -47,7 +47,13 @@ export type AiValidationError = {
     /** Menção legítima a outro item do capítulo, sem o itemId na seção (02F.2). */
     | "CROSS_REFERENCE"
     /** O modelo descreveu horário, precisão ou intervalos (texto do sistema, 02F.2). */
-    | "PRECISION_CLAIM";
+    | "PRECISION_CLAIM"
+    /** Mãos (03E): característica fora das observações validadas. */
+    | "UNSUPPORTED_FEATURE"
+    /** Mãos (03E): valor diferente do observado (ex.: "curta" para uma linha longa). */
+    | "CONTRADICTION"
+    /** Mãos (03E): idade, gênero, saúde, aparência ou outro atributo pessoal. */
+    | "SENSITIVE_ATTRIBUTE";
   chapter?: ChapterId;
   /** Parte do capítulo: "introduction", "sections.N", "synthesis", "reflectionQuestions.N". */
   part?: string;
@@ -359,6 +365,46 @@ type CheckOptions = {
   precision?: InterpretationReport["basis"]["precision"];
 };
 
+/**
+ * Linguagem determinista (com negação aceita: "sem garantias") e temas de
+ * saúde, finanças ou decisões de relacionamento. Comum a todos os domínios
+ * (astrologia 02F, mãos 03E).
+ */
+export function languageIssues(text: string): Issue[] {
+  const out: Issue[] = [];
+  const add = (
+    code: Issue["code"],
+    message: string,
+    extra: Pick<Issue, "fix"> = {},
+  ) => out.push({ code, message, ...extra });
+  for (const re of FORBIDDEN_PATTERNS) {
+    for (const m of text.matchAll(new RegExp(re.source, `${re.flags}g`))) {
+      const before = text.slice(Math.max(0, m.index - 60), m.index);
+      const negated =
+        NEGATABLE.test(m[0]) &&
+        NEGATION_BEFORE.test(before) &&
+        !NOT_ONLY.test(before);
+      if (negated) continue;
+      add("FORBIDDEN_LANGUAGE", `Linguagem determinista: "${m[0]}".`, {
+        fix: `Reescreva sem "${m[0]}", com linguagem de possibilidade ("pode", "tende", "costuma").`,
+      });
+      break;
+    }
+  }
+  for (const re of SENSITIVE_PATTERNS) {
+    const m = text.match(re);
+    if (m)
+      add(
+        "HEALTH_FINANCE_RELATIONSHIP",
+        `Tema de saúde, finanças ou decisão de relacionamento: "${m[0]}".`,
+        {
+          fix: `Remova "${m[0]}": o texto não trata de saúde, finanças nem decisões de relacionamento.`,
+        },
+      );
+  }
+  return out;
+}
+
 /** Verificações de conteúdo de um trecho de texto contra o que o sustenta. */
 function checkText(text: string, s: Support, options: CheckOptions): Issue[] {
   const out: Issue[] = [];
@@ -480,31 +526,7 @@ function checkText(text: string, s: Support, options: CheckOptions): Issue[] {
       });
   }
 
-  for (const re of FORBIDDEN_PATTERNS) {
-    for (const m of text.matchAll(new RegExp(re.source, `${re.flags}g`))) {
-      const before = text.slice(Math.max(0, m.index - 60), m.index);
-      const negated =
-        NEGATABLE.test(m[0]) &&
-        NEGATION_BEFORE.test(before) &&
-        !NOT_ONLY.test(before);
-      if (negated) continue;
-      add("FORBIDDEN_LANGUAGE", `Linguagem determinista: "${m[0]}".`, {
-        fix: `Reescreva sem "${m[0]}", com linguagem de possibilidade ("pode", "tende", "costuma").`,
-      });
-      break;
-    }
-  }
-  for (const re of SENSITIVE_PATTERNS) {
-    const m = text.match(re);
-    if (m)
-      add(
-        "HEALTH_FINANCE_RELATIONSHIP",
-        `Tema de saúde, finanças ou decisão de relacionamento: "${m[0]}".`,
-        {
-          fix: `Remova "${m[0]}": o texto não trata de saúde, finanças nem decisões de relacionamento.`,
-        },
-      );
-  }
+  out.push(...languageIssues(text));
   if (options.precisionClaims) {
     // Um problema por trecho, com todos os fragmentos encontrados.
     const found = PRECISION_PATTERNS.map((re) => text.match(re)?.[0]).filter(

@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createConsent } from "../consent";
 import type { LocalPhoto } from "../lib/load-image";
 import { PalmPhotoProvider } from "../palm-photo-context";
-import type { PalmAnalysisResult } from "../vision/analyze";
+import type { PalmAnalysisResult } from "../chapters/presentation";
 import { PhotoCapture } from "./photo-capture";
 
 const push = vi.hoisted(() => vi.fn());
@@ -52,8 +52,8 @@ const result = (
   status: "complete",
   retakeRecommended: false,
   simulated: true,
-  observations: [],
-  limitations: { maos: [], linhas: [] },
+  disclaimer: "Leitura simbólica.",
+  chapters: [],
   ...over,
 });
 

@@ -4,7 +4,7 @@
  * análise está habilitada E a pessoa toca em "Analisar".
  */
 import type { PalmHand, PalmConsent } from "../consent";
-import type { PalmAnalysisResult } from "../vision/analyze";
+import type { PalmAnalysisResult } from "../chapters/presentation";
 
 const BASE = "/api/leitura-das-maos";
 const ANALYSIS_TIMEOUT_MS = 70_000;

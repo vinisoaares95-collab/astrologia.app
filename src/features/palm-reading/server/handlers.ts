@@ -15,7 +15,12 @@ import "server-only";
  */
 import { createHash } from "node:crypto";
 
-import { createBudget } from "../../interpretation/ai/budget";
+import { createAnthropicProvider } from "../../interpretation/ai/anthropic-provider";
+import { createBudget, withBudget } from "../../interpretation/ai/budget";
+import type { AiProvider } from "../../interpretation/ai/contract";
+import { composePalmReading } from "../chapters/compose";
+import { createMockPalmTextProvider } from "../chapters/mock-text-provider";
+import type { PalmAnalysisResult } from "../chapters/presentation";
 import { CONSENT_VERSION } from "../consent";
 import { inspectJpeg } from "../lib/jpeg";
 import {
@@ -25,7 +30,7 @@ import {
   visualTokens,
 } from "../lib/prepare-image";
 import { MIN_SHORT_SIDE_PX } from "../lib/image-validation";
-import { analyzePalmImage, type PalmAnalysisResult } from "../vision/analyze";
+import { analyzePalmImage } from "../vision/analyze";
 import { createAnthropicVisionProvider } from "../vision/anthropic-provider";
 import { withVisionBudget } from "../vision/budget";
 import type { VisionProvider } from "../vision/contract";
@@ -62,6 +67,8 @@ export type PalmApiDeps = {
   secret: Buffer | null;
   now: () => number;
   provider: () => VisionProvider;
+  /** Redação dos capítulos 6 e 7 (Fase 03E). */
+  textProvider: () => AiProvider;
   limits: {
     consentPerClient: Limiter;
     analysisGlobal: Limiter;
@@ -99,11 +106,26 @@ export function getProcessDeps(): PalmApiDeps {
           budget,
         )
       : null;
+  // Texto real só quando a visão real está autorizada; mesmo modelo e o
+  // MESMO teto do processo (visão + texto somados). Sem isso: simulado.
+  const mockText = createMockPalmTextProvider(["valid"]);
+  const realText =
+    config.mode === "anthropic"
+      ? withBudget(
+          createAnthropicProvider({
+            model: config.model,
+            effort: config.effort,
+            apiKey: anthropicApiKey(),
+          }),
+          budget,
+        )
+      : null;
   processDeps = {
     config,
     secret: receiptSecret(),
     now: () => Date.now(),
     provider: () => real ?? mock,
+    textProvider: () => realText ?? mockText,
     limits: defaultLimits(),
     cache: new Map(),
   };
@@ -298,19 +320,23 @@ export async function handleAnalysis(
       bytes,
       hand: receipt.hand,
       provider: deps.provider(),
-      simulated: deps.config.mode === "mock",
     });
     bytes = null;
 
     switch (outcome.kind) {
-      case "ok":
-        deps.cache.set(cacheKey, {
-          expires: now + CACHE_TTL_MS,
-          result: outcome.result,
+      case "ok": {
+        // A trilha de auditoria (origem, motivo da reserva, tentativas)
+        // fica no servidor; o cliente recebe só os capítulos.
+        const { result } = await composePalmReading({
+          observation: outcome.observation,
+          textProvider: deps.textProvider(),
+          simulated: deps.config.mode === "mock",
         });
+        deps.cache.set(cacheKey, { expires: now + CACHE_TTL_MS, result });
         if (deps.cache.size > CACHE_MAX)
           deps.cache.delete(deps.cache.keys().next().value!);
-        return json(200, { result: outcome.result });
+        return json(200, { result });
+      }
       case "refused":
         return fail(422, "retake_required");
       case "invalid_output":

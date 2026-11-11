@@ -20,20 +20,29 @@ import {
   type PalmApiDeps,
 } from "./handlers";
 import { syntheticJpeg } from "./test-jpeg";
+import {
+  createMockPalmTextProvider,
+  type MockPalmTextScenario,
+} from "../chapters/mock-text-provider";
 
 const ORIGIN = "http://localhost:3000";
 const SECRET = Buffer.alloc(32, 7);
 let clock = 1_800_000_000_000;
 
 function deps(
-  over: Partial<PalmApiDeps> & { scenarios?: MockVisionScenario[] } = {},
+  over: Partial<PalmApiDeps> & {
+    scenarios?: MockVisionScenario[];
+    textScenarios?: MockPalmTextScenario[];
+  } = {},
 ) {
   const provider = createMockVisionProvider(over.scenarios ?? ["clear"]);
+  const text = createMockPalmTextProvider(over.textScenarios ?? ["valid"]);
   const d: PalmApiDeps = {
     config: readPalmAnalysisConfig({ SIDERA_PALM_ANALYSIS_ENABLED: "1" }),
     secret: SECRET,
     now: () => clock,
     provider: () => provider,
+    textProvider: () => text,
     limits: defaultLimits(),
     cache: new Map(),
     ...over,
@@ -204,7 +213,7 @@ describe("consentimento", () => {
 });
 
 describe("análise: requisição válida", () => {
-  it("devolve só observações do sistema e limitações; usa a mão do recibo", async () => {
+  it("devolve os capítulos 6 e 7 sem dados internos; usa a mão do recibo", async () => {
     const { d, provider } = deps();
     const r = await read(await handleAnalysis(analysisRequest(goodJpeg()), d));
     expect(r.status).toBe(200);
@@ -216,8 +225,8 @@ describe("análise: requisição válida", () => {
     });
     expect(Object.keys(result).sort()).toEqual(
       [
-        "limitations",
-        "observations",
+        "chapters",
+        "disclaimer",
         "retakeRecommended",
         "simulated",
         "status",
@@ -407,16 +416,32 @@ describe("análise: resultados e falhas do provedor", () => {
       expect(r.body.result).toMatchObject({
         status: "insufficient",
         retakeRecommended: true,
-        observations: [],
       });
+      const chapters = (r.body.result as { chapters: { status: string }[] })
+        .chapters;
+      expect(chapters.map((c) => c.status)).toEqual([
+        "unavailable",
+        "unavailable",
+      ]);
     }
   });
 
-  it("linhas não identificáveis: só o formato da mão é observado", async () => {
+  it("linhas não identificáveis: capítulo 6 com conteúdo, 7 indisponível", async () => {
     const r = await status(["lines-missing"]);
-    const obs = (r.body.result as { observations: { chapter: number }[] })
-      .observations;
-    expect(obs.every((o) => o.chapter === 6)).toBe(true);
+    const chapters = (
+      r.body.result as {
+        chapters: {
+          number: number;
+          status: string;
+          unavailableMessage: string | null;
+        }[];
+      }
+    ).chapters;
+    expect(chapters.map((c) => [c.number, c.status])).toEqual([
+      [6, "content"],
+      [7, "unavailable"],
+    ]);
+    expect(chapters[1].unavailableMessage).toMatch(/nova foto/u);
   });
 
   it("conteúdo sensível ou JSON inválido nas duas tentativas → 502", async () => {
@@ -473,5 +498,42 @@ describe("análise: resultados e falhas do provedor", () => {
     });
     const r = await handleAnalysis(analysisRequest(goodJpeg()), d);
     expect(await read(r)).toEqual({ status: 500, body: { error: "internal" } });
+  });
+});
+
+describe("análise: capítulos 6 e 7 (Fase 03E)", () => {
+  it("falha na geração de texto não derruba a leitura: biblioteca, sem aviso técnico", async () => {
+    for (const textScenarios of [
+      ["error:timeout"],
+      ["invalid-json"],
+      ["longevity"],
+    ] as MockPalmTextScenario[][]) {
+      const { d } = deps({ textScenarios });
+      const response = await handleAnalysis(analysisRequest(goodJpeg()), d);
+      expect(response.status).toBe(200);
+      const text = await response.text();
+      const body = JSON.parse(text) as {
+        result: { chapters: { status: string }[] };
+      };
+      expect(body.result.chapters.map((c) => c.status)).toEqual([
+        "content",
+        "content",
+      ]);
+      expect(text).not.toMatch(
+        /fallback|biblioteca|library|source|timeout|erro|falha|itemIds|vida longa/iu,
+      );
+    }
+  });
+
+  it("a mesma foto no mesmo recibo reaproveita o resultado (sem nova redação)", async () => {
+    const text = createMockPalmTextProvider();
+    const { d } = deps({ textProvider: () => text });
+    const t = token();
+    const send = () =>
+      handleAnalysis(analysisRequest(goodJpeg(), { [CONSENT_HEADER]: t }), d);
+    await send();
+    expect(text.calls).toHaveLength(2); // um por capítulo
+    await send();
+    expect(text.calls).toHaveLength(2);
   });
 });

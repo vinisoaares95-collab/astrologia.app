@@ -15,10 +15,11 @@ import { Mandala } from "@/components/visuals/mandala";
 import { palmLines } from "@/components/visuals/palm-illustration";
 import { routes } from "@/config/routes";
 import { reportParts } from "@/content/report-chapters";
+import { ChapterArticle } from "@/features/report/chapter-article";
 
 import { HAND_LABELS } from "../consent";
 import { usePalmPhoto } from "../palm-photo-context";
-import type { PalmAnalysisResult } from "../vision/analyze";
+import type { PalmAnalysisResult } from "../chapters/presentation";
 
 /**
  * Descrições gerais da tradição — iguais para todas as pessoas.
@@ -61,10 +62,12 @@ export function DemoPreview() {
 
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <Callout tone="demo" title="Demonstração — sua foto não foi analisada">
-        Nenhuma inteligência artificial processou sua imagem. O conteúdo abaixo
-        é um texto fixo, igual para todas as pessoas.
-      </Callout>
+      {!analysis && (
+        <Callout tone="demo" title="Demonstração — sua foto não foi analisada">
+          Nenhuma inteligência artificial processou sua imagem. O conteúdo
+          abaixo é um texto fixo, igual para todas as pessoas.
+        </Callout>
+      )}
 
       {/* Destaque: foto dentro da mandala */}
       <Card
@@ -123,7 +126,7 @@ export function DemoPreview() {
         ))}
       </ul>
 
-      {analysis && <ObservedFeatures analysis={analysis} />}
+      {analysis && <PalmChapters analysis={analysis} />}
 
       {/* O que o relatório completo adiciona */}
       <section className="space-y-3" aria-labelledby="no-relatorio">
@@ -137,24 +140,26 @@ export function DemoPreview() {
           </Badge>
         </div>
         <ul className="space-y-2">
-          {lockedChapters.map((chapter) => (
-            <li
-              key={chapter.number}
-              className="flex items-center gap-3.5 rounded-2xl bg-surface/60 px-4 py-3 edge-light"
-            >
-              <span className="font-mono text-sm text-accent">
-                {String(chapter.number).padStart(2, "0")}
-              </span>
-              <div className="flex-1 space-y-2">
-                <p className="text-sm font-medium text-fg">{chapter.title}</p>
-                <div aria-hidden className="space-y-1.5 blur-[1.5px]">
-                  <span className="block h-1.5 w-11/12 rounded-full bg-surface-bright" />
-                  <span className="block h-1.5 w-2/3 rounded-full bg-surface-bright" />
+          {lockedChapters
+            .filter((chapter) => !analysis || chapter.number > 7)
+            .map((chapter) => (
+              <li
+                key={chapter.number}
+                className="flex items-center gap-3.5 rounded-2xl bg-surface/60 px-4 py-3 edge-light"
+              >
+                <span className="font-mono text-sm text-accent">
+                  {String(chapter.number).padStart(2, "0")}
+                </span>
+                <div className="flex-1 space-y-2">
+                  <p className="text-sm font-medium text-fg">{chapter.title}</p>
+                  <div aria-hidden className="space-y-1.5 blur-[1.5px]">
+                    <span className="block h-1.5 w-11/12 rounded-full bg-surface-bright" />
+                    <span className="block h-1.5 w-2/3 rounded-full bg-surface-bright" />
+                  </div>
                 </div>
-              </div>
-              <Lock aria-hidden className="size-4 text-fg-subtle" />
-            </li>
-          ))}
+                <Lock aria-hidden className="size-4 text-fg-subtle" />
+              </li>
+            ))}
         </ul>
         <p className="text-xs leading-relaxed text-fg-subtle">
           Na versão final, a prévia descreverá características observadas na sua
@@ -182,19 +187,18 @@ export function DemoPreview() {
 }
 
 /**
- * O que a análise observou (Fase 03D): só as frases do sistema e as
- * limitações. A interpretação simbólica e a redação dos capítulos 6 e 7
- * chegam na Fase 03E.
+ * Capítulos 6 e 7 (Fase 03E): observação da foto separada da leitura
+ * simbólica, mesmo formato para texto redigido e biblioteca.
  */
-function ObservedFeatures({ analysis }: { analysis: PalmAnalysisResult }) {
-  const limitations = [
-    ...new Set([...analysis.limitations.maos, ...analysis.limitations.linhas]),
-  ];
+function PalmChapters({ analysis }: { analysis: PalmAnalysisResult }) {
   return (
-    <section className="space-y-3" aria-labelledby="observado">
-      <h2 id="observado" className="text-lg font-semibold text-fg">
-        O que foi observado na foto
-      </h2>
+    <section className="space-y-4" aria-labelledby="sua-leitura">
+      <div className="space-y-1">
+        <h2 id="sua-leitura" className="text-lg font-semibold text-fg">
+          A leitura das suas mãos
+        </h2>
+        <p className="text-sm text-fg-muted">{analysis.disclaimer}</p>
+      </div>
       {analysis.simulated && (
         <Callout tone="demo" title="Resultado simulado">
           Estas observações são fictícias, geradas por um simulador para testar
@@ -203,30 +207,13 @@ function ObservedFeatures({ analysis }: { analysis: PalmAnalysisResult }) {
       )}
       {analysis.status === "partial" && (
         <Callout tone="info" title="Leitura parcial">
-          Algumas características não ficaram visíveis na foto e não serão
+          Algumas características não ficaram visíveis na foto e não foram
           interpretadas. Uma nova foto pode completar a leitura.
         </Callout>
       )}
-      {analysis.observations.length > 0 && (
-        <ul className="divide-y divide-line-soft rounded-2xl bg-surface/80 edge-light">
-          {analysis.observations.map((o) => (
-            <li
-              key={o.feature}
-              className="flex items-start justify-between gap-3 px-4 py-3 text-sm text-fg-muted"
-            >
-              <span>{o.text}</span>
-              {o.partial && <Badge>Parcial</Badge>}
-            </li>
-          ))}
-        </ul>
-      )}
-      {limitations.length > 0 && (
-        <ul className="space-y-1.5 text-xs leading-relaxed text-fg-subtle">
-          {limitations.map((l) => (
-            <li key={l}>{l}</li>
-          ))}
-        </ul>
-      )}
+      {analysis.chapters.map((chapter) => (
+        <ChapterArticle key={chapter.number} chapter={chapter} />
+      ))}
     </section>
   );
 }

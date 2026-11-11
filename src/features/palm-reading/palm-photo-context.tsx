@@ -14,7 +14,7 @@ import {
 import type { PalmConsent, PalmHand } from "./consent";
 import type { ConsentReceiptToken } from "./lib/analysis-client";
 import type { LocalPhoto } from "./lib/load-image";
-import type { PalmAnalysisResult } from "./vision/analyze";
+import type { PalmAnalysisResult } from "./chapters/presentation";
 
 type PalmPhotoContextValue = {
   photo: LocalPhoto | null;

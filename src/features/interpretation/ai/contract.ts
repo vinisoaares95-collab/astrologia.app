@@ -128,8 +128,9 @@ export interface AiProvider {
 
 // ── Instrumentação ───────────────────────────────────────────────────────
 
-export type AttemptMetrics = {
-  chapter: ChapterId;
+/** Métricas de uma tentativa; `C` = ids de capítulo do domínio (astrologia por padrão). */
+export type AttemptMetrics<C extends string = ChapterId> = {
+  chapter: C;
   attempt: number;
   /** Modelo pedido na requisição. */
   requestedModel: string;

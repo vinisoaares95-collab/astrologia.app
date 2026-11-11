@@ -93,8 +93,8 @@ const groupOf = (id: FeatureId) => FEATURE_GROUP[id];
 
 /** Títulos fixos (iguais ao sumário em content/report-chapters.ts). */
 export const PALM_CHAPTER_TITLES: Record<PalmChapterId, string> = {
-  maos: "Características das suas mãos",
-  linhas: "As linhas principais e seus significados",
+  maos: "As características das suas mãos",
+  linhas: "As linhas da sua palma",
 };
 
 const ISSUE_TEXT: Partial<Record<ImageIssue, string>> = {
@@ -110,7 +110,9 @@ const ISSUE_TEXT: Partial<Record<ImageIssue, string>> = {
 function limitationFor(id: FeatureId): string {
   if (id === "fate.presence")
     return "A linha do destino não foi identificada com clareza na foto e não foi interpretada; isso não quer dizer que ela não exista.";
-  return `${FEATURE_LABELS[id]} não pôde ser observado na foto e não foi interpretado.`;
+  const label = FEATURE_LABELS[id];
+  const o = label.startsWith("A ") ? "a" : "o";
+  return `${label} não pôde ser observad${o} na foto e não foi interpretad${o}.`;
 }
 
 export function buildPalmInterpretation(o: ValidatedObservation): PalmReport {

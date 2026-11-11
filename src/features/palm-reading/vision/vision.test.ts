@@ -7,6 +7,8 @@ import { MODEL_PRICES } from "../../interpretation/ai/pricing";
 import { FEATURE_IDS } from "../analysis/contract";
 import { inspectJpeg, jpegMetadataSegments } from "../lib/jpeg";
 import { syntheticJpeg } from "../server/test-jpeg";
+import { composePalmReading } from "../chapters/compose";
+import { createMockPalmTextProvider } from "../chapters/mock-text-provider";
 import { analyzePalmImage } from "./analyze";
 import { createAnthropicVisionProvider } from "./anthropic-provider";
 import { visionWorstCaseUsd, withVisionBudget } from "./budget";
@@ -170,31 +172,40 @@ describe("teto de gasto da visão", () => {
 describe("orquestração", () => {
   const image = () => syntheticJpeg(1200, 1600);
 
-  it("resultado seguro: sem evidência; parcial e insuficiente sinalizados", async () => {
+  it("devolve a observação validada; o resultado do cliente não leva evidência", async () => {
     const ok = await analyzePalmImage({
       bytes: image(),
       hand: "right",
       provider: createMockVisionProvider(["clear"]),
-      simulated: true,
     });
     expect(ok.kind).toBe("ok");
-    expect(JSON.stringify(ok)).not.toMatch(/evidence|Largura na base/u);
+    if (ok.kind !== "ok") return;
+    const { result } = await composePalmReading({
+      observation: ok.observation,
+      textProvider: createMockPalmTextProvider(),
+      simulated: true,
+    });
+    expect(JSON.stringify(result)).not.toMatch(/evidence|Largura na base/u);
 
     const partial = await analyzePalmImage({
       bytes: image(),
       hand: "left",
       provider: createMockVisionProvider(["partial"]),
-      simulated: true,
     });
-    expect(partial.kind === "ok" && partial.result.status).toBe("partial");
+    expect(partial.kind === "ok" && partial.observation.status).toBe("partial");
 
     const none = await analyzePalmImage({
       bytes: image(),
       hand: "right",
       provider: createMockVisionProvider(["insufficient"]),
+    });
+    if (none.kind !== "ok") throw new Error("esperado ok");
+    const r = await composePalmReading({
+      observation: none.observation,
+      textProvider: createMockPalmTextProvider(),
       simulated: true,
     });
-    expect(none.kind === "ok" && none.result).toMatchObject({
+    expect(r.result).toMatchObject({
       status: "insufficient",
       retakeRecommended: true,
     });
@@ -207,7 +218,6 @@ describe("orquestração", () => {
         bytes,
         hand: "right",
         provider: createMockVisionProvider([scenario]),
-        simulated: true,
       });
       expect(
         bytes.every((b) => b === 0),
@@ -224,7 +234,6 @@ describe("orquestração", () => {
           bytes: image(),
           hand: "right",
           provider: t,
-          simulated: true,
         })
       ).kind,
     ).toBe("ok");
@@ -235,7 +244,6 @@ describe("orquestração", () => {
       bytes: image(),
       hand: "right",
       provider: timeouts,
-      simulated: true,
     });
     expect(r).toMatchObject({ kind: "provider_error", error: "timeout" });
     expect(timeouts.calls).toHaveLength(2);
@@ -245,7 +253,6 @@ describe("orquestração", () => {
       bytes: image(),
       hand: "right",
       provider: auth,
-      simulated: true,
     });
     expect(auth.calls).toHaveLength(1);
   });
@@ -256,7 +263,6 @@ describe("orquestração", () => {
       bytes: image(),
       hand: "right",
       provider: refusal,
-      simulated: true,
     });
     expect(r.kind).toBe("refused");
     expect(refusal.calls).toHaveLength(1);
@@ -268,7 +274,6 @@ describe("orquestração", () => {
           bytes: image(),
           hand: "right",
           provider: trunc,
-          simulated: true,
         })
       ).kind,
     ).toBe("ok");
@@ -279,7 +284,6 @@ describe("orquestração", () => {
       bytes: image(),
       hand: "right",
       provider: createMockVisionProvider(["sensitive"]),
-      simulated: true,
     });
     expect(r.kind).toBe("invalid_output");
     expect(r.audit.map((a) => a.outcome)).toEqual(["rejected", "rejected"]);

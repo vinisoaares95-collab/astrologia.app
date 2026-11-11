@@ -49,12 +49,12 @@ export const reportParts: readonly ReportPart[] = [
     chapters: [
       {
         number: 6,
-        title: "Características das suas mãos",
+        title: "As características das suas mãos",
         summary: "Formato, proporções e traços visíveis na fotografia.",
       },
       {
         number: 7,
-        title: "As linhas principais e seus significados",
+        title: "As linhas da sua palma",
         summary: "Coração, cabeça e vida segundo a tradição da quiromancia.",
       },
     ],

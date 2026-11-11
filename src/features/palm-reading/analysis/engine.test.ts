@@ -22,8 +22,8 @@ describe("mão nítida", () => {
 
   it("capítulos 6 e 7 com títulos fixos", () => {
     expect(r.chapters.map((c) => [c.number, c.id, c.title])).toEqual([
-      [6, "maos", "Características das suas mãos"],
-      [7, "linhas", "As linhas principais e seus significados"],
+      [6, "maos", "As características das suas mãos"],
+      [7, "linhas", "As linhas da sua palma"],
     ]);
     expect(r.status).toBe("complete");
     expect(r.hand).toBe("right");

@@ -8,7 +8,6 @@
  */
 import type { ChapterId, InterpretationReport } from "../contract";
 import {
-  AiProviderError,
   type AiProvider,
   type AttemptMetrics,
   type GeneratedChapter,
@@ -16,41 +15,17 @@ import {
   type GenerationMetrics,
 } from "./contract";
 import { libraryDraft, toGeneratedChapter } from "./library-chapter";
-import { estimateCostUsd } from "./pricing";
+import { generateValidatedDraft } from "./generate-core";
 import { buildChapterRequest, PROMPT_VERSION } from "./prompt";
 import {
-  describePart,
   repairCrossReferences,
   repetitionIssues,
   validateChapterDraft,
-  type AiValidationError,
 } from "./validate";
 
 export const MAX_ATTEMPTS = 2;
 
-/**
- * Instruções da nova tentativa: local legível + correção objetiva
- * (ex.: "Na seção 4, inclua o item referente à Lua (…) nos itemIds
- * utilizados ou remova essa referência.").
- */
-export function correctionFeedback(errors: AiValidationError[]): string {
-  const lines = [
-    ...new Set(
-      errors.map((e) => {
-        const where = describePart(e.part);
-        if (e.fix)
-          return e.fix.startsWith(where) ? e.fix : `${where}: ${e.fix}`;
-        if (e.code === "REPETITION")
-          return `${where}: reescreva para não repetir (${e.message})`;
-        return `${where}: ${e.message}`;
-      }),
-    ),
-  ];
-  return `A versão anterior foi reprovada pela revisão automática. Corrija estes pontos e mantenha o restante:\n${lines
-    .slice(0, 8)
-    .map((l) => `- ${l}`)
-    .join("\n")}`;
-}
+export { correctionFeedback } from "./generate-core";
 
 export type GenerateOptions = {
   maxAttempts?: number;
@@ -82,117 +57,28 @@ async function generateChapter(
     maxOutputTokens: opts.maxOutputTokens,
     timeoutMs: opts.timeoutMs,
   });
-  let lastReason = "";
-  // Após uma reprovação, a nova tentativa recebe os problemas encontrados.
-  let feedback = "";
-
-  for (let attempt = 1; attempt <= opts.maxAttempts; attempt++) {
-    const started = opts.now();
-    const record = (
-      m: Omit<AttemptMetrics, "chapter" | "attempt" | "latencyMs">,
-    ) =>
-      metrics.push({
-        chapter: id,
-        attempt,
-        latencyMs: Math.round(opts.now() - started),
-        ...m,
-      });
-
-    let response;
-    try {
-      response = await provider.generate(
-        feedback
-          ? { ...request, user: `${request.user}\n\n${feedback}` }
-          : request,
+  const outcome = await generateValidatedDraft<
+    Parameters<typeof toGeneratedChapter>[2],
+    ChapterId
+  >({
+    chapter: id,
+    request,
+    provider,
+    validate: (draft) => validateChapterDraft(draft, chapter, report),
+    repair: repairCrossReferences,
+    maxAttempts: opts.maxAttempts,
+    now: opts.now,
+    metrics,
+  });
+  return outcome.ok
+    ? toGeneratedChapter(report, id, outcome.draft, "ai", null)
+    : toGeneratedChapter(
+        report,
+        id,
+        libraryDraft(report, id),
+        "library",
+        outcome.reason,
       );
-    } catch (error) {
-      const err =
-        error instanceof AiProviderError
-          ? error
-          : new AiProviderError("unknown", String(error));
-      record({
-        requestedModel: provider.model,
-        model: provider.model,
-        usage: null,
-        costUsd: err.chargedUsd,
-        outcome: `error:${err.kind}`,
-        errors: [err.message],
-      });
-      lastReason = `Falha do provedor (${err.kind}).`;
-      if (!err.retryable) break;
-      continue;
-    }
-
-    const base = {
-      requestedModel: provider.model,
-      model: response.model,
-      usage: response.usage,
-      costUsd: estimateCostUsd(response.model, response.usage),
-    };
-    if (response.stopReason === "refusal") {
-      record({ ...base, outcome: "refusal", errors: [] });
-      lastReason = "O modelo recusou a solicitação.";
-      continue;
-    }
-    if (response.stopReason === "max_tokens") {
-      record({ ...base, outcome: "truncated", errors: [] });
-      lastReason = "Resposta incompleta (limite de tokens).";
-      continue;
-    }
-
-    let draft: unknown;
-    try {
-      draft = JSON.parse(response.text);
-    } catch {
-      record({ ...base, outcome: "invalid_json", errors: [] });
-      lastReason = "Resposta fora do formato JSON.";
-      continue;
-    }
-
-    let result = validateChapterDraft(draft, chapter, report);
-    let repairs: string[] | undefined;
-    // Última tentativa: referências cruzadas legítimas (e SÓ elas) são
-    // corrigidas acrescentando o itemId sugerido; o rascunho corrigido passa
-    // de novo pela validação completa.
-    if (!result.ok && attempt === opts.maxAttempts) {
-      const repaired = repairCrossReferences(draft, result.errors);
-      if (repaired) {
-        const again = validateChapterDraft(repaired.draft, chapter, report);
-        if (again.ok) {
-          draft = repaired.draft;
-          result = again;
-          repairs = repaired.repairs;
-        }
-      }
-    }
-    if (!result.ok) {
-      record({
-        ...base,
-        outcome: "validation_failed",
-        errors: result.errors.map((e) => `${e.code}: ${e.message}`),
-      });
-      lastReason = `Reprovado na validação (${[...new Set(result.errors.map((e) => e.code))].join(", ")}).`;
-      feedback = correctionFeedback(result.errors);
-      continue;
-    }
-
-    record({ ...base, outcome: "ok", errors: [], ...(repairs && { repairs }) });
-    return toGeneratedChapter(
-      report,
-      id,
-      draft as Parameters<typeof toGeneratedChapter>[2],
-      "ai",
-      null,
-    );
-  }
-
-  return toGeneratedChapter(
-    report,
-    id,
-    libraryDraft(report, id),
-    "library",
-    lastReason || "Geração não concluída.",
-  );
 }
 
 export async function generateReport(

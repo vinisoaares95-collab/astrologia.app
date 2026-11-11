@@ -42,7 +42,7 @@ import {
   type AnalysisErrorCode,
 } from "../lib/analysis-client";
 import { useAnalysisAvailability } from "../lib/use-analysis-availability";
-import type { PalmAnalysisResult } from "../vision/analyze";
+import type { PalmAnalysisResult } from "../chapters/presentation";
 import { ACCEPT_ATTRIBUTE } from "../lib/image-validation";
 import { loadLocalPhoto } from "../lib/load-image";
 import { usePalmPhoto } from "../palm-photo-context";

@@ -22,9 +22,7 @@ describe("ReportExplorer", () => {
       "aria-selected",
       "true",
     );
-    expect(
-      screen.getByText("As linhas principais e seus significados"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("As linhas da sua palma")).toBeInTheDocument();
     expect(
       screen.queryByText("Sua identidade astrológica"),
     ).not.toBeInTheDocument();

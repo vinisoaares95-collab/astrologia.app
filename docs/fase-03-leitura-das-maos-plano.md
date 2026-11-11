@@ -8,7 +8,9 @@ Status:
   `docs/fase-03c-observacoes-e-biblioteca.md`.
 - **03D (integração com IA visual): concluída com provedor simulado**; ver
   seção 18 e `docs/fase-03d-integracao-visual.md`.
-- 03E em diante: aguardando aprovação.
+- **03E (capítulos 6 e 7): concluída com provedores simulados**; ver seção
+  19 e `docs/fase-03e-capitulos-das-maos.md`.
+- 03F: aguardando aprovação.
 
 Nenhuma chamada paga foi feita na Fase 03. A integração com o mapa astral
 (capítulos 8–9) fica para a Fase 04.
@@ -700,3 +702,25 @@ Funciona de ponta a ponta com o **provedor simulado**. Detalhes em
 - **Verificação:**
   - 852 testes, lint, tipos e build de produção passando;
   - jornada conferida no Chromium com o simulador.
+
+## 19. Conclusão da Fase 03E (11/11/2026)
+
+Capítulos 6 ("As características das suas mãos") e 7 ("As linhas da sua
+palma") gerados no **mesmo pipeline da astrologia** (núcleo
+`interpretation/ai/generate-core.ts`), com validador próprio da quiromancia,
+reserva na biblioteca 03C e capítulo "indisponível" com orientação quando
+nada foi observado. Detalhes em `docs/fase-03e-capitulos-das-maos.md`.
+
+- O modelo de texto recebe só frases do sistema e interpretações da
+  biblioteca; nunca a foto nem a evidência visual.
+- O cliente recebe os capítulos (observação separada da leitura simbólica);
+  origem, motivo de reserva, IDs, tentativas e custo ficam na auditoria.
+- Texto real só quando a visão real está autorizada, com o mesmo teto.
+- 903 testes, lint, tipos e build passando; jornada conferida no celular
+  (Chromium, simuladores). Nenhuma chamada paga.
+
+Pendência para a 03F (registrada a pedido, orçamentos não alterados):
+**revisar os limites de orçamento: o pior caso de duas chamadas Sonnet pode
+ultrapassar US$ 0,10, e o pior caso da rodada completa pode ultrapassar
+US$ 1.** Pior caso calculado: ≈ US$ 0,31 por foto no Sonnet (visão + 2
+capítulos, 2 tentativas) e ≈ US$ 2,6 na rodada de 8 fotos × 2 modelos.

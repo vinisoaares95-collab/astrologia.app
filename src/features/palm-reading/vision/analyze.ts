@@ -2,10 +2,11 @@
  * Orquestração da análise visual (Fase 03D).
  *
  * imagem conferida → provedor de visão → JSON → validador 03C → motor 03C
- * → resultado SEGURO para o cliente (observações do sistema e limitações).
+ * → observação VALIDADA (que segue para os capítulos 6 e 7, Fase 03E).
  *
- * O que nunca sai daqui para o cliente: evidências, notas do validador,
- * resposta bruta do modelo e a imagem. A imagem é zerada no fim, com ou sem
+ * O que nunca sai daqui: resposta bruta do modelo e a imagem. A evidência
+ * visual fica na observação validada, mas não chega ao modelo de texto nem
+ * ao cliente (ver chapters/prompt.ts e chapters/presentation.ts). A imagem é zerada no fim, com ou sem
  * sucesso. Nada é gravado.
  */
 import {
@@ -14,15 +15,10 @@ import {
   type AiUsage,
 } from "../../interpretation/ai/contract";
 import type { PalmHand } from "../consent";
-import type { FeatureId } from "../analysis/contract";
-import {
-  buildPalmInterpretation,
-  type PalmChapterId,
-} from "../analysis/engine";
+import type { ValidatedObservation } from "../analysis/validate-observation";
 import {
   validatePalmObservation,
   type ObservationNote,
-  type ReadingStatus,
 } from "../analysis/validate-observation";
 import type { VisionProvider } from "./contract";
 import { buildVisionRequest } from "./prompt";
@@ -30,22 +26,6 @@ import { buildVisionRequest } from "./prompt";
 export const VISION_MAX_ATTEMPTS = 2;
 export const VISION_MAX_OUTPUT_TOKENS = 4000;
 export const VISION_TIMEOUT_MS = 45_000;
-
-/** O que o cliente recebe (sem evidência, sem modelo, sem imagem). */
-export type PalmAnalysisResult = {
-  status: ReadingStatus;
-  /** Sugerir nova foto: insuficiente, ou parcial com pouco observado. */
-  retakeRecommended: boolean;
-  /** Provedor simulado: nada foi realmente observado na foto. */
-  simulated: boolean;
-  observations: {
-    chapter: 6 | 7;
-    feature: FeatureId | "hand.type";
-    text: string;
-    partial: boolean;
-  }[];
-  limitations: Record<PalmChapterId, string[]>;
-};
 
 export type AttemptAudit = {
   attempt: number;
@@ -62,19 +42,15 @@ export type AttemptAudit = {
 };
 
 export type AnalysisOutcome =
-  | { kind: "ok"; result: PalmAnalysisResult; audit: AttemptAudit[] }
+  | { kind: "ok"; observation: ValidatedObservation; audit: AttemptAudit[] }
   | { kind: "refused"; audit: AttemptAudit[] }
   | { kind: "invalid_output"; audit: AttemptAudit[] }
   | { kind: "provider_error"; error: AiErrorKind; audit: AttemptAudit[] };
-
-/** Menos que isto observado → sugerir nova foto mesmo com leitura parcial. */
-const MIN_OBSERVED_FOR_PARTIAL = 3;
 
 export async function analyzePalmImage(input: {
   bytes: Uint8Array;
   hand: PalmHand;
   provider: VisionProvider;
-  simulated: boolean;
   maxAttempts?: number;
 }): Promise<AnalysisOutcome> {
   const { bytes, hand, provider } = input;
@@ -142,11 +118,7 @@ export async function analyzePalmImage(input: {
         "ok",
         validation.notes.map((n) => n.code),
       );
-      return {
-        kind: "ok",
-        result: toClientResult(validation.observation, input.simulated),
-        audit,
-      };
+      return { kind: "ok", observation: validation.observation, audit };
     }
     if (lastError && audit.every((a) => a.outcome.startsWith("error:")))
       return { kind: "provider_error", error: lastError, audit };
@@ -155,32 +127,4 @@ export async function analyzePalmImage(input: {
     // A imagem não deve sobreviver ao processamento.
     bytes.fill(0);
   }
-}
-
-function toClientResult(
-  observation: Parameters<typeof buildPalmInterpretation>[0],
-  simulated: boolean,
-): PalmAnalysisResult {
-  const report = buildPalmInterpretation(observation);
-  const observations = report.chapters.flatMap((c) =>
-    c.items.map((item) => ({
-      chapter: c.number,
-      feature: item.factIds[0],
-      text: item.observation,
-      partial: item.certainty === "uncertain",
-    })),
-  );
-  const direct = observations.filter((o) => o.feature !== "hand.type");
-  return {
-    status: report.status,
-    retakeRecommended:
-      report.status === "insufficient" ||
-      (report.status === "partial" && direct.length < MIN_OBSERVED_FOR_PARTIAL),
-    simulated,
-    observations,
-    limitations: {
-      maos: report.chapters[0].limitations,
-      linhas: report.chapters[1].limitations,
-    },
-  };
 }
