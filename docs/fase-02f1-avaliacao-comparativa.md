@@ -85,14 +85,16 @@ nesta sessão.
 ## 5. Como autorizar e executar
 
 1. Criar a chave num workspace com limite de gasto (recomendado).
-2. Configurar a chave **fora do repositório**: como segredo de rede da
-   sessão para `api.anthropic.com` no cabeçalho `x-api-key` (então usar
-   `SIDERA_AI_KEY_VIA_PROXY=1`), ou como `ANTHROPIC_API_KEY` no ambiente
-   do servidor. Nunca em `.env` versionado, documento ou chat.
-3. Autorizar explicitamente e rodar:
+2. Configurar a chave **fora do repositório e do chat**, como variável de
+   ambiente `ANTHROPIC_API_KEY` do ambiente de nuvem `astrologia.app`
+   (menu do ambiente na barra de título da sessão → Editar → variáveis de
+   ambiente). Nesta plataforma, a API da Anthropic **não aceita** segredo de
+   rede da sessão (verificado em 11/11/2026), por isso a variável de
+   ambiente é o caminho. A variável vale a partir da próxima sessão.
+3. Autorizar explicitamente e rodar numa sessão nova desse ambiente:
 
 ```bash
-SIDERA_AI_PAID_TESTS=1 SIDERA_AI_KEY_VIA_PROXY=1 npm test -- paid-eval
+SIDERA_AI_PAID_TESTS=1 npm test -- paid-eval
 ```
 
 Os artefatos vão para `docs/avaliacao-ia/<data>/` (`cego/Relatório-A.md` …
