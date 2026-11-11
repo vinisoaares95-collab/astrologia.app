@@ -97,7 +97,7 @@ nesta sessão.
 SIDERA_AI_PAID_TESTS=1 npm test -- paid-eval
 ```
 
-Os artefatos vão para `docs/avaliacao-ia/<data>/` (`cego/Relatório-A.md` …
+Os artefatos vão para `avaliacao-ia/<data-hora>/` (pasta ignorada pelo Git; os relatórios não são versionados) ou para `SIDERA_AI_EVAL_OUT_DIR` (`cego/Relatório-A.md` …
 `cego/Relatório-F.md`, `cego/ficha.md`, `chave.json`).
 
 ## 6. Resultados comparativos

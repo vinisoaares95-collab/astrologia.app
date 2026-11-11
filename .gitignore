@@ -48,3 +48,7 @@ next-env.d.ts
 
 # efemérides do Swiss Ephemeris (AGPL) — baixadas por `npm run ephe:fetch`
 /ephe/
+
+# Relatórios da avaliação paga de IA (Fase 02F.1): nunca versionar
+/avaliacao-ia/
+/docs/avaliacao-ia/

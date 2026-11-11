@@ -11,7 +11,8 @@
  * Antes de qualquer chamada, calcula o pior custo de TODAS as chamadas
  * (incluindo novas tentativas) e aborta se passar do teto (R$ 15). Durante a
  * execução, cada chamada reserva seu pior custo no orçamento.
- * Grava em docs/avaliacao-ia/<data>/: relatórios cegos, ficha de avaliação e
+ * Grava em avaliacao-ia/<data-hora>/ (ignorada pelo Git) ou em
+ * SIDERA_AI_EVAL_OUT_DIR: relatórios cegos, ficha de avaliação e
  * a chave (modelo, custos, latência) separada. Nenhum prompt é gravado.
  */
 import { randomInt } from "node:crypto";
@@ -104,9 +105,11 @@ describe.runIf(gate.allowed)("avaliação comparativa paga", () => {
       () => randomInt(0, 2 ** 31) / 2 ** 31,
     );
 
+    // Os relatórios não vão para o repositório: por padrão, ficam numa
+    // pasta ignorada pelo Git; SIDERA_AI_EVAL_OUT_DIR escolhe outro destino.
     const dir = path.resolve(
-      "docs/avaliacao-ia",
-      new Date().toISOString().slice(0, 10),
+      process.env.SIDERA_AI_EVAL_OUT_DIR ?? "avaliacao-ia",
+      new Date().toISOString().replace(/[:.]/g, "-"),
     );
     mkdirSync(path.join(dir, "cego"), { recursive: true });
     for (const r of reports)
