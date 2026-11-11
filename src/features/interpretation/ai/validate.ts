@@ -268,6 +268,16 @@ type Support = {
 };
 
 /**
+ * Pontos de um fato, incluindo os ângulos nomeados pelas cúspides: a
+ * observação da casa 7 é a do Descendente; a da casa 4, a do Fundo do Céu.
+ */
+function pointsOfFact(f: Fact): Point[] {
+  if (f.kind === "cusp-sign" && f.house === 7) return [...f.bodies, "desc"];
+  if (f.kind === "cusp-sign" && f.house === 4) return [...f.bodies, "ic"];
+  return f.bodies;
+}
+
+/**
  * O que os itens citados sustentam (e nada além disso). Com
  * `systemPrecision`, a janela de incerteza sai das observações: seus graus
  * são texto do sistema, não do modelo.
@@ -285,7 +295,9 @@ function supportOf(
     aspects: new Set(),
     observations: items.map((i) => ({
       text: systemPrecision ? modelObservation(i.observation) : i.observation,
-      points: new Set(i.factIds.flatMap((id) => factById.get(id)!.bodies)),
+      points: new Set(
+        i.factIds.flatMap((id) => pointsOfFact(factById.get(id)!)),
+      ),
     })),
     uncertain: items.some((i) => i.certainty === "uncertain"),
   };

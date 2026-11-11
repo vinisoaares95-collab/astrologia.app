@@ -282,6 +282,36 @@ describe("graus", () => {
     expect(errors.map((e) => e.code)).toEqual(["UNSUPPORTED_DEGREE"]);
     expect(errors[0].message).toMatch(/não pertence a Mercúrio/);
   });
+
+  it("o grau da cúspide pertence ao Descendente / Fundo do Céu (validação Haiku)", () => {
+    // Falso positivo da validação real: "Descendente a 16°18′" (grau da
+    // cúspide da casa 7) era recusado como se o grau fosse de outro ponto.
+    const cusp7 = sectionOf(
+      r,
+      "relacionamentos",
+      "relacionamentos:cusp-sign:7",
+    );
+    expect(
+      codesFor(r, "relacionamentos", (d) => {
+        d.sections[cusp7].text =
+          "Com o Descendente a 24°45′ de Peixes, a tradição associa as parcerias à sensibilidade.";
+      }),
+    ).toEqual([]);
+    const cusp4 = sectionOf(r, "emocional", "emocional:cusp-sign:4");
+    expect(
+      codesFor(r, "emocional", (d) => {
+        d.sections[cusp4].text =
+          "O Fundo do Céu está a 26°24′ de Sagitário, ligado às raízes.";
+      }),
+    ).toEqual([]);
+    // O rigor continua: grau de Vênus atribuído ao Descendente é recusado.
+    expect(
+      codesFor(r, "relacionamentos", (d) => {
+        d.sections[cusp7].itemIds.push("relacionamentos:body-sign:venus");
+        d.sections[cusp7].text = "O Descendente está a 9°39′.";
+      }),
+    ).toEqual(["UNSUPPORTED_DEGREE"]);
+  });
 });
 
 // ── 2. Fallback invisível ao cliente ──────────────────────────────────────
