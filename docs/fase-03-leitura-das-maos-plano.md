@@ -4,7 +4,9 @@ Status:
 
 - **03A (planejamento): aprovada** em 11/11/2026, com as decisões da seção 0.
 - **03B (preparação da foto no navegador): concluída**; ver seção 16.
-- 03C em diante: aguardando aprovação.
+- **03C (observações, validação e biblioteca): concluída**; ver seção 17 e
+  `docs/fase-03c-observacoes-e-biblioteca.md`.
+- 03D em diante: aguardando aprovação.
 
 Nenhuma chamada paga foi feita na Fase 03. A integração com o mapa astral
 (capítulos 8–9) fica para a Fase 04.
@@ -58,9 +60,10 @@ Restrições técnicas relevantes:
     disso é truncado com aviso (`…/proxyClientMaxBodySize.md`).
   - Consequência (revisada na 03B): para preservar as linhas, a foto
     preparada é um JPEG de alta qualidade de ~1 600 × 2 200 px. Em fotos
-    reais isso pode passar de 1 MB. A 03D deve configurar
-    `bodySizeLimit: "3mb"` só para a ação de análise, ou usar um Route
-    Handler. O teto do arquivo preparado é 2,5 MB (`MAX_PREPARED_BYTES`).
+    reais isso pode passar de 1 MB. **Decidido na 03C:** a 03D usa um Route
+    Handler `POST` dedicado, com limite de corpo próprio verificado no
+    servidor, em vez de Server Action. O teto do arquivo preparado é 2,5 MB
+    (`MAX_PREPARED_BYTES`).
 - Visão no Claude: JPEG/PNG/WebP/GIF; custo de
   `⌈largura/28⌉ × ⌈altura/28⌉` tokens visuais; modelos 4.7 e posteriores
   (inclui Haiku 5.5) até 2 576 px e 4 784 tokens por imagem. A doc oficial
@@ -128,12 +131,12 @@ Por quê:
 ```
 Navegador                                   Servidor (Next.js, flag interna)
 ─────────                                   ──────────────────────────────
-captura → reprocessa (canvas):              ação analyzePalmAction(imagem, mão)
+captura → reprocessa (canvas):              POST /api/... (Route Handler dedicado)
   orientação, sem EXIF/GPS,                   ├─ checa flag, tamanho, assinatura
   ≤ 2 576 px / 4 784 tokens, JPEG 0,92        │  JPEG (bytes mágicos) e dimensões
 → checagens locais (luz, nitidez)             ├─ dedupe por SHA-256 (sessão)
 → consentimento registrado                    ├─ provedor de visão (AiProvider +
-→ envia (≤ 2,5 MB; bodySizeLimit 3 MB)        │  imagem) com withBudget
+→ envia (≤ 2,5 MB, limite no handler)         │  imagem) com withBudget
                                               ├─ validatePalmObservation → fatos
                                               ├─ palm engine (biblioteca) → itens
                                               ├─ generateReport (caps. 6–7, texto)
@@ -159,8 +162,9 @@ Novos módulos (nomes indicativos), no padrão atual:
   - `ChapterId` estendido com `maos` e `linhas`;
   - validador com vocabulário da quiromancia;
   - `anthropic-provider.ts` aceitando blocos de imagem (base64).
-- `features/palm-reading/actions.ts`: ação de servidor atrás de flag
-  (`isInternalEngineEnabled` ou flag própria), sem persistência.
+- Route Handler `POST` dedicado (decidido na 03C) atrás de flag interna,
+  com consentimento, maioridade, mão e arquivo conferidos no servidor; sem
+  persistência.
 
 ## 5. Análise e validação das fotografias
 
@@ -355,7 +359,8 @@ type PalmObservation = {
 - **Maioridade:** confirmação de 18 anos ou mais. Menores ficam fora do MVP,
   porque exigiriam consentimento dos responsáveis.
 - **Segurança:**
-  - ação de servidor atrás de flag interna até a aprovação;
+  - Route Handler atrás de flag interna até a aprovação, conferindo de novo
+    o consentimento no servidor;
   - limite de corpo (1 MB);
   - checagem de bytes mágicos JPEG e dimensões;
   - limite de envios por sessão, chave só no servidor;
@@ -439,16 +444,16 @@ Preços oficiais da Anthropic (USD por 1 M tokens, tabela da API consultada em
 
 ## 14. Etapas da Fase 03
 
-| Etapa   | Entrega                                                                                                                                        | Chamadas pagas              |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| **03A** | Este plano (aprovação)                                                                                                                         | Não                         |
-| **03B** | ✅ Concluída: consentimento específico, escolha da mão, reprocessamento sem EXIF, checagens de luz/nitidez, textos de nova foto (só navegador) | Não                         |
-| **03C** | Contrato `PalmObservation`, validador, biblioteca autoral da quiromancia, motor observações → itens, fixtures                                  | Não                         |
-| **03D** | Adaptador com imagem, provedor simulado de visão, ação de servidor atrás de flag, sem persistência, teto e dedupe                              | Não (só simulado)           |
-| **03E** | Capítulos 6 e 7 no pipeline da 02F: validador da quiromancia, biblioteca alternativa, apresentação                                             | Não                         |
-| **03F** | Conjunto de fotos de teste consentidas e avaliação cega Haiku × Sonnet (teto próprio, autorização separada)                                    | **Sim, autorizada à parte** |
-| **03G** | Revisão de privacidade: textos de consentimento, retenção, exclusão, documentação                                                              | Não                         |
-| (spike) | MediaPipe no navegador: **adiado** (decisão 2)                                                                                                 | Não                         |
+| Etapa   | Entrega                                                                                                                                                                | Chamadas pagas              |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| **03A** | Este plano (aprovação)                                                                                                                                                 | Não                         |
+| **03B** | ✅ Concluída: consentimento específico, escolha da mão, reprocessamento sem EXIF, checagens de luz/nitidez, textos de nova foto (só navegador)                         | Não                         |
+| **03C** | ✅ Concluída: contrato `PalmObservation`, validador, biblioteca autoral da quiromancia, motor observações → itens, fixtures                                            | Não                         |
+| **03D** | Adaptador com imagem, provedor simulado de visão, Route Handler `POST` atrás de flag (consentimento e arquivo conferidos no servidor), sem persistência, teto e dedupe | Não (só simulado)           |
+| **03E** | Capítulos 6 e 7 no pipeline da 02F: validador da quiromancia, biblioteca alternativa, apresentação                                                                     | Não                         |
+| **03F** | Conjunto de fotos de teste consentidas e avaliação cega Haiku × Sonnet (teto próprio, autorização separada)                                                            | **Sim, autorizada à parte** |
+| **03G** | Revisão de privacidade: textos de consentimento, retenção, exclusão, documentação                                                                                      | Não                         |
+| (spike) | MediaPipe no navegador: **adiado** (decisão 2)                                                                                                                         | Não                         |
 
 Cada etapa termina com testes, lint e tipos, como na Fase 02.
 
@@ -471,20 +476,40 @@ Riscos técnicos:
   leituras, ao custo de dobrar a visão.
 - **iOS/HEIC e câmeras:** o reprocessamento no canvas resolve na maioria dos
   casos; o HEIC fora do Safari continua com orientação para JPG.
-- **Limite de 1 MB** das Server Actions: o reprocessamento garante o
-  tamanho; senão, ajustar `bodySizeLimit`.
+- **Limite de corpo:** o Route Handler da 03D confere o tamanho (≤ 2,5 MB) e
+  recusa acima disso. O limite de 1 MB das Server Actions não se aplica.
 - **Expectativa do usuário:** a quiromancia apresentada como leitura
   simbólica, com aviso no início dos capítulos, como na astrologia.
 
-As decisões da 03A estão na seção 0. Continuam pendentes:
+As decisões da 03A estão na seção 0. Diretrizes registradas na aprovação da
+03C (11/11/2026):
 
-1. ZDR no provedor antes do lançamento, ou consentimento que declare a
-   retenção de até 30 dias (revisão jurídica).
-2. Configuração de envio da 03D: `bodySizeLimit` de 3 MB na ação de análise,
-   ou um Route Handler.
-3. Tamanho da amostra da 03F dentro de R$ 5 (proposta: 15 fotos × 2 modelos).
-4. Texto definitivo do consentimento, depois da revisão jurídica.
-5. Calibração dos limiares de luz e foco com as fotos dos voluntários.
+1. **ZDR não é pré-requisito do MVP.** O desenvolvimento segue sem retenção
+   zero, mas a **retenção real do provedor** (30 dias na API comercial, até
+   2 anos para conteúdo sinalizado, ou ZDR, se habilitada) **precisa ser
+   verificada na conta antes do lançamento**, e o consentimento deve refletir
+   o que for confirmado.
+2. **A 03D usará um Route Handler `POST` dedicado** em vez de Server Action,
+   com limites próprios de corpo. O servidor confere:
+   - o consentimento (versão do texto e aceite);
+   - maioridade declarada e mão;
+   - tipo e assinatura JPEG, dimensões e tamanho;
+   - limite de envios;
+   - flag interna.
+
+   Nada é persistido.
+
+3. **A 03F começa com uma amostra piloto** de fotos autorizadas de
+   voluntários. A ampliação depende da qualidade observada e do orçamento (teto
+   de R$ 5; nenhuma chamada paga sem autorização específica).
+4. **O texto definitivo do consentimento e a transferência internacional**
+   (provedor nos EUA) **exigem revisão jurídica** antes da operação pública.
+
+Continuam pendentes:
+
+1. Tamanho exato da amostra piloto da 03F.
+2. Calibração dos limiares de luz e foco com as fotos dos voluntários.
+3. Revisão das categorias visuais da 03C depois da 03F.
 
 ## 16. Conclusão da Fase 03B (11/11/2026)
 
@@ -584,5 +609,29 @@ ou analisado, e nenhuma chamada paga foi feita.
   (decisão 6). A retenção do provedor ainda precisa ser confirmada na conta
   (ZDR ou 30 dias).
 - O tamanho real dos arquivos preparados a partir de fotos de celular será
-  medido na 03F; o teto de 2,5 MB exige `bodySizeLimit` acima de 1 MB na
-  03D.
+  medido na 03F; o Route Handler da 03D deve aceitar até 2,5 MB.
+
+## 17. Conclusão da Fase 03C (11/11/2026)
+
+Motor estruturado de interpretação simbólica das mãos, **sem visão e sem
+chamadas pagas**. Detalhes em `docs/fase-03c-observacoes-e-biblioteca.md`.
+
+- Contrato `PalmObservation` (`analysis/contract.ts`): 9 características em
+  categorias fechadas, visibilidade categórica, evidência obrigatória e
+  "não visível" sem valor. Não há comprimento da linha da vida, e a linha do
+  destino entra só como "presente".
+- Validador (`analysis/validate-observation.ts`):
+  - recusa estrutura malformada, campos e valores fora do contrato, mão
+    divergente e conteúdo sensível;
+  - rebaixa evidência fraca, interpretativa ou repetida, destino não nítido e
+    inconsistências;
+  - status `complete`, `partial` ou `insufficient`.
+- Biblioteca (`analysis/library.ts`): definição visual, observação do sistema
+  e leitura simbólica por categoria, mais os quatro tipos elementares.
+  Regras editoriais conferidas em teste; referências da tradição
+  documentadas.
+- Motor (`analysis/engine.ts`): fatos rastreáveis → itens dos capítulos 6 e
+  7, ressalva para o parcial e limitações para o não visível. A evidência fica
+  só na auditoria.
+- 56 testes novos com cenários fictícios; suíte completa, lint, tipos e build
+  passando.
