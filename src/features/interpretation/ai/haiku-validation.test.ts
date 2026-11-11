@@ -25,7 +25,9 @@ import { createAnthropicProvider } from "./anthropic-provider";
 import { anthropicApiKey } from "./api-key";
 import { createBudget, withBudget } from "./budget";
 import { paidRunGate, usdBrlFrom } from "./eval-config";
+import { libraryDraft } from "./library-chapter";
 import { createMockProvider } from "./mock-provider";
+import { validateChapterDraft } from "./validate";
 import {
   buildValidationCases,
   runValidation,
@@ -105,19 +107,14 @@ describe("validação Haiku 5.5: preparação (sem custo)", () => {
       modelMismatches: 0,
       precisionOk: true,
     });
-    // Achado da preparação: no caso sem horário, o texto da BIBLIOTECA (02E)
-    // do capítulo de talentos repete "sugere que as emoções e a" em três
-    // aspectos da Lua. O simulado copia a biblioteca, é reprovado e cai na
-    // própria biblioteca; a auditoria registra o defeito em vez de escondê-lo.
-    expect(summary.revalidationFailures).toEqual([
-      {
-        caseId: "desconhecido",
-        chapter: "talentos",
-        source: "library",
-        errors: [expect.stringMatching(/^REPETITION/)],
-      },
-    ]);
-    expect(summary.chaptersFromAi + summary.chaptersFromLibrary).toBe(15);
+    // Com o texto da biblioteca corrigido (Manaus/talentos), o simulado, que
+    // copia a biblioteca, é aprovado em todos os capítulos.
+    expect(summary.revalidationFailures).toEqual([]);
+    expect(summary).toMatchObject({
+      calls: 15,
+      chaptersFromAi: 15,
+      chaptersFromLibrary: 0,
+    });
     // Notas de precisão: nenhuma no exato; intervalos no aproximado/desconhecido.
     const notes = runs.map((r) => r.audit.flatMap((a) => a.notes).length);
     expect(notes[0]).toBe(0);
@@ -165,6 +162,31 @@ describe("validação Haiku 5.5: preparação (sem custo)", () => {
     expect(s.errorCodes.UNSUPPORTED_POSITION).toBeGreaterThan(0);
     // Mesmo da biblioteca, nada incompatível com a precisão do horário.
     expect(s.precisionOk).toBe(true);
+  });
+
+  it("regressão: o fallback da biblioteca passa na validação nos três cenários", () => {
+    for (const c of cases)
+      for (const ch of c.report.chapters)
+        expect(
+          validateChapterDraft(libraryDraft(c.report, ch.id), ch, c.report)
+            .errors,
+          `${c.id}/${ch.id}`,
+        ).toEqual([]);
+    // Manaus (sem horário), talentos: os três aspectos da Lua têm texto
+    // autoral e a frase composta repetida não aparece mais.
+    const talentos = cases
+      .find((c) => c.id === "desconhecido")!
+      .report.chapters.find((ch) => ch.id === "talentos")!;
+    const moon = talentos.items.filter((i) =>
+      /aspect:moon-(?:saturn|neptune|uranus)/u.test(i.id),
+    );
+    expect(moon).toHaveLength(3);
+    expect(moon.every((i) => i.origin === "authored")).toBe(true);
+    const all = talentos.items.map((i) => i.symbolic).join(" ");
+    expect(all).not.toContain("sugere que as emoções e a");
+    // Rastreabilidade preservada: cada item segue ligado ao seu fato.
+    for (const i of moon)
+      expect(i.factIds).toEqual([i.id.split(":").slice(1).join(":")]);
   });
 
   it("a avaliação comparativa paga não roda quando esta suíte é escolhida", () => {

@@ -273,6 +273,19 @@ export const AUTHORED: Record<string, AuthoredEntry> = {
   "aspect:mars-venus:tense": {
     text: "Vênus em aspecto tenso com Marte é tradicionalmente ligada à tensão entre ternura e impulso: a atração pode vir acompanhada de fricção criativa.",
   },
+  // Lua com Saturno, Netuno e Urano (02F.2): sem texto autoral, os três
+  // eram compostos com a mesma frase ("sugere que as emoções e a…") e o
+  // capítulo de talentos de um mapa sem horário era reprovado por repetição.
+  // Mesmo significado do texto composto, com aberturas diferentes.
+  "aspect:moon-saturn:harmonious": {
+    text: "Na relação harmoniosa entre a Lua e Saturno, a tradição vê emoções que encontram estrutura: constância e maturidade afetiva podem se tornar recursos que você exerce com naturalidade.",
+  },
+  "aspect:moon-neptune:tense": {
+    text: "Lua em aspecto tenso com Netuno é tradicionalmente ligada à tensão entre sensibilidade e imaginação: distinguir o que você sente do que idealiza pode ajudar a integrar essas duas forças.",
+  },
+  "aspect:moon-uranus:tense": {
+    text: "A tradição associa a tensão entre a Lua e Urano ao choque entre a necessidade de segurança emocional e o desejo de liberdade: dar espaço às mudanças sem perder o próprio centro pode trazer equilíbrio.",
+  },
 
   // ── Retrogradação ─────────────────────────────────────────────────────
   "retro:mercury": {
