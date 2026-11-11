@@ -121,6 +121,15 @@ Versões verificadas no npm em 30/10/2026.
 | Limitações e títulos | Vêm do motor, não do modelo                                       | O modelo não pode apagar ou reescrever limitações             |
 | Credenciais          | Só variáveis de ambiente do servidor; `.env.example` sem valores  | Segurança                                                     |
 
+## Avaliação comparativa (Fase 02F.1)
+
+| Tema                   | Decisão                                                                   | Motivo                                                  |
+| ---------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Fallback entre modelos | Desligado na avaliação; nunca enviado a modelos sem suporte (Haiku 5.5)   | Cada resposta deve vir do modelo avaliado               |
+| Teto de gasto          | R$ 15 no total; pior caso conferido antes e reservado por chamada         | Gasto limitado mesmo com novas tentativas e paralelismo |
+| Avaliação              | Cega (rótulos sorteados, chave separada), 10 critérios, tamanho não conta | Evitar viés de marca e de extensão                      |
+| Artefatos              | Sem prompts; só textos gerados, IDs e métricas                            | Não registrar prompts em arquivos persistentes          |
+
 ## Limitações conhecidas
 
 - **HEIC** é aceito, mas só tem pré-visualização no Safari; em outros

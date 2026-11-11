@@ -25,6 +25,8 @@ export type AiConfig = {
   mode: "anthropic" | "mock";
   model: string;
   effort: AnthropicEffort;
+  /** SIDERA_AI_REFUSAL_FALLBACK=0 desliga o fallback entre modelos. */
+  refusalFallback: boolean;
   /** Motivo de estar no modo simulado (para logs internos). */
   reason: string | null;
 };
@@ -44,7 +46,13 @@ export function readAiConfig(env: Env = process.env): AiConfig {
         : !env.ANTHROPIC_API_KEY
           ? "ANTHROPIC_API_KEY ausente."
           : null;
-  return { mode: reason ? "mock" : "anthropic", model, effort, reason };
+  return {
+    mode: reason ? "mock" : "anthropic",
+    model,
+    effort,
+    refusalFallback: env.SIDERA_AI_REFUSAL_FALLBACK !== "0",
+    reason,
+  };
 }
 
 export function providerFromEnv(env: Env = process.env): {
@@ -57,6 +65,7 @@ export function providerFromEnv(env: Env = process.env): {
       ? createAnthropicProvider({
           model: config.model,
           effort: config.effort,
+          refusalFallback: config.refusalFallback,
           apiKey: env.ANTHROPIC_API_KEY,
         })
       : createMockProvider();

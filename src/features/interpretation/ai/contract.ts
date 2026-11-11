@@ -85,12 +85,19 @@ export type AiErrorKind =
   | "auth"
   | "bad_request"
   | "network"
+  | "budget"
   | "unknown";
 
 export class AiProviderError extends Error {
   constructor(
     readonly kind: AiErrorKind,
     message: string,
+    /**
+     * Custo (USD) atribuído a uma chamada que falhou sem informar consumo.
+     * O controle de orçamento assume o pior caso quando não dá para saber
+     * se houve cobrança (timeout, rede).
+     */
+    readonly chargedUsd: number | null = null,
   ) {
     super(message);
     this.name = "AiProviderError";
@@ -115,6 +122,9 @@ export interface AiProvider {
 export type AttemptMetrics = {
   chapter: ChapterId;
   attempt: number;
+  /** Modelo pedido na requisição. */
+  requestedModel: string;
+  /** Modelo que efetivamente respondeu (response.model). */
   model: string;
   latencyMs: number;
   usage: AiUsage | null;
@@ -143,6 +153,10 @@ export type GenerationMetrics = {
     cacheReadInputTokens: number;
     cacheCreationInputTokens: number;
     costUsd: number;
+    /** Tentativas sem preço conhecido (custo não somado — revisar). */
+    unpricedCalls: number;
+    /** Tentativas respondidas por um modelo diferente do pedido. */
+    modelMismatches: number;
     /** Tempo total de parede (capítulos rodam em paralelo). */
     wallTimeMs: number;
     chaptersFromAi: number;

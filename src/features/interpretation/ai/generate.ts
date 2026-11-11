@@ -81,9 +81,10 @@ async function generateChapter(
           ? error
           : new AiProviderError("unknown", String(error));
       record({
+        requestedModel: provider.model,
         model: provider.model,
         usage: null,
-        costUsd: null,
+        costUsd: err.chargedUsd,
         outcome: `error:${err.kind}`,
         errors: [err.message],
       });
@@ -93,6 +94,7 @@ async function generateChapter(
     }
 
     const base = {
+      requestedModel: provider.model,
       model: response.model,
       usage: response.usage,
       costUsd: estimateCostUsd(response.model, response.usage),
@@ -193,6 +195,11 @@ export async function generateReport(
         (a) => a.usage?.cacheCreationInputTokens ?? 0,
       ),
       costUsd: sum((a) => a.costUsd ?? 0),
+      unpricedCalls: attempts.filter(
+        (a) => a.costUsd === null && a.usage !== null,
+      ).length,
+      modelMismatches: attempts.filter((a) => a.model !== a.requestedModel)
+        .length,
       wallTimeMs: Math.round(opts.now() - started),
       chaptersFromAi: chapters.filter((c) => c.source === "ai").length,
       chaptersFromLibrary: chapters.filter((c) => c.source === "library")
@@ -244,6 +251,8 @@ export function libraryReport(
         cacheReadInputTokens: 0,
         cacheCreationInputTokens: 0,
         costUsd: 0,
+        unpricedCalls: 0,
+        modelMismatches: 0,
         wallTimeMs: 0,
         chaptersFromAi: 0,
         chaptersFromLibrary: chapters.length,

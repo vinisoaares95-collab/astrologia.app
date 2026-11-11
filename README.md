@@ -97,3 +97,4 @@ Veja `docs/capturas/` (mobile 390 px e desktop 1440 px).
 - [Decisões técnicas](docs/DECISIONS.md)
 - [Fase 02E — motor de interpretação](docs/fase-02e-motor-de-interpretacao.md)
 - [Fase 02F — geração com IA](docs/fase-02f-geracao-com-ia.md)
+- [Fase 02F.1 — avaliação comparativa](docs/fase-02f1-avaliacao-comparativa.md)

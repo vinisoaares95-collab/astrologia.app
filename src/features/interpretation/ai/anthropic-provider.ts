@@ -6,7 +6,9 @@ import "server-only";
  * - Saída estruturada: output_config.format com JSON Schema por capítulo.
  * - System prompt com cache_control (prefixo estável entre capítulos).
  * - Fallback do servidor em caso de recusa por classificador
- *   (fallbacks: "default"), com o modelo efetivo lido de response.model.
+ *   (fallbacks: "default"), opcional: desligado na avaliação comparativa,
+ *   para que cada resposta venha do modelo pedido. O modelo efetivo é
+ *   sempre lido de response.model.
  * - Sem novas tentativas no SDK (maxRetries: 0): quem decide é generate.ts,
  *   com limite fixo.
  * A chave vem só de ANTHROPIC_API_KEY no servidor; nunca do cliente.
@@ -22,6 +24,15 @@ import {
 
 export type AnthropicEffort = "low" | "medium" | "high";
 
+/**
+ * Modelos que aceitam `fallbacks: "default"` na API (Haiku 5.5 não tem
+ * fallback do servidor). Fora desta lista o parâmetro nunca é enviado.
+ */
+export const SERVER_FALLBACK_MODELS: readonly string[] = [
+  "claude-sonnet-5-5",
+  "claude-opus-5-5",
+];
+
 type CreateFn = (
   body: Anthropic.Beta.Messages.MessageCreateParamsNonStreaming,
   options: { timeout: number },
@@ -31,6 +42,8 @@ export function createAnthropicProvider(config: {
   model: string;
   effort: AnthropicEffort;
   apiKey?: string;
+  /** Fallback do servidor para outro modelo em caso de recusa (padrão: sim, quando suportado). */
+  refusalFallback?: boolean;
   /** Injetável para testes (sem rede). */
   create?: CreateFn;
 }): AiProvider {
@@ -40,6 +53,10 @@ export function createAnthropicProvider(config: {
       const client = new Anthropic({ apiKey: config.apiKey, maxRetries: 0 });
       return (body, options) => client.beta.messages.create(body, options);
     })();
+
+  const fallback =
+    (config.refusalFallback ?? true) &&
+    SERVER_FALLBACK_MODELS.includes(config.model);
 
   return {
     id: "anthropic",
@@ -51,8 +68,12 @@ export function createAnthropicProvider(config: {
           {
             model: config.model,
             max_tokens: request.maxOutputTokens,
-            betas: ["server-side-fallback-2026-07-01"],
-            fallbacks: "default",
+            ...(fallback
+              ? {
+                  betas: ["server-side-fallback-2026-07-01"],
+                  fallbacks: "default" as const,
+                }
+              : {}),
             output_config: {
               effort: config.effort,
               format: { type: "json_schema", schema: request.schema },

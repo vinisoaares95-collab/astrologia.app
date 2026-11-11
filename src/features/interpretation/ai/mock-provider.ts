@@ -68,13 +68,15 @@ export function createMockProvider(
     MockScenario[] | ((request: AiRequest, call: number) => MockScenario) = [
     "valid",
   ],
+  options: { model?: string } = {},
 ): AiProvider & { calls: AiRequest[] } {
+  const model = options.model ?? "mock-local";
   const calls: AiRequest[] = [];
   const perChapter = new Map<string, number>();
 
   return {
     id: "mock",
-    model: "mock-local",
+    model,
     calls,
     async generate(request: AiRequest): Promise<AiResponse> {
       calls.push(request);
@@ -106,7 +108,7 @@ export function createMockProvider(
       if (scenario === "truncated") text = text.slice(0, text.length / 2);
 
       return {
-        model: "mock-local",
+        model,
         text,
         stopReason:
           scenario === "truncated"
