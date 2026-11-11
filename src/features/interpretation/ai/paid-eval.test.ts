@@ -44,105 +44,118 @@ import {
 } from "./evaluation";
 
 const gate = paidRunGate(process.env);
+// A validação só com Haiku (haiku-validation.test.ts) nunca dispara esta
+// comparação, que chama o Sonnet 5.5.
+const comparisonSelected =
+  process.env.SIDERA_AI_PAID_SUITE !== "haiku-validation";
 
-describe.runIf(gate.allowed)("avaliação comparativa paga", () => {
-  it("Sonnet 5.5 × Haiku 5.5, três horários", async () => {
-    const usdBrl = usdBrlFrom(process.env);
-    const budgetBrl = budgetBrlFrom(process.env);
-    const cases: EvalCase[] = [
-      { id: "exato", label: "Caso 1 · horário exato", time: TEST_TIMES.exact },
-      {
-        id: "aproximado",
-        label: "Caso 2 · horário aproximado (± 2 h)",
-        time: TEST_TIMES.approximate,
-      },
-      {
-        id: "desconhecido",
-        label: "Caso 3 · horário desconhecido",
-        time: TEST_TIMES.unknown,
-      },
-    ].map((c) => ({
-      id: c.id,
-      label: c.label,
-      report: buildInterpretation(testChart(c.time)),
-    }));
-
-    const plan = preflight(
-      cases.map((c) => c.report),
-      EVAL_MODELS,
-      usdBrl,
-      budgetBrl,
-    );
-    expect(
-      plan.withinBudget,
-      `Pior caso R$ ${plan.worstBrl.toFixed(2)} acima do teto`,
-    ).toBe(true);
-
-    const budget = createBudget(plan.budgetUsd);
-    const models = EVAL_MODELS.map((model) => ({
-      name: model,
-      provider: withBudget(
-        createAnthropicProvider({
-          model,
-          effort: EVAL_CONDITIONS.effort,
-          refusalFallback: EVAL_CONDITIONS.refusalFallback,
-          // Com o proxy, o SDK precisa de um valor; o proxy o substitui.
-          apiKey: gate.keyViaProxy ? "injetada-pelo-proxy" : anthropicApiKey(),
-        }),
-        budget,
-      ),
-    }));
-
-    const runs = await runComparison(cases, models, {
-      maxAttempts: EVAL_CONDITIONS.maxAttempts,
-      maxOutputTokens: EVAL_CONDITIONS.maxOutputTokens,
-      timeoutMs: EVAL_CONDITIONS.timeoutMs,
-    });
-    const { reports, key } = blindRuns(
-      runs,
-      cases,
-      () => randomInt(0, 2 ** 31) / 2 ** 31,
-    );
-
-    // Os relatórios não vão para o repositório: por padrão, ficam numa
-    // pasta ignorada pelo Git; SIDERA_AI_EVAL_OUT_DIR escolhe outro destino.
-    const dir = path.resolve(
-      process.env.SIDERA_AI_EVAL_OUT_DIR ?? "avaliacao-ia",
-      new Date().toISOString().replace(/[:.]/g, "-"),
-    );
-    mkdirSync(path.join(dir, "cego"), { recursive: true });
-    for (const r of reports)
-      writeFileSync(
-        path.join(dir, "cego", `${r.label.replace(" ", "-")}.md`),
-        renderBlindReport(r),
-      );
-    writeFileSync(
-      path.join(dir, "cego", "ficha.md"),
-      renderScoreSheet(reports),
-    );
-    writeFileSync(
-      path.join(dir, "chave.json"),
-      JSON.stringify(
+describe.runIf(gate.allowed && comparisonSelected)(
+  "avaliação comparativa paga",
+  () => {
+    it("Sonnet 5.5 × Haiku 5.5, três horários", async () => {
+      const usdBrl = usdBrlFrom(process.env);
+      const budgetBrl = budgetBrlFrom(process.env);
+      const cases: EvalCase[] = [
         {
-          aviso: "Abrir somente depois de preencher a ficha de avaliação.",
-          conditions: EVAL_CONDITIONS,
-          usdBrl,
-          budgetBrl,
-          preflightWorstBrl: plan.worstBrl,
-          spentUsd: budget.spentUsd(),
-          spentBrl: budget.spentUsd() * usdBrl,
-          blockedCalls: budget.blockedCalls(),
-          summary: summarizeKey(key, usdBrl),
-          key,
+          id: "exato",
+          label: "Caso 1 · horário exato",
+          time: TEST_TIMES.exact,
         },
-        null,
-        2,
-      ) + "\n",
-    );
+        {
+          id: "aproximado",
+          label: "Caso 2 · horário aproximado (± 2 h)",
+          time: TEST_TIMES.approximate,
+        },
+        {
+          id: "desconhecido",
+          label: "Caso 3 · horário desconhecido",
+          time: TEST_TIMES.unknown,
+        },
+      ].map((c) => ({
+        id: c.id,
+        label: c.label,
+        report: buildInterpretation(testChart(c.time)),
+      }));
 
-    expect(budget.spentUsd() * usdBrl).toBeLessThanOrEqual(budgetBrl);
-    expect(
-      key.every((k) => k.servedModels.every((m) => m === k.modelName)),
-    ).toBe(true);
-  }, 900_000);
-});
+      const plan = preflight(
+        cases.map((c) => c.report),
+        EVAL_MODELS,
+        usdBrl,
+        budgetBrl,
+      );
+      expect(
+        plan.withinBudget,
+        `Pior caso R$ ${plan.worstBrl.toFixed(2)} acima do teto`,
+      ).toBe(true);
+
+      const budget = createBudget(plan.budgetUsd);
+      const models = EVAL_MODELS.map((model) => ({
+        name: model,
+        provider: withBudget(
+          createAnthropicProvider({
+            model,
+            effort: EVAL_CONDITIONS.effort,
+            refusalFallback: EVAL_CONDITIONS.refusalFallback,
+            // Com o proxy, o SDK precisa de um valor; o proxy o substitui.
+            apiKey: gate.keyViaProxy
+              ? "injetada-pelo-proxy"
+              : anthropicApiKey(),
+          }),
+          budget,
+        ),
+      }));
+
+      const runs = await runComparison(cases, models, {
+        maxAttempts: EVAL_CONDITIONS.maxAttempts,
+        maxOutputTokens: EVAL_CONDITIONS.maxOutputTokens,
+        timeoutMs: EVAL_CONDITIONS.timeoutMs,
+      });
+      const { reports, key } = blindRuns(
+        runs,
+        cases,
+        () => randomInt(0, 2 ** 31) / 2 ** 31,
+      );
+
+      // Os relatórios não vão para o repositório: por padrão, ficam numa
+      // pasta ignorada pelo Git; SIDERA_AI_EVAL_OUT_DIR escolhe outro destino.
+      const dir = path.resolve(
+        process.env.SIDERA_AI_EVAL_OUT_DIR ?? "avaliacao-ia",
+        new Date().toISOString().replace(/[:.]/g, "-"),
+      );
+      mkdirSync(path.join(dir, "cego"), { recursive: true });
+      for (const r of reports)
+        writeFileSync(
+          path.join(dir, "cego", `${r.label.replace(" ", "-")}.md`),
+          renderBlindReport(r),
+        );
+      writeFileSync(
+        path.join(dir, "cego", "ficha.md"),
+        renderScoreSheet(reports),
+      );
+      writeFileSync(
+        path.join(dir, "chave.json"),
+        JSON.stringify(
+          {
+            aviso: "Abrir somente depois de preencher a ficha de avaliação.",
+            conditions: EVAL_CONDITIONS,
+            usdBrl,
+            budgetBrl,
+            preflightWorstBrl: plan.worstBrl,
+            spentUsd: budget.spentUsd(),
+            spentBrl: budget.spentUsd() * usdBrl,
+            blockedCalls: budget.blockedCalls(),
+            summary: summarizeKey(key, usdBrl),
+            key,
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+
+      expect(budget.spentUsd() * usdBrl).toBeLessThanOrEqual(budgetBrl);
+      expect(
+        key.every((k) => k.servedModels.every((m) => m === k.modelName)),
+      ).toBe(true);
+    }, 900_000);
+  },
+);

@@ -125,3 +125,38 @@ Correções (`validate.ts`, `generate.ts`):
 - Os rascunhos reprovados continuam sem ser guardados; a análise de falhas
   depende dos códigos e mensagens registrados.
 - As limitações do motor (02E) não foram reescritas nesta fase.
+
+## Validação final com Haiku 5.5 (preparada, não executada)
+
+Avaliação pequena e reproduzível do motor atualizado, **só com Haiku 5.5**
+(`validation-run.ts`, `haiku-validation.test.ts`).
+
+- Três nascimentos fictícios, diferentes do caso de referência e entre si
+  (locais reais da base IBGE; pessoas e horários inventados):
+  1. exato: Recife, 03/11/1984, 07:15 (`America/Recife`);
+  2. aproximado (± 1 h): Porto Alegre, 21/07/2001, 22:40;
+  3. desconhecido: Manaus, 29/02/1996 (`America/Manaus`, ano bissexto).
+- Mesmas condições da 02F.1 (esforço `medium`, até 2 tentativas, 6 000 tokens
+  de saída, 120 s), sem fallback pago.
+- Teto próprio de **R$ 2** (uma variável só pode baixá-lo); pior caso
+  estimado de **US$ 0,10 ≈ R$ 0,57** para 30 chamadas no máximo, conferido
+  antes da primeira chamada e reservado chamada a chamada.
+- A comparação com Sonnet (`paid-eval`) não roda quando esta suíte é
+  escolhida (`SIDERA_AI_PAID_SUITE=haiku-validation`).
+- Saída em `avaliacao-ia/validacao-haiku-<data-hora>/` (ignorada pelo Git):
+  `cliente/` (texto que o cliente leria, sem metadados), `auditoria.json`
+  (modelo efetivo, custo, tokens, tempo, tentativas, motivos, correções,
+  origem dos capítulos, notas de precisão, auditoria do texto final) e
+  `resumo.md` (comparação com a 02F.1).
+
+Comando (execução paga, só com autorização):
+
+```bash
+SIDERA_AI_PAID_TESTS=1 SIDERA_AI_PAID_SUITE=haiku-validation npm test -- haiku-validation
+```
+
+Achado do ensaio local: no caso sem horário, o texto da biblioteca (02E) do
+capítulo de talentos repete "sugere que as emoções e a" em três aspectos da
+Lua e é reprovado pelo próprio validador (`REPETITION`). Se o Haiku falhar
+nesse capítulo, o cliente receberia esse texto repetitivo. A biblioteca não
+foi alterada; a auditoria registra o caso.

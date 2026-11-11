@@ -29,10 +29,20 @@ export const TEST_TIMES = {
 } as const satisfies Record<string, BirthDataInput["time"]>;
 
 export function testChart(time: BirthDataInput["time"]): ChartView {
+  return fictionalChart({ date: TEST_DATE, place: TEST_PLACE, time });
+}
+
+/** Mapa de um nascimento fictício qualquer (data, local e horário dados). */
+export function fictionalChart(input: {
+  date: string;
+  place: PlaceRecord;
+  time: BirthDataInput["time"];
+}): ChartView {
+  const { date, place, time } = input;
   const r = normalizeBirthData(
-    { date: TEST_DATE, placeId: TEST_PLACE.id, time },
+    { date, placeId: place.id, time },
     {
-      getPlace: (id) => (id === TEST_PLACE.id ? TEST_PLACE : undefined),
+      getPlace: (id) => (id === place.id ? place : undefined),
       today: { year: 2026, month: 10, day: 30 },
       tzdbVersion: "teste",
     },
