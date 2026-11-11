@@ -10,7 +10,9 @@ Status:
   seção 18 e `docs/fase-03d-integracao-visual.md`.
 - **03E (capítulos 6 e 7): concluída com provedores simulados**; ver seção
   19 e `docs/fase-03e-capitulos-das-maos.md`.
-- 03F: aguardando aprovação.
+- **03F.1 (preparação da avaliação visual): concluída, sem chamadas
+  pagas**; ver seção 20 e `docs/fase-03f1-avaliacao-visual.md`.
+- 03F.2 (execução paga): aguardando autorização.
 
 Nenhuma chamada paga foi feita na Fase 03. A integração com o mapa astral
 (capítulos 8–9) fica para a Fase 04.
@@ -724,3 +726,23 @@ Pendência para a 03F (registrada a pedido, orçamentos não alterados):
 ultrapassar US$ 0,10, e o pior caso da rodada completa pode ultrapassar
 US$ 1.** Pior caso calculado: ≈ US$ 0,31 por foto no Sonnet (visão + 2
 capítulos, 2 tentativas) e ≈ US$ 2,6 na rodada de 8 fotos × 2 modelos.
+
+## 20. Conclusão da Fase 03F.1 (11/11/2026)
+
+Avaliação comparativa Haiku 5.5 × Sonnet 5.5 **só da extração visual**,
+separada da redação e do fluxo comercial. Detalhes em
+`docs/fase-03f1-avaliacao-visual.md`.
+
+- Foto → modelo visual → observação → validador → auditoria, reaproveitando
+  o orquestrador, o adaptador e o validador do produto; capítulos não são
+  gerados.
+- Orçamento exclusivo (R$ 7, não autorizado para consumo): recusa prévia,
+  verificação por foto × modelo, reserva por chamada e interrupção no teto.
+  Limites comerciais inalterados.
+- Plano com as funções reais: 8 fotos × 2 modelos esperado ≈ R$ 1,85; pior
+  caso (2 tentativas) R$ 5,96; teto de execução US$ 1,0833; cabem 9 fotos.
+- Revisão humana cega (referência do revisor + ficha A/B + chave separada)
+  e apuração; passar no validador não conta como acerto.
+- Fotos fora do repositório, identificadores opacos, relatórios sem imagem,
+  nome de arquivo ou credencial; procedimento de autorização e exclusão.
+- 941 testes, lint, tipos e build passando. Nenhuma chamada paga.

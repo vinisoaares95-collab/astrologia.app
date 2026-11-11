@@ -39,6 +39,8 @@ export type AttemptAudit = {
   usage: AiUsage | null;
   /** Só códigos (sem texto do modelo nem evidência). */
   codes: string[];
+  /** Mesmos códigos com a característica afetada, quando houver. */
+  notes: { code: string; feature: string | null }[];
 };
 
 export type AnalysisOutcome =
@@ -83,13 +85,26 @@ export async function analyzePalmImage(input: {
           outcome: `error:${err.kind}`,
           usage: null,
           codes: [],
+          notes: [],
         });
         lastError = err.kind;
         if (!err.retryable) break;
         continue;
       }
-      const record = (outcome: AttemptAudit["outcome"], codes: string[] = []) =>
-        audit.push({ attempt, outcome, usage: response.usage, codes });
+      const record = (
+        outcome: AttemptAudit["outcome"],
+        notes: ObservationNote[] = [],
+      ) =>
+        audit.push({
+          attempt,
+          outcome,
+          usage: response.usage,
+          codes: notes.map((n) => n.code),
+          notes: notes.map((n) => ({
+            code: n.code,
+            feature: n.feature ?? null,
+          })),
+        });
 
       if (response.stopReason === "refusal") {
         record("refusal");
@@ -108,16 +123,10 @@ export async function analyzePalmImage(input: {
       }
       const validation = validatePalmObservation(raw, hand);
       if (!validation.ok) {
-        record(
-          "rejected",
-          validation.errors.map((e: ObservationNote) => e.code),
-        );
+        record("rejected", validation.errors);
         continue;
       }
-      record(
-        "ok",
-        validation.notes.map((n) => n.code),
-      );
+      record("ok", validation.notes);
       return { kind: "ok", observation: validation.observation, audit };
     }
     if (lastError && audit.every((a) => a.outcome.startsWith("error:")))
