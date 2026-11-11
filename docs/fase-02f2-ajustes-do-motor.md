@@ -126,7 +126,7 @@ Correções (`validate.ts`, `generate.ts`):
   depende dos códigos e mensagens registrados.
 - As limitações do motor (02E) não foram reescritas nesta fase.
 
-## Validação final com Haiku 5.5 (preparada, não executada)
+## Validação final com Haiku 5.5 (executada em 11/11/2026)
 
 Avaliação pequena e reproduzível do motor atualizado, **só com Haiku 5.5**
 (`validation-run.ts`, `haiku-validation.test.ts`).
@@ -149,14 +149,44 @@ Avaliação pequena e reproduzível do motor atualizado, **só com Haiku 5.5**
   origem dos capítulos, notas de precisão, auditoria do texto final) e
   `resumo.md` (comparação com a 02F.1).
 
-Comando (execução paga, só com autorização):
+Comando (execução paga, só com autorização; executado uma vez):
 
 ```bash
 SIDERA_AI_PAID_TESTS=1 SIDERA_AI_PAID_SUITE=haiku-validation npm test -- haiku-validation
 ```
 
-Achado do ensaio local: no caso sem horário, o texto da biblioteca (02E) do
-capítulo de talentos repete "sugere que as emoções e a" em três aspectos da
-Lua e é reprovado pelo próprio validador (`REPETITION`). Se o Haiku falhar
-nesse capítulo, o cliente receberia esse texto repetitivo. A biblioteca não
-foi alterada; a auditoria registra o caso.
+### Achado do ensaio local (corrigido antes da execução paga)
+
+No caso sem horário, o texto da biblioteca (02E) do capítulo de talentos
+repetia "sugere que as emoções e a" em três aspectos da Lua (Saturno, Netuno
+e Urano), compostos pelo mesmo modelo de frase, e era reprovado pelo próprio
+validador (`REPETITION`). Correção pontual (commit `c656c10`): textos
+autorais para `aspect:moon-saturn:harmonious`, `aspect:moon-neptune:tense` e
+`aspect:moon-uranus:tense` em `library/authored.ts`, com o mesmo significado
+e aberturas diferentes; validador inalterado. Regressão: o fallback da
+biblioteca passa na validação nos três cenários (`haiku-validation.test.ts`).
+
+### Resultado da execução paga
+
+| Métrica                               | Validação final      | 02F.1 (Haiku)        |
+| ------------------------------------- | -------------------- | -------------------- |
+| Modelo que respondeu                  | `claude-haiku-5-5`   | `claude-haiku-5-5`   |
+| Chamadas / novas tentativas / reprov. | 16 / 1 / 2           | 20 / 5 / 5           |
+| Capítulos IA / biblioteca             | 14 / 1               | 15 / 0               |
+| Erros de ponto/signo/posição/aspecto  | 0                    | 15                   |
+| Tokens entrada / saída                | 15 503 / 36 695      | 22 319 / 54 606      |
+| Custo                                 | US$ 0,0234 (R$ 0,13) | US$ 0,0324           |
+| Tempo por relatório                   | 31,4 / 17,3 / 13,4 s | 25,0 / 30,4 / 27,0 s |
+
+- Nenhuma afirmação incompatível com a precisão do horário no texto do
+  modelo; notas de intervalo completas e ligadas ao ponto correto; os 15
+  capítulos finais passam de novo no validador.
+- As duas reprovações (Recife, relacionamentos) foram um **falso positivo do
+  validador**: "Descendente a 16°18′" é o grau da cúspide da casa 7, mas a
+  regra "o grau pertence ao ponto nomeado" não associava as cúspides 7 e 4 ao
+  Descendente e ao Fundo do Céu. Corrigido com regressão (commit `5f20d22`);
+  a correção não foi verificada por nova execução paga.
+- Observações restantes: "a tradição associa esse signo a" aparece 3 vezes no
+  relatório de Recife (abaixo do limite de reprovação; a repetição entre
+  capítulos só é informada); a ressalva curta das notas do sistema se repete
+  literalmente quando um capítulo tem três ou mais aspectos incertos.
