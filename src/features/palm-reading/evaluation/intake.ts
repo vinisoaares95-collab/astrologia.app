@@ -30,6 +30,7 @@ import {
   visualTokens,
 } from "../lib/prepare-image";
 import { EVAL_MAX_PHOTOS } from "./config";
+import { diagnose, sampleSize, type TechnicalDiagnosis } from "./technical";
 
 export const MANIFEST_FILE = "manifesto.json";
 export const PHOTO_MAP_FILE = "mapa-fotos.json";
@@ -86,6 +87,8 @@ export type PreparedPhoto = {
   width: number;
   height: number;
   visualTokens: number;
+  /** Resolução, compressão, foco e luz (informativo; não bloqueia). */
+  diagnosis: Omit<TechnicalDiagnosis, "id">;
 };
 
 export type PrepareResult =
@@ -96,10 +99,13 @@ export type SharpLike = (input: Uint8Array) => {
   rotate(): ReturnType<SharpLike>;
   resize(w: number, h: number, o: { fit: "fill" }): ReturnType<SharpLike>;
   jpeg(o: { quality: number }): ReturnType<SharpLike>;
+  greyscale(): ReturnType<SharpLike>;
+  raw(): ReturnType<SharpLike>;
   metadata(): Promise<{
     width?: number;
     height?: number;
     orientation?: number;
+    format?: string;
   }>;
   toBuffer(): Promise<Buffer>;
 };
@@ -124,7 +130,10 @@ export async function prepareEvalPhoto(
     const w0 = swap ? meta.height : meta.width;
     const h0 = swap ? meta.width : meta.height;
     if (Math.min(w0, h0) < MIN_SHORT_SIDE_PX)
-      return { ok: false, reason: "Resolução abaixo do mínimo." };
+      return {
+        ok: false,
+        reason: `Resolução abaixo do mínimo (${w0}×${h0}; mínimo ${MIN_SHORT_SIDE_PX} px no lado menor, sem ampliação).`,
+      };
     const t = targetDimensions(w0, h0);
     for (const q of JPEG_QUALITY_STEPS) {
       const out = await s(original)
@@ -151,6 +160,24 @@ export async function prepareEvalPhoto(
           reason: "A foto preparada não passou nas checagens do servidor.",
         };
       }
+      // Amostra em cinza da foto preparada, como na tela de foto.
+      const g = sampleSize(info.width, info.height);
+      const gray = await s(bytes)
+        .resize(g.width, g.height, { fit: "fill" })
+        .greyscale()
+        .raw()
+        .toBuffer();
+      const diagnosis = diagnose({
+        original: {
+          bytes: original,
+          width: w0,
+          height: h0,
+          format: meta.format ?? "desconhecido",
+        },
+        prepared: { width: info.width, height: info.height },
+        gray: { data: gray, width: g.width, height: g.height },
+      });
+      gray.fill(0);
       return {
         ok: true,
         photo: {
@@ -158,6 +185,7 @@ export async function prepareEvalPhoto(
           width: info.width,
           height: info.height,
           visualTokens: visualTokens(info.width, info.height),
+          diagnosis,
         },
       };
     }

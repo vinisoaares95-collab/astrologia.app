@@ -114,6 +114,29 @@ export function renderReferenceCsv(
   return toCsv(rows);
 }
 
+export const PHOTO_QUALITY_HEADER = [
+  "foto",
+  "revisor_resolucao",
+  "revisor_compressao",
+  "revisor_foco",
+  "revisor_iluminacao",
+  "revisor_linhas_legiveis",
+  "comentario",
+] as const;
+
+/**
+ * Avaliação da FOTO pelo revisor (separada das características): resolução
+ * (ok | insuficiente), compressão (ok | artefatos), foco (ok | desfocada),
+ * iluminação (ok | escura | clara_demais | reflexo | sombra) e se as linhas
+ * são legíveis (sim | parcial | nao). Aceite técnico não é leitura confiável.
+ */
+export function renderPhotoQualityCsv(photos: readonly string[]): string {
+  return toCsv([
+    [...PHOTO_QUALITY_HEADER],
+    ...photos.map((p) => [p, "", "", "", "", "", ""]),
+  ]);
+}
+
 export const SHEET_HEADER = [
   "foto",
   "caracteristica_id",
@@ -167,6 +190,12 @@ export function renderReviewGuide(
 Fotos: ${photos.join(", ")}. Os observadores A e B são os dois modelos,
 sorteados **por foto** (o A de uma foto não é necessariamente o A de outra).
 Não abra a pasta \`restrito/\` antes de terminar.
+
+## Passo 0 — a foto em si (\`qualidade-fotos.csv\`)
+
+Para cada foto, registre separadamente resolução, compressão, foco,
+iluminação e se as linhas da palma são legíveis (\`sim\`, \`parcial\`,
+\`nao\`). Uma foto tecnicamente aceita pode não permitir leitura confiável.
 
 ## Passo 1 — sua leitura de referência (\`referencia.csv\`)
 
@@ -380,7 +409,32 @@ export function renderTechnicalReport(
         `| ${u.photoId} | ${u.model} | ${c.attempt} | ${c.outcome} | ${c.respondedModel ?? "—"} | ${c.usage ? `${c.usage.inputTokens}/${c.usage.outputTokens}` : "—"} | ${c.costUsd === null ? "—" : usd(c.costUsd)} | ${Math.round(c.latencyMs)} ms | ${c.notes.map((n) => (n.feature ? `${n.code}(${n.feature})` : n.code)).join(", ") || "—"} |`,
       );
   }
+  const ISSUE_GROUP: Record<string, string> = {
+    blurry: "foco",
+    too_dark: "iluminação",
+    overexposed: "iluminação",
+    glare: "iluminação",
+  };
   out.push(
+    "",
+    "## Problemas de imagem apontados pelos modelos",
+    "",
+    "| Foto | Modelo | Qualidade declarada | Foco | Iluminação | Enquadramento e outros |",
+    "| --- | --- | --- | --- | --- | --- |",
+  );
+  for (const u of run.units) {
+    if (!u.final) continue;
+    const by = (g: string | null) =>
+      u
+        .final!.issues.filter((i) => (ISSUE_GROUP[i] ?? null) === g)
+        .join(", ") || "—";
+    out.push(
+      `| ${u.photoId} | ${u.model} | ${u.final.quality} | ${by("foco")} | ${by("iluminação")} | ${by(null)} |`,
+    );
+  }
+  out.push(
+    "",
+    "Resolução e compressão não são declaradas pelos modelos: estão no diagnóstico técnico do plano.",
     "",
     "## Resultado final por foto",
     "",
@@ -408,6 +462,7 @@ export function renderTechnicalReport(
 // ── Apuração (após a revisão) ─────────────────────────────────────────────
 
 const VIS = new Set(["nitida", "parcial"]);
+const LINE_FEATURE = /^(heart|head|life|fate)\./u;
 
 export type ModelScore = {
   model: string;
@@ -421,6 +476,14 @@ export type ModelScore = {
   missedClear: number;
   /** Modelo marcou não visível e o revisor não via com nitidez. */
   bothHidden: number;
+  /** Falso visível em LINHAS (coração, cabeça, vida, destino): linha inventada. */
+  inventedLines: number;
+  /** Modelo disse "nítida" onde o revisor só via parcialmente. */
+  overconfident: number;
+  /** Onde o revisor não via com nitidez (parcial ou não visível)… */
+  limitedByPhoto: number;
+  /** …o modelo também reconheceu o limite (parcial ou não visível). */
+  limitRecognized: number;
   evidence: { sim: number; parcial: number; nao: number };
   /** Linhas sem preenchimento do revisor (excluídas). */
   unreviewed: number;
@@ -447,6 +510,10 @@ export function scoreReview(input: {
         falseVisible: 0,
         missedClear: 0,
         bothHidden: 0,
+        inventedLines: 0,
+        overconfident: 0,
+        limitedByPhoto: 0,
+        limitRecognized: 0,
         evidence: { sim: 0, parcial: 0, nao: 0 },
         unreviewed: 0,
       },
@@ -470,9 +537,16 @@ export function scoreReview(input: {
       if (modelSees && reviewerSees) {
         s.visibleBoth++;
         if (row[`${side}_valor`] === r!.revisor_valor) s.correctValue++;
-      } else if (modelSees) s.falseVisible++;
-      else if (rv === "nitida") s.missedClear++;
+      } else if (modelSees) {
+        s.falseVisible++;
+        if (LINE_FEATURE.test(row.caracteristica_id)) s.inventedLines++;
+      } else if (rv === "nitida") s.missedClear++;
       else s.bothHidden++;
+      if (vis === "nitida" && rv === "parcial") s.overconfident++;
+      if (rv !== "nitida") {
+        s.limitedByPhoto++;
+        if (vis !== "nitida") s.limitRecognized++;
+      }
       const ev = row[`${side}_evidencia_confere`] as "sim" | "parcial" | "nao";
       if (modelSees && ev in s.evidence) s.evidence[ev]++;
     }
@@ -493,6 +567,9 @@ export function renderScore(scores: ModelScore[]): string {
     "| --- | " + scores.map(() => "---").join(" | ") + " |",
     `| Valor correto quando ambos veem | ${scores.map((s) => pct(s.correctValue, s.visibleBoth)).join(" | ")} |`,
     `| Afirmou visível sem estar (falso visível) | ${scores.map((s) => s.falseVisible).join(" | ")} |`,
+    `| … dos quais linhas inventadas | ${scores.map((s) => s.inventedLines).join(" | ")} |`,
+    `| Reconheceu o limite da foto (onde não estava nítido) | ${scores.map((s) => pct(s.limitRecognized, s.limitedByPhoto)).join(" | ")} |`,
+    `| Disse "nítida" onde só era parcial | ${scores.map((s) => s.overconfident).join(" | ")} |`,
     `| Deixou de ver o que estava nítido | ${scores.map((s) => s.missedClear).join(" | ")} |`,
     `| Marcou não visível e na foto não estava nítido | ${scores.map((s) => s.bothHidden).join(" | ")} |`,
     `| Evidência confere (sim / parcial / não) | ${scores.map((s) => `${s.evidence.sim} / ${s.evidence.parcial} / ${s.evidence.nao}`).join(" | ")} |`,

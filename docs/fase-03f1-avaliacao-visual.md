@@ -200,6 +200,50 @@ autorização é só um código opaco (`AUT-03F-01`…), sem nome.
 > `revisao/referencia.csv` (sem nada dos modelos); com a mesma
 > `SIDERA_PALM_EVAL_OUT_DIR`, a execução não a sobrescreve.
 
+## 4.1 Piloto reduzido (3–4 fotos) e câmeras simples
+
+Decisão de 13/11/2026: o piloto começa com **3 ou 4 fotos**, os mesmos dois
+modelos e as mesmas imagens. O produto precisa funcionar com câmeras
+simples e fotos comprimidas, desde que a palma esteja visível.
+
+- **Mínimo técnico mantido:** 600 px no lado menor (o do produto), até haver
+  evidência para revisá-lo. 1 500 px era só uma preferência dos testes, não
+  requisito: aparece no diagnóstico como informação, sem bloquear.
+- **1200 × 1600 é candidata válida:** passa sem redimensionar (cerca de
+  2 494 tokens visuais). A nitidez e a visibilidade são avaliadas pelo
+  diagnóstico e pelo revisor.
+- **Sem ampliação:** fotos abaixo do mínimo são recusadas, com as
+  dimensões no motivo; nunca são ampliadas.
+- **Registro separado de resolução, compressão, foco e iluminação**
+  (só informativo, gerado no plano gratuito):
+  - `plano.md` e `diagnostico-tecnico.json`: resolução original e
+    preparada, formato, bits por pixel, qualidade JPEG estimada pela tabela
+    de quantização, foco (variância do Laplaciano) e luz (média, escuros,
+    estourados, contraste), com as mesmas heurísticas da tela de foto;
+  - `revisao/qualidade-fotos.csv`: o revisor avalia cada foto (resolução,
+    compressão, foco, iluminação e **se as linhas são legíveis**);
+  - relatório técnico: problemas de imagem declarados por cada modelo, por
+    categoria.
+- **Aceite técnico não é leitura confiável:** a legibilidade das linhas vem
+  do revisor, não do diagnóstico.
+- **Reconhecer limites e não inventar linhas**, novas medidas da apuração:
+  - **linhas inventadas**: falso visível em coração, cabeça, vida ou
+    destino;
+  - **reconheceu o limite**: onde o revisor não via com nitidez, o modelo
+    marcou parcial ou não visível;
+  - **disse "nítida" onde era parcial**: excesso de confiança.
+- Os limiares de compressão (q < 60 ou < 0,5 bpp: forte; q < 80 ou
+  < 1,5 bpp: moderada) e os de foco e luz são provisórios, para calibrar com
+  o piloto. Nenhum limite do produto mudou.
+
+Custo do piloto (mesma função do plano, câmbio R$ 5,50):
+
+| Fotos           | Tentativas | Esperado | Pior caso |
+| --------------- | ---------- | -------- | --------- |
+| 3 (1200 × 1600) | 2          | R$ 0,62  | R$ 2,23   |
+| 4 (1200 × 1600) | 2          | R$ 0,82  | R$ 2,98   |
+| 4 (1200 × 1600) | 1          | R$ 0,82  | R$ 1,49   |
+
 ## 5. Comandos
 
 Plano (grátis, sem chamadas; grava `plano.md`):

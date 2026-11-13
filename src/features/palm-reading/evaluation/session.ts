@@ -31,9 +31,11 @@ import {
   visionEvalGate,
 } from "./config";
 import { planEvaluation, type EvalPlan } from "./estimate";
+import { renderTechnicalDiagnosis } from "./technical";
 import { intakePhotos, type IntakeResult, type SharpLike } from "./intake";
 import {
   blindKey,
+  renderPhotoQualityCsv,
   renderPlan,
   renderReferenceCsv,
   renderReviewGuide,
@@ -149,12 +151,30 @@ export async function runEvaluationSession(input: {
     outDir,
     "plano.md",
     renderPlan(plan) +
+      "\n" +
+      renderTechnicalDiagnosis(
+        intake.photos.map((p) => ({ id: p.id, ...p.diagnosis })),
+      ) +
       (intake.rejected.length
         ? `\n## Fotos recusadas (fora do plano)\n\n${intake.rejected.map((r) => `- ${r.id}: ${r.reason}`).join("\n")}\n`
         : ""),
   );
   // A referência do revisor sai já no plano (sem nada dos modelos), para
   // ser preenchida ANTES da execução; a execução nunca a sobrescreve.
+  await write(
+    outDir,
+    "diagnostico-tecnico.json",
+    JSON.stringify(
+      intake.photos.map((p) => ({ id: p.id, ...p.diagnosis })),
+      null,
+      2,
+    ) + "\n",
+  );
+  await writeIfAbsent(
+    outDir,
+    "revisao/qualidade-fotos.csv",
+    renderPhotoQualityCsv(intake.photos.map((p) => p.id)),
+  );
   await writeIfAbsent(
     outDir,
     "revisao/referencia.csv",

@@ -40,6 +40,7 @@ import {
   parseCsv,
   renderReferenceCsv,
   renderReviewGuide,
+  renderPhotoQualityCsv,
   renderReviewSheet,
   renderScore,
   renderTechnicalReport,
@@ -47,6 +48,7 @@ import {
   toCsv,
 } from "./report";
 import { runVisionEvaluation, type EvalPhoto } from "./run";
+import { estimateJpegQuality, renderTechnicalDiagnosis } from "./technical";
 import { resolveOutDir, runEvaluationSession } from "./session";
 
 const ROOT = path.resolve(__dirname, "../../../..");
@@ -559,8 +561,13 @@ describe("sessão completa (pastas temporárias, simuladores)", () => {
     });
     expect(r.kind).toBe("planned");
     expect(created).toBe(0);
-    expect((await readdir(out)).sort()).toEqual(["plano.md", "revisao"]);
-    expect(await readdir(path.join(out, "revisao"))).toEqual([
+    expect((await readdir(out)).sort()).toEqual([
+      "diagnostico-tecnico.json",
+      "plano.md",
+      "revisao",
+    ]);
+    expect((await readdir(path.join(out, "revisao"))).sort()).toEqual([
+      "qualidade-fotos.csv",
       "referencia.csv",
     ]);
   });
@@ -668,5 +675,162 @@ describe("sessão completa (pastas temporárias, simuladores)", () => {
     expect(resolveOutDir({}, ROOT, "x")).toBe(
       path.join(ROOT, "avaliacao-ia", "03f-x"),
     );
+  });
+});
+
+// ── Piloto com câmeras simples (diagnóstico informativo) ─────────────────
+
+describe("diagnóstico técnico (informativo, não bloqueia)", () => {
+  /** Imagem sintética com "linhas" (listras) para ter detalhe fino. */
+  const striped = (w: number, h: number, light = 170) => {
+    const raw = Buffer.alloc(w * h * 3);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const v = (x + y) % 9 < 2 ? Math.round(light * 0.45) : light;
+        raw.fill(v, (y * w + x) * 3, (y * w + x) * 3 + 3);
+      }
+    return sharp(raw, { raw: { width: w, height: h, channels: 3 } });
+  };
+
+  it("qualidade JPEG estimada pela tabela de quantização", async () => {
+    const at = async (q: number) =>
+      estimateJpegQuality(
+        new Uint8Array(await striped(800, 800).jpeg({ quality: q }).toBuffer()),
+      );
+    expect(await at(95)).toBeGreaterThanOrEqual(93);
+    expect(await at(50)).toBeGreaterThanOrEqual(48);
+    expect(await at(50)).toBeLessThanOrEqual(52);
+    expect(estimateJpegQuality(new Uint8Array([1, 2, 3]))).toBeNull();
+  });
+
+  it("1200 × 1600 comprimida: aceita, sem ampliação, compressão registrada à parte", async () => {
+    const original = new Uint8Array(
+      await striped(1200, 1600).jpeg({ quality: 40 }).toBuffer(),
+    );
+    const r = await prepareEvalPhoto(original);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect([r.photo.width, r.photo.height]).toEqual([1200, 1600]);
+    const d = r.photo.diagnosis;
+    expect(d.resolution.belowTestPreference).toBe(true);
+    expect(d.compression.jpegQuality).toBeLessThan(60);
+    expect(d.compression.flag).toBe("forte");
+  });
+
+  it("foco e iluminação registrados separadamente", async () => {
+    const dark = await prepareEvalPhoto(
+      new Uint8Array(await striped(900, 1200, 40).jpeg().toBuffer()),
+    );
+    const blurry = await prepareEvalPhoto(
+      new Uint8Array(await striped(900, 1200).blur(12).jpeg().toBuffer()),
+    );
+    const sharpOk = await prepareEvalPhoto(
+      new Uint8Array(await striped(900, 1200).jpeg({ quality: 95 }).toBuffer()),
+    );
+    if (!dark.ok || !blurry.ok || !sharpOk.ok) throw new Error("preparo");
+    expect(dark.photo.diagnosis.lighting.flags).toContain("too-dark");
+    expect(blurry.photo.diagnosis.focus.flag).toBe("possivelmente desfocada");
+    expect(sharpOk.photo.diagnosis.focus.flag).toBe("sem alerta");
+    expect(sharpOk.photo.diagnosis.compression.flag).not.toBe("forte");
+  });
+
+  it("abaixo de 600 px: recusada com as dimensões, nunca ampliada", async () => {
+    const r = await prepareEvalPhoto(
+      new Uint8Array(await striped(290, 480).png().toBuffer()),
+    );
+    expect(r).toMatchObject({ ok: false });
+    if (!r.ok)
+      expect(r.reason).toMatch(/290×480; mínimo 600 px.*sem ampliação/u);
+  });
+
+  it("relatório do diagnóstico avisa que aceite técnico não é leitura confiável", () => {
+    const md = renderTechnicalDiagnosis([]);
+    expect(md).toMatch(/não garante leitura confiável/u);
+    expect(md).toMatch(/não bloqueia/u);
+  });
+});
+
+describe("apuração: limites e linhas inventadas", () => {
+  it("separa linha inventada, excesso de confiança e reconhecimento do limite", () => {
+    const key = { photos: { "foto-01": { A: "m-a", B: "m-b" } } };
+    const reference = [
+      {
+        foto: "foto-01",
+        caracteristica_id: "fate.presence",
+        revisor_visibilidade: "nao_visivel",
+        revisor_valor: "",
+      },
+      {
+        foto: "foto-01",
+        caracteristica_id: "heart.shape",
+        revisor_visibilidade: "parcial",
+        revisor_valor: "curved",
+      },
+      {
+        foto: "foto-01",
+        caracteristica_id: "hand.palmShape",
+        revisor_visibilidade: "nitida",
+        revisor_valor: "square",
+      },
+    ];
+    const sheet = [
+      // A inventa a linha do destino; B reconhece que não dá para ver.
+      {
+        foto: "foto-01",
+        caracteristica_id: "fate.presence",
+        A_visibilidade: "nitida",
+        A_valor: "present",
+        B_visibilidade: "nao_visivel",
+        B_valor: "",
+      },
+      // A diz "nítida" onde era parcial; B diz parcial.
+      {
+        foto: "foto-01",
+        caracteristica_id: "heart.shape",
+        A_visibilidade: "nitida",
+        A_valor: "curved",
+        B_visibilidade: "parcial",
+        B_valor: "curved",
+      },
+      {
+        foto: "foto-01",
+        caracteristica_id: "hand.palmShape",
+        A_visibilidade: "nitida",
+        A_valor: "square",
+        B_visibilidade: "nitida",
+        B_valor: "square",
+      },
+    ];
+    const [a, b] = scoreReview({ reference, sheet, key });
+    expect(a).toMatchObject({
+      inventedLines: 1,
+      overconfident: 1,
+      limitedByPhoto: 2,
+      limitRecognized: 0,
+    });
+    expect(b).toMatchObject({
+      inventedLines: 0,
+      overconfident: 0,
+      limitedByPhoto: 2,
+      limitRecognized: 2,
+    });
+    const md = renderScore([a, b]);
+    expect(md).toMatch(/linhas inventadas/u);
+    expect(md).toMatch(/Reconheceu o limite/u);
+  });
+
+  it("ficha de qualidade por foto, sem nada dos modelos", () => {
+    const csv = renderPhotoQualityCsv(["foto-01", "foto-02"]);
+    const rows = parseCsv(csv);
+    expect(rows).toHaveLength(2);
+    expect(Object.keys(rows[0])).toEqual([
+      "foto",
+      "revisor_resolucao",
+      "revisor_compressao",
+      "revisor_foco",
+      "revisor_iluminacao",
+      "revisor_linhas_legiveis",
+      "comentario",
+    ]);
   });
 });
