@@ -86,7 +86,9 @@ const visLabel = (
   !unit || unit.status !== "ok"
     ? "sem_resultado"
     : f!.visibility === "not_visible"
-      ? "nao_visivel"
+      ? f!.reason === "unclassifiable"
+        ? "indeterminada"
+        : "nao_visivel"
       : f!.visibility === "clear"
         ? "nitida"
         : "parcial";
@@ -100,6 +102,8 @@ export const REFERENCE_HEADER = [
   "opcoes_de_valor",
   "revisor_visibilidade",
   "revisor_valor",
+  /** "valor" (vejo, não sei classificar) ou "identificar" (não sei qual é). */
+  "revisor_duvida",
 ] as const;
 
 /** Leitura de referência do revisor, preenchida ANTES de abrir a ficha. */
@@ -110,7 +114,15 @@ export function renderReferenceCsv(
   const rows: (string | null)[][] = [[...REFERENCE_HEADER]];
   for (const p of photos)
     for (const id of FEATURE_IDS)
-      rows.push([p, id, FEATURE_LABELS[id], values[id].join(" | "), "", ""]);
+      rows.push([
+        p,
+        id,
+        FEATURE_LABELS[id],
+        values[id].join(" | "),
+        "",
+        "",
+        "",
+      ]);
   return toCsv(rows);
 }
 
@@ -217,7 +229,8 @@ Para cada observação **visível** de A e de B, preencha
 - \`parcial\`: corresponde em parte (local certo, detalhe errado);
 - \`nao\`: não corresponde (linha inexistente, local errado, inventado).
 
-Deixe vazio quando o observador marcou \`nao_visivel\` ou \`sem_resultado\`.
+Deixe vazio quando o observador marcou \`nao_visivel\`, \`indeterminada\`
+(viu o traço, mas não classificou) ou \`sem_resultado\`.
 
 ## Regras
 
@@ -275,6 +288,9 @@ export function modelSummary(run: EvalRun, model: string) {
     partial: features.filter((f) => f.visibility === "partial").length,
     notVisible: features.filter((f) => f.visibility === "not_visible").length,
     downgraded: features.filter((f) => f.downgradedBy).length,
+    /** Traço visto, valor não classificável (03c.2). */
+    unclassifiable: features.filter((f) => f.reason === "unclassifiable")
+      .length,
     inputTokens: calls.reduce((n, c) => n + (c.usage?.inputTokens ?? 0), 0),
     outputTokens: calls.reduce((n, c) => n + (c.usage?.outputTokens ?? 0), 0),
     costUsd: ran.reduce((n, u) => n + u.costUsd, 0),
@@ -380,6 +396,10 @@ export function renderTechnicalReport(
         ["… parcialmente visíveis", (s) => s.partial],
         ["Não visíveis", (s) => s.notVisible],
         ["Rebaixadas a não visível", (s) => s.downgraded],
+        [
+          "Indeterminadas (traço visto, sem classificar)",
+          (s) => s.unclassifiable,
+        ],
         ["Tokens de entrada", (s) => s.inputTokens],
         ["Tokens de saída", (s) => s.outputTokens],
         ["Custo", (s) => usd(s.costUsd)],
@@ -450,7 +470,7 @@ export function renderTechnicalReport(
             const f = u?.final?.features[id];
             if (!u || !f) return u?.status ?? "—";
             return f.visibility === "not_visible"
-              ? `não visível${f.downgradedBy ? ` (rebaixada: ${f.downgradedBy})` : ""}`
+              ? `${f.reason === "unclassifiable" ? "indeterminada" : "não visível"}${f.downgradedBy ? ` (rebaixada: ${f.downgradedBy})` : ""}`
               : `${f.value} (${f.visibility})`;
           })
           .join(" | ")} |`,
@@ -484,6 +504,10 @@ export type ModelScore = {
   limitedByPhoto: number;
   /** …o modelo também reconheceu o limite (parcial ou não visível). */
   limitRecognized: number;
+  /** Modelo marcou "indeterminada" (traço visto, sem classificar). */
+  indeterminate: number;
+  /** …onde o revisor também via, mas não sabia classificar ("valor"). */
+  indeterminateWhereReviewerUnsure: number;
   evidence: { sim: number; parcial: number; nao: number };
   /** Linhas sem preenchimento do revisor (excluídas). */
   unreviewed: number;
@@ -514,6 +538,8 @@ export function scoreReview(input: {
         overconfident: 0,
         limitedByPhoto: 0,
         limitRecognized: 0,
+        indeterminate: 0,
+        indeterminateWhereReviewerUnsure: 0,
         evidence: { sim: 0, parcial: 0, nao: 0 },
         unreviewed: 0,
       },
@@ -528,6 +554,11 @@ export function scoreReview(input: {
       const vis = row[`${side}_visibilidade`];
       if (vis === "sem_resultado") continue;
       const rv = r?.revisor_visibilidade ?? "";
+      if (vis === "indeterminada") {
+        s.indeterminate++;
+        if (!rv && r?.revisor_duvida === "valor")
+          s.indeterminateWhereReviewerUnsure++;
+      }
       if (!rv) {
         s.unreviewed++;
         continue;
@@ -568,6 +599,7 @@ export function renderScore(scores: ModelScore[]): string {
     `| Valor correto quando ambos veem | ${scores.map((s) => pct(s.correctValue, s.visibleBoth)).join(" | ")} |`,
     `| Afirmou visível sem estar (falso visível) | ${scores.map((s) => s.falseVisible).join(" | ")} |`,
     `| … dos quais linhas inventadas | ${scores.map((s) => s.inventedLines).join(" | ")} |`,
+    `| Indeterminadas (traço visto, sem classificar) | ${scores.map((s) => `${s.indeterminate} (${s.indeterminateWhereReviewerUnsure} onde o revisor também não classificou)`).join(" | ")} |`,
     `| Reconheceu o limite da foto (onde não estava nítido) | ${scores.map((s) => pct(s.limitRecognized, s.limitedByPhoto)).join(" | ")} |`,
     `| Disse "nítida" onde só era parcial | ${scores.map((s) => s.overconfident).join(" | ")} |`,
     `| Deixou de ver o que estava nítido | ${scores.map((s) => s.missedClear).join(" | ")} |`,

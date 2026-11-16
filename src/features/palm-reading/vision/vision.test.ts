@@ -20,11 +20,15 @@ import {
 } from "./prompt";
 
 describe("prompt de visão", () => {
-  it("só observa, em português, e marca não visível na dúvida", () => {
+  it("só observa, em português, e separa dúvida de existência × de categoria", () => {
     const p = VISION_SYSTEM_PROMPT;
     expect(p).toMatch(/Você não interpreta/u);
     expect(p).toMatch(/português do Brasil/u);
-    expect(p).toMatch(/Na dúvida, use "not_visible"/u);
+    expect(p).toMatch(
+      /Dúvida sobre a EXISTÊNCIA ou a identidade do traço: "not_visible"/u,
+    );
+    expect(p).toMatch(/Dúvida só sobre a CATEGORIA: "unclassifiable"/u);
+    expect(p).toMatch(/Não escolha uma categoria por aproximação/u);
     expect(p).toMatch(/Nunca deduza uma linha ou um formato/u);
     expect(p).toMatch(/não estime milímetros, ângulos ou proporções exatas/u);
     for (const id of FEATURE_IDS) expect(p).toContain(`- ${id} (`);
@@ -313,5 +317,41 @@ describe("JPEG no servidor", () => {
       ok: false,
       reason: "not-jpeg",
     });
+  });
+});
+
+describe("calibração 03F.1", () => {
+  it("o schema aceita 'unclassifiable' só como motivo de não visível", () => {
+    const schema = observationSchema("right") as {
+      properties: {
+        features: {
+          properties: Record<
+            string,
+            {
+              anyOf: {
+                properties: Record<string, { enum?: string[]; const?: string }>;
+              }[];
+            }
+          >;
+        };
+      };
+    };
+    const [observed, hidden] =
+      schema.properties.features.properties["head.length"].anyOf;
+    expect(hidden.properties.reason.enum).toContain("unclassifiable");
+    expect(observed.properties.visibility.enum).toEqual(["clear", "partial"]);
+  });
+
+  it("regras de dedos e de problemas de imagem estão nas instruções", () => {
+    expect(VISION_SYSTEM_PROMPT).toMatch(
+      /PONTA do dedo médio e a dobra do PULSO/u,
+    );
+    expect(VISION_SYSTEM_PROMPT).toMatch(
+      /Pontas cortadas: "not_visible" com "out_of_frame"/u,
+    );
+    expect(VISION_SYSTEM_PROMPT).toMatch(/Liste "hand_cropped" sempre que/u);
+    expect(VISION_SYSTEM_PROMPT).toMatch(
+      /Use "partial" para não descartar uma observação que a foto sustenta/u,
+    );
   });
 });

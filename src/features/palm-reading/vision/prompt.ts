@@ -18,7 +18,7 @@ import {
 import { FEATURE_LABELS, PALM_LIBRARY } from "../analysis/library";
 import type { VisionRequest } from "./contract";
 
-export const VISION_PROMPT_VERSION = "03d.1";
+export const VISION_PROMPT_VERSION = "03d.2";
 
 const definitions = FEATURE_IDS.map((id) => {
   const values = FEATURE_VALUES[id] as readonly string[];
@@ -35,10 +35,17 @@ ${definitions}
 
 Como decidir
 - Use as definições como critério visual aproximado, a olho. Fotografias comuns não permitem medições anatômicas: não estime milímetros, ângulos ou proporções exatas.
-- "clear": a característica é vista sem dúvida. "partial": é vista, mas parte dela está encoberta, fraca ou fora do quadro. "not_visible": não dá para identificar com segurança. Na dúvida, use "not_visible". Nunca deduza uma linha ou um formato que não esteja visível.
+- Separe duas perguntas: (1) o traço ou a parte da mão está visível e você sabe qual é? (2) o critério da categoria aparece (por exemplo, onde a linha termina, se ela sobe no final, se começa junto da linha da vida)?
+- "clear": as duas respostas são sim, sem dúvida: o traço é contínuo e o critério da categoria aparece com nitidez.
+- "partial": você sabe qual é o traço e o critério aparece o bastante para escolher a categoria, embora parte do traço esteja fraca, interrompida, levemente encoberta ou no limite do quadro. Use "partial" para não descartar uma observação que a foto sustenta; a evidência deve dizer o que aparece e o que falta.
+- "not_visible" com "reason": "unclassifiable": você sabe qual é o traço, mas o critério da categoria não aparece (ex.: o final da linha some, a foto está inclinada). Não escolha uma categoria por aproximação.
+- "not_visible" com "reason": "ambiguous": não dá para saber qual linha ou traço é (ex.: duas linhas se confundem). Use "too_faint", "obscured", "out_of_frame" ou "image_quality" quando o traço não aparece por esses motivos.
+- Dúvida sobre a EXISTÊNCIA ou a identidade do traço: "not_visible". Dúvida só sobre a CATEGORIA: "unclassifiable". Nunca deduza uma linha ou um formato que não esteja visível.
+- Comprimento dos dedos ("hand.fingerLength"): só classifique se a PONTA do dedo médio e a dobra do PULSO aparecem na foto e a mão está de frente para a câmera; a evidência deve citar a ponta do dedo médio e o pulso. Pontas cortadas: "not_visible" com "out_of_frame". Mão inclinada ou em perspectiva: "not_visible" com "unclassifiable".
+- Formato da palma e dedos são proporções: em foto inclinada ou em perspectiva, prefira "partial" (dizendo a distorção na evidência) ou "unclassifiable".
 - A linha do destino ("fate.presence") só pode ser "clear" se uma linha vertical estiver nitidamente visível; caso contrário, "not_visible". A ausência de uma linha na foto não prova que ela não exista: use "not_visible", com o motivo.
 - Toda característica "clear" ou "partial" precisa de "evidence": uma frase em português do Brasil (entre 20 e 160 caracteres) dizendo ONDE ela aparece na foto, com referência a dedos, polegar, pulso, borda ou centro da palma. Cada evidência deve ser própria daquela característica. A evidência descreve, não interpreta.
-- Avalie a imagem em "image": "adequate", "limited" ou "insufficient", e liste os problemas que encontrar. Se não for uma palma, se for o dorso, se houver mais de uma mão, se a mão estiver fechada ou se a foto não permitir análise, use "insufficient" e marque as características como "not_visible".
+- Avalie a imagem em "image": "adequate", "limited" ou "insufficient", e liste os problemas que encontrar. Liste "hand_cropped" sempre que pontas dos dedos, polegar ou pulso estiverem fora do quadro, e "angled" sempre que a mão não estiver de frente para a câmera. Se não for uma palma, se for o dorso, se houver mais de uma mão, se a mão estiver fechada ou se a foto não permitir análise, use "insufficient" e marque as características como "not_visible".
 
 Limites obrigatórios
 - Não infira nem mencione idade, gênero, identidade, etnia, cor ou tom da pele, saúde, condições médicas, cicatrizes, tatuagens, joias ou qualquer atributo pessoal.

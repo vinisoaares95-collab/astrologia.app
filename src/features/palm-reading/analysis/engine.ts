@@ -21,6 +21,7 @@ import {
   FEATURE_IDS,
   type FeatureId,
   type ImageIssue,
+  type NotVisibleReason,
 } from "./contract";
 import {
   FEATURE_LABELS,
@@ -37,7 +38,7 @@ import type {
   ValidatedObservation,
 } from "./validate-observation";
 
-export const PALM_ENGINE_VERSION = `03c.1+${PALM_LIBRARY_VERSION}`;
+export const PALM_ENGINE_VERSION = `03c.2+${PALM_LIBRARY_VERSION}`;
 
 export type PalmChapterId = "maos" | "linhas";
 
@@ -107,11 +108,14 @@ const ISSUE_TEXT: Partial<Record<ImageIssue, string>> = {
   obstruction: "algo cobrindo parte da palma",
 };
 
-function limitationFor(id: FeatureId): string {
+function limitationFor(id: FeatureId, reason: NotVisibleReason): string {
   if (id === "fate.presence")
     return "A linha do destino não foi identificada com clareza na foto e não foi interpretada; isso não quer dizer que ela não exista.";
   const label = FEATURE_LABELS[id];
   const o = label.startsWith("A ") ? "a" : "o";
+  // Traço visto, mas sem como classificar: diz isso, sem interpretar.
+  if (reason === "unclassifiable")
+    return `${label} aparece na foto, mas não pôde ser classificad${o} com segurança e não foi interpretad${o}.`;
   return `${label} não pôde ser observad${o} na foto e não foi interpretad${o}.`;
 }
 
@@ -124,7 +128,7 @@ export function buildPalmInterpretation(o: ValidatedObservation): PalmReport {
     const f = o.features[id];
     const chapter = CHAPTER_OF[groupOf(id)];
     if (f.visibility === "not_visible") {
-      limitations[chapter].push(limitationFor(id));
+      limitations[chapter].push(limitationFor(id, f.reason));
       continue;
     }
     const entry = (PALM_LIBRARY[id] as Record<string, LibraryEntry>)[f.value];

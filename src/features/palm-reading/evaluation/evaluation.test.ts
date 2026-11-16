@@ -834,3 +834,51 @@ describe("apuração: limites e linhas inventadas", () => {
     ]);
   });
 });
+
+describe("indeterminada (03c.2) na ficha e na apuração", () => {
+  it("ficha mostra 'indeterminada'; apuração não conta como erro nem como visível", async () => {
+    const run = await runVisionEvaluation({
+      photos: [photo("foto-01")],
+      models: EVAL_VISION_MODELS,
+      providerFor: mocks().providerFor,
+      budget: createBudget(1),
+    });
+    for (const u of run.units)
+      u.final!.features["head.length"] = {
+        visibility: "not_visible",
+        value: null,
+        evidence: null,
+        reason: "unclassifiable",
+        downgradedBy: null,
+      };
+    const key = blindKey(run, () => true);
+    const sheet = parseCsv(renderReviewSheet(run, key));
+    const row = sheet.find((r) => r.caracteristica_id === "head.length")!;
+    expect([row.A_visibilidade, row.B_visibilidade]).toEqual([
+      "indeterminada",
+      "indeterminada",
+    ]);
+    const reference = [
+      {
+        foto: "foto-01",
+        caracteristica_id: "head.length",
+        revisor_visibilidade: "",
+        revisor_valor: "",
+        revisor_duvida: "valor",
+      },
+    ];
+    const [a] = scoreReview({ reference, sheet: [row], key });
+    expect(a).toMatchObject({
+      indeterminate: 1,
+      indeterminateWhereReviewerUnsure: 1,
+      falseVisible: 0,
+      unreviewed: 1,
+    });
+    expect(renderScore([a])).toMatch(/Indeterminadas/u);
+  });
+
+  it("referência nova já traz a coluna revisor_duvida", () => {
+    const rows = parseCsv(renderReferenceCsv(["foto-01"], FEATURE_VALUES));
+    expect(Object.keys(rows[0])).toContain("revisor_duvida");
+  });
+});

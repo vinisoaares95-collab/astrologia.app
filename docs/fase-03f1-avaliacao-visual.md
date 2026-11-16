@@ -329,3 +329,60 @@ tipos e build de produção (nada da avaliação no bundle).
    de uso público, registro jurídico do consentimento e a revisão dos
    limites comerciais de orçamento (pendência da 03E; esta avaliação usa
    orçamento próprio e não altera os limites comerciais).
+
+## 8. Correções após o piloto (03c.2 / prompt 03d.2)
+
+Piloto exploratório (4 pessoas, 8 fotos, referência parcial assistida por
+IA): Sonnet 5.5 escolhido provisoriamente como modelo visual. Os dados do
+piloto ficam fora do Git (`avaliacao-ia/03f-piloto/`) e não foram
+alterados.
+
+**Problemas comprovados que motivaram as mudanças:** todas as 5 evidências
+não confirmadas e todos os 4 falsos visíveis foram de comprimento dos dedos
+(com pontas cortadas, perspectiva ou sem citar a ponta do médio e o pulso);
+o contrato não tinha como registrar "vejo a linha, mas não sei
+classificá-la" (o revisor precisou excluir 22 linhas por esse motivo).
+
+**Contrato (03c.2), mudança mínima:** novo motivo de não visível
+`unclassifiable`, para traço identificável cujo critério de categoria não
+aparece. Continua `not_visible`: o motor, os capítulos 6 e 7, os
+fallbacks, os validadores e a apuração tratam como hoje (nada
+interpretado). Só a limitação muda de texto ("aparece na foto, mas não
+pôde ser classificado com segurança"). Os quatro estados ficam:
+
+| Situação                                                  | Contrato                                 |
+| --------------------------------------------------------- | ---------------------------------------- |
+| Traço identificável e categoria classificável             | `clear` ou `partial` + valor + evidência |
+| Traço identificável, categoria indeterminada              | `not_visible` + `unclassifiable`         |
+| Não se sabe qual traço é                                  | `not_visible` + `ambiguous`              |
+| Não visível (fraco, encoberto, fora do quadro, qualidade) | `not_visible` + motivo                   |
+
+Não foi criado um novo valor de visibilidade: todo o código que testa
+`visibility !== "not_visible"` continua seguro.
+
+**Validador (comprimento dos dedos):** rebaixa quando há `hand_cropped` ou
+a evidência fala em ponta cortada (`FINGERS_CROPPED` → `out_of_frame`),
+quando há `angled` (`PERSPECTIVE` → `unclassifiable`) e quando a evidência
+não cita a ponta do dedo médio **e** o pulso (`FINGER_REFERENCES_MISSING`
+→ `unclassifiable`).
+
+**Prompt (03d.2):** separa "o traço existe e sei qual é?" de "o critério da
+categoria aparece?"; define `clear`, `partial` (usar para não descartar
+observação sustentada, dizendo o que falta) e `not_visible` com
+`unclassifiable` ou `ambiguous`; regras para dedos (ponta do médio e
+pulso; cortado → `out_of_frame`; inclinado → `unclassifiable`); pede
+`hand_cropped` e `angled` sempre que se aplicarem.
+
+**Reaplicação local do validador às 16 respostas do piloto (sem API):**
+remove 4 das 5 evidências não confirmadas; também remove 4 evidências
+confirmadas que não citavam a ponta do dedo e o pulso (o prompt novo passa
+a pedir isso — efeito a medir na revalidação). Nenhuma linha do piloto foi
+afetada.
+
+**Ferramentas de avaliação:** ficha mostra `indeterminada`; apuração conta
+indeterminadas e as que coincidem com "valor" do revisor; nova referência
+já traz `revisor_duvida`.
+
+**Riscos:** a regra dos dedos é léxica (uma evidência pode citar ponta e
+pulso e ainda estar errada, como no caso restante do piloto); o efeito do
+prompt nas linhas não foi medido; `angled` depende de o modelo marcá-lo.

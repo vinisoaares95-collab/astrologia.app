@@ -19,7 +19,8 @@
  */
 import type { PalmHand } from "../consent";
 
-export const OBSERVATION_VERSION = "03c.1";
+/** 03c.2: motivo "unclassifiable" (traço identificável, valor não classificável). */
+export const OBSERVATION_VERSION = "03c.2";
 
 export const VISIBILITIES = ["clear", "partial", "not_visible"] as const;
 export type Visibility = (typeof VISIBILITIES)[number];
@@ -102,13 +103,22 @@ export const FEATURE_GROUP: Record<
   "fate.presence": "fate",
 };
 
-/** Por que uma característica não pôde ser observada. */
+/**
+ * Por que uma característica não pôde ser usada.
+ *
+ * - "ambiguous": não dá para saber qual linha ou traço é;
+ * - "unclassifiable" (03c.2): o traço é identificável, mas o critério da
+ *   categoria não aparece (ex.: o final da linha some, a mão está
+ *   inclinada). Continua "not_visible": nada é interpretado, só a
+ *   limitação muda de texto. Separa "não sei o valor" de "não vejo".
+ */
 export const NOT_VISIBLE_REASONS = [
   "out_of_frame",
   "too_faint",
   "obscured",
   "image_quality",
   "ambiguous",
+  "unclassifiable",
 ] as const;
 export type NotVisibleReason = (typeof NOT_VISIBLE_REASONS)[number];
 

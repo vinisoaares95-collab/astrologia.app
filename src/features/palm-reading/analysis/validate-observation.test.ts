@@ -255,3 +255,105 @@ describe("estruturas malformadas e tentativas não sustentadas", () => {
     expect(fail(p)).toEqual(["INVALID_VALUE", "INVALID_VALUE"]);
   });
 });
+
+// ── 03F.1: correções após o piloto visual ─────────────────────────────────
+
+describe("comprimento dos dedos (piloto 03F.1)", () => {
+  const fingersOf = (r: ReturnType<typeof ok>) =>
+    r.observation.features["hand.fingerLength"];
+  const noteOf = (r: ReturnType<typeof ok>) =>
+    r.notes.find((n) => n.feature === "hand.fingerLength")?.code;
+
+  it("com a ponta do dedo médio e o pulso na evidência, a classificação vale", () => {
+    const r = ok(clearHand());
+    expect(fingersOf(r)).toMatchObject({ visibility: "clear", value: "short" });
+    expect(noteOf(r)).toBeUndefined();
+  });
+
+  it.each([
+    // Evidências reais do piloto que não puderam ser confirmadas.
+    [
+      "sem ponta nem pulso",
+      "O dedo médio, estendido à direita, mede bem menos de três quartos do comprimento da palma.",
+    ],
+    [
+      "sem ponta",
+      "O dedo médio é visivelmente mais curto que o comprimento da palma, do pulso até a base dos dedos.",
+    ],
+    [
+      "sem pulso",
+      "A ponta do dedo médio fica bem abaixo das pontas dos dedos vizinhos.",
+    ],
+  ])("evidência %s: indeterminada, não interpretada", (_, evidence) => {
+    const o = clearHand();
+    o.features["hand.fingerLength"].evidence = evidence;
+    const r = ok(o);
+    expect(fingersOf(r)).toEqual({
+      visibility: "not_visible",
+      reason: "unclassifiable",
+    });
+    expect(noteOf(r)).toBe("FINGER_REFERENCES_MISSING");
+  });
+
+  it("pontas cortadas (problema de imagem): fora do quadro", () => {
+    const o = clearHand();
+    o.image = { quality: "limited", issues: ["hand_cropped"] };
+    const r = ok(o);
+    expect(fingersOf(r)).toEqual({
+      visibility: "not_visible",
+      reason: "out_of_frame",
+    });
+    expect(noteOf(r)).toBe("FINGERS_CROPPED");
+  });
+
+  it("pontas cortadas descritas na própria evidência, mesmo sem o problema marcado", () => {
+    const o = clearHand();
+    o.features["hand.fingerLength"] = {
+      visibility: "partial",
+      value: "medium",
+      evidence:
+        "O dedo médio sai da base da palma perto do pulso, mas a ponta fica cortada no topo da foto.",
+    };
+    const r = ok(o);
+    expect(fingersOf(r)).toMatchObject({ reason: "out_of_frame" });
+    expect(noteOf(r)).toBe("FINGERS_CROPPED");
+  });
+
+  it("mão inclinada: indeterminada (proporção distorcida)", () => {
+    const o = clearHand();
+    o.image = { quality: "limited", issues: ["angled"] };
+    const r = ok(o);
+    expect(fingersOf(r)).toMatchObject({ reason: "unclassifiable" });
+    expect(noteOf(r)).toBe("PERSPECTIVE");
+    // Só os dedos: as linhas seguem valendo.
+    expect(r.observation.features["heart.length"].visibility).toBe("clear");
+  });
+});
+
+describe("traço visível × categoria classificável (03c.2)", () => {
+  it("'unclassifiable' é aceito como motivo de não visível", () => {
+    const o = clearHand();
+    o.features["head.length"] = {
+      visibility: "not_visible",
+      reason: "unclassifiable",
+    };
+    const r = ok(o);
+    expect(r.observation.features["head.length"]).toEqual({
+      visibility: "not_visible",
+      reason: "unclassifiable",
+    });
+    expect(r.observation.status).toBe("partial");
+  });
+
+  it("'unclassifiable' não carrega valor nem evidência", () => {
+    const o = clearHand() as unknown as {
+      features: Record<string, Record<string, unknown>>;
+    };
+    o.features["head.length"] = {
+      visibility: "not_visible",
+      reason: "unclassifiable",
+      value: "long",
+    };
+    expect(fail(o)).toContain("UNKNOWN_FIELD");
+  });
+});

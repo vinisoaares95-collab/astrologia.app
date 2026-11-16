@@ -51,7 +51,10 @@ export type ObservationDowngradeCode =
   | "REPEATED_EVIDENCE"
   | "FATE_NOT_CLEAR"
   | "INCONSISTENT"
-  | "IMAGE_INSUFFICIENT";
+  | "IMAGE_INSUFFICIENT"
+  | "FINGER_REFERENCES_MISSING"
+  | "FINGERS_CROPPED"
+  | "PERSPECTIVE";
 
 export type ObservationNote = {
   code:
@@ -125,7 +128,24 @@ const DOWNGRADE_MESSAGES: Record<ObservationDowngradeCode, string> = {
   INCONSISTENT: "Incompatível com outra característica da mesma observação.",
   IMAGE_INSUFFICIENT:
     "A qualidade da imagem não permite usar nenhuma característica.",
+  FINGER_REFERENCES_MISSING:
+    "O comprimento dos dedos só é classificado quando a evidência cita a ponta do dedo médio e o pulso.",
+  FINGERS_CROPPED:
+    "Pontas dos dedos fora do quadro: o comprimento dos dedos não pode ser classificado.",
+  PERSPECTIVE:
+    "Mão inclinada em relação à câmera: a proporção dos dedos fica distorcida.",
 };
+
+/**
+ * Comprimento dos dedos (piloto 03F.1: todas as evidências não confirmadas
+ * e todos os falsos visíveis foram desta característica). A classificação
+ * compara a ponta do dedo médio com o pulso; sem as duas referências na
+ * evidência, ou com a ponta cortada, não há como sustentá-la.
+ */
+const FINGER_TIP_RE = /(?<!\p{L})(ponta|extremidade)(?!\p{L})/iu;
+const WRIST_RE = /(?<!\p{L})(pulso|punho)(?!\p{L})/iu;
+const CROPPED_RE =
+  /(?<!\p{L})(cortad\p{L}*|fora do (?:quadro|enquadramento)|não aparece\p{L}*)(?!\p{L})/iu;
 
 // ── Validação ──────────────────────────────────────────────────────────────
 
@@ -308,6 +328,26 @@ export function validatePalmObservation(
     const key = f.evidence.toLowerCase();
     if (seen.has(key)) downgrade(id, "REPEATED_EVIDENCE", "ambiguous");
     else seen.set(key, id);
+  }
+
+  // Comprimento dos dedos: referências na evidência, pontas no quadro e
+  // mão de frente. Sem isso, o traço pode até ser visto, mas não
+  // classificado ("unclassifiable") ou está fora do quadro.
+  const fingers = parsed["hand.fingerLength"];
+  if (fingers.visibility !== "not_visible") {
+    if (issues.includes("hand_cropped") || CROPPED_RE.test(fingers.evidence))
+      downgrade("hand.fingerLength", "FINGERS_CROPPED", "out_of_frame");
+    else if (issues.includes("angled"))
+      downgrade("hand.fingerLength", "PERSPECTIVE", "unclassifiable");
+    else if (
+      !FINGER_TIP_RE.test(fingers.evidence) ||
+      !WRIST_RE.test(fingers.evidence)
+    )
+      downgrade(
+        "hand.fingerLength",
+        "FINGER_REFERENCES_MISSING",
+        "unclassifiable",
+      );
   }
 
   // Linha do destino: só nítida.

@@ -154,3 +154,47 @@ describe("sem dados pessoais", () => {
     expect(JSON.stringify(r)).not.toMatch(/blob:|data:image|base64|exif/iu);
   });
 });
+
+describe("traço visto sem classificar (03c.2)", () => {
+  it("não é interpretado; a limitação diz que aparece mas não foi classificado", () => {
+    const raw = clearHand();
+    raw.features["head.length"] = {
+      visibility: "not_visible",
+      reason: "unclassifiable",
+    };
+    raw.features["hand.fingerLength"] = {
+      visibility: "not_visible",
+      reason: "unclassifiable",
+    };
+    const r = reportOf(raw);
+    const all = items(r);
+    expect(all.some((i) => i.factIds.includes("head.length"))).toBe(false);
+    // Sem dedos classificados, o tipo de mão não é derivado.
+    expect(all.some((i) => i.factIds.includes("hand.type"))).toBe(false);
+    expect(r.chapters[1].limitations).toContain(
+      "O comprimento da linha da cabeça aparece na foto, mas não pôde ser classificado com segurança e não foi interpretado.",
+    );
+    expect(r.chapters[0].limitations).toContain(
+      "O comprimento dos dedos aparece na foto, mas não pôde ser classificado com segurança e não foi interpretado.",
+    );
+  });
+
+  it("concordância no feminino e linha do destino com texto próprio", () => {
+    const raw = clearHand();
+    raw.features["head.slope"] = {
+      visibility: "not_visible",
+      reason: "unclassifiable",
+    };
+    raw.features["fate.presence"] = {
+      visibility: "not_visible",
+      reason: "unclassifiable",
+    };
+    const lim = reportOf(raw).chapters[1].limitations;
+    expect(lim).toContain(
+      "A inclinação da linha da cabeça aparece na foto, mas não pôde ser classificada com segurança e não foi interpretada.",
+    );
+    expect(
+      lim.some((l) => /linha do destino não foi identificada/u.test(l)),
+    ).toBe(true);
+  });
+});

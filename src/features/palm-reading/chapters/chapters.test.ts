@@ -266,7 +266,10 @@ describe("falhas e biblioteca", () => {
             : {
                 visibility,
                 value: pick(FEATURE_VALUES[f as FeatureId]),
-                evidence: "Traço fictício visível perto da base do dedo médio.",
+                evidence:
+                  f === "hand.fingerLength"
+                    ? "A ponta do dedo médio fica a cerca de três quartos da distância até o pulso."
+                    : "Traço fictício visível perto da base do dedo médio.",
               };
       }
       const r = validatePalmObservation(raw, "right");

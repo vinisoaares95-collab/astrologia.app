@@ -30,7 +30,7 @@ export const clearHand = (): Raw => ({
       visibility: "clear",
       value: "short",
       evidence:
-        "Dedo médio visivelmente menor que três quartos do comprimento da palma.",
+        "A ponta do dedo médio fica bem antes de três quartos da distância entre o pulso e a base dele.",
     },
     "heart.length": {
       visibility: "clear",
