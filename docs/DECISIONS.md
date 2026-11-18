@@ -140,6 +140,14 @@ Versões verificadas no npm em 30/10/2026.
 | Precisão e intervalos | Texto do sistema (`notes`), a partir dos fatos; o modelo não descreve horário, janelas nem margens                                  | Descrições de incerteza do modelo saíram vagas ou incorretas na 02F.1 |
 | Fallback no relatório | Sem rótulo técnico para o cliente; origem e motivo só na trilha de auditoria                                                        | Experiência de leitura consistente                                    |
 
+## Segurança de dependências (18/11/2026)
+
+| Tema                           | Decisão                                                                                                                                     | Motivo                                                                               |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Next.js                        | 16.4.3 → 16.4.6 (com `eslint-config-next`), mesma versão principal; React 19.3.0 inalterado                                                 | GHSA-mfr8-8qww-v76h e GHSA-vc7v-qv4w-wrv8 (vazamento de cache com `'use cache'`)     |
+| minimatch (dev)                | 11.0.9, via `typescript-eslint` 8.73.0, dentro da faixa já aceita                                                                           | GHSA-g3hv-75wg-m249 (negação de serviço)                                             |
+| **Pendência:** picomatch (dev) | Mantido em 4.0.7: **sem versão corrigida publicada** para GHSA-fc5q-39xc-vjpf (ReDoS, alta). Sem downgrades de Vitest ou eslint-config-next | Afeta só lint e testes (`npm audit --omit=dev`: 0). Atualizar quando houver correção |
+
 ## Limitações conhecidas
 
 - **HEIC** é aceito, mas só tem pré-visualização no Safari; em outros
