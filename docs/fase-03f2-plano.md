@@ -299,6 +299,7 @@ Os modelos não mudaram e os controles continuam.
 
    Palavras com gênero sobre coisas continuam livres. A nova tentativa
    recebe a orientação de usar verbo ou construção neutra.
+
 3. **Avisos redundantes:** saem só as orações ", sem definir quem você é",
    ", e não uma definição fechada"… O resto da frase fica, e o texto é
    validado de novo; se não passar, fica o original. A remoção é
