@@ -87,7 +87,7 @@ describe("parcial", () => {
     expect(items(r).some((i) => i.id.includes("fingerLength"))).toBe(false);
     expect(items(r).some((i) => i.id.includes("hand.type"))).toBe(false);
     expect(r.chapters[0].limitations).toContain(
-      "O comprimento dos dedos não pôde ser observado na foto e não foi interpretado.",
+      "O comprimento dos dedos não ficou visível na foto e não foi interpretado.",
     );
     expect(items(r).some((i) => i.id.includes("fate"))).toBe(false);
     expect(r.chapters[1].limitations).toContain(
@@ -98,7 +98,8 @@ describe("parcial", () => {
   it("problemas de imagem viram limitação comum aos dois capítulos", () => {
     for (const c of r.chapters)
       expect(c.limitations[0]).toBe(
-        "A foto tinha reflexos; algumas características podem não ter sido observadas.",
+        // Problema apontado pela análise automática, não apresentado como fato.
+        "A análise da foto apontou reflexos; algumas características podem não ter sido observadas.",
       );
   });
 });
@@ -139,10 +140,14 @@ describe("foto insuficiente e linhas ausentes", () => {
     }
   });
 
-  it("linhas não identificáveis: capítulo 7 vazio, com limitações por linha", () => {
+  it("linhas não identificáveis: capítulo 7 vazio, limitações condensadas", () => {
     const r = reportOf(linesMissing());
     expect(r.chapters[1].items).toEqual([]);
-    expect(r.chapters[1].limitations).toHaveLength(7);
+    // Uma frase para as não visíveis (todas citadas) + a do destino.
+    expect(r.chapters[1].limitations).toHaveLength(2);
+    expect(r.chapters[1].limitations[0]).toMatch(
+      /^O comprimento e o traçado da linha do coração, .* e o arco da linha da vida não ficaram visíveis na foto e não foram interpretados\.$/u,
+    );
     expect(r.chapters[0].items.length).toBeGreaterThan(0);
   });
 });
@@ -151,7 +156,15 @@ describe("sem dados pessoais", () => {
   it("o relatório só contém mão, características e textos do sistema", () => {
     const r = reportOf(clearHand());
     expect(Object.keys(r).sort()).toEqual(
-      ["chapters", "disclaimer", "facts", "hand", "status", "version"].sort(),
+      [
+        "chapters",
+        "disclaimer",
+        "facts",
+        "hand",
+        "issues",
+        "status",
+        "version",
+      ].sort(),
     );
     expect(JSON.stringify(r)).not.toMatch(/blob:|data:image|base64|exif/iu);
   });
@@ -174,10 +187,10 @@ describe("traço visto sem classificar (03c.2)", () => {
     // Sem dedos classificados, o tipo de mão não é derivado.
     expect(all.some((i) => i.factIds.includes("hand.type"))).toBe(false);
     expect(r.chapters[1].limitations).toContain(
-      "O comprimento da linha da cabeça aparece na foto, mas não pôde ser classificado com segurança e não foi interpretado.",
+      "O comprimento da linha da cabeça aparece na foto, mas não pôde ser classificado com segurança; por isso não foi interpretado.",
     );
     expect(r.chapters[0].limitations).toContain(
-      "O comprimento dos dedos aparece na foto, mas não pôde ser classificado com segurança e não foi interpretado.",
+      "O comprimento dos dedos aparece na foto, mas não pôde ser classificado com segurança; por isso não foi interpretado.",
     );
   });
 
@@ -193,7 +206,7 @@ describe("traço visto sem classificar (03c.2)", () => {
     };
     const lim = reportOf(raw).chapters[1].limitations;
     expect(lim).toContain(
-      "A inclinação da linha da cabeça aparece na foto, mas não pôde ser classificada com segurança e não foi interpretada.",
+      "A inclinação da linha da cabeça aparece na foto, mas não pôde ser classificada com segurança; por isso não foi interpretada.",
     );
     expect(
       lim.some((l) => /linha do destino não foi identificada/u.test(l)),

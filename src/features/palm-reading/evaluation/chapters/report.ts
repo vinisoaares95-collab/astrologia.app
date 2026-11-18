@@ -416,8 +416,10 @@ export function scoreChapterSheet(
   const editorial = content
     .flatMap((r) => [Number(r.clareza), Number(r.naturalidade)])
     .filter((n) => n >= 1 && n <= 5);
+  // Só casos reais com pelo menos um capítulo com texto (03F.2): um caso
+  // sem nenhum capítulo não pode contar como personalizado.
   const realCases = [
-    ...new Set(sheet.filter((r) => r.tipo === "real").map((r) => r.caso)),
+    ...new Set(content.filter((r) => r.tipo === "real").map((r) => r.caso)),
   ];
   const personalizedOk = realCases.filter((c) =>
     content

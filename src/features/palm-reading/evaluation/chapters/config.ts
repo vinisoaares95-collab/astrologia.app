@@ -92,3 +92,20 @@ export function chaptersEvalGate(env: Env, repoRoot: string): ChaptersEvalGate {
     outDir,
   };
 }
+
+/**
+ * Rascunhos reprovados (só avaliação, 03F.2): desligado por padrão. Liga com
+ * SIDERA_PALM_CHAPTERS_EVAL_KEEP_REJECTED=1 e NUNCA em produção. O arquivo
+ * fica em `restrito/` (pasta 700, arquivo 600), só com caso, capítulo,
+ * tentativa, códigos e texto do modelo — sem pessoa, mão, foto ou
+ * evidência — e é apagado na primeira sessão depois de expirar.
+ */
+export const REJECTED_DRAFTS_FILE = "restrito/rascunhos-reprovados.json";
+export const REJECTED_DRAFTS_RETENTION_DAYS = 30;
+
+export function keepRejectedDrafts(env: Env): boolean {
+  return (
+    env.SIDERA_PALM_CHAPTERS_EVAL_KEEP_REJECTED === "1" &&
+    env.NODE_ENV !== "production"
+  );
+}

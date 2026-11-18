@@ -12,7 +12,10 @@ import {
   worstCaseUsd,
   type BudgetController,
 } from "../../../interpretation/ai/budget";
-import type { AiProvider } from "../../../interpretation/ai/contract";
+import type {
+  AiProvider,
+  AiRequest,
+} from "../../../interpretation/ai/contract";
 import {
   MODEL_PRICES,
   type ModelPrice,
@@ -92,6 +95,41 @@ export type ChapterResult = {
   words: number;
 };
 
+/**
+ * Rascunho reprovado pelo validador (só avaliação, opcional — 03F.2): o
+ * texto do modelo e os códigos da reprovação, sem pessoa, mão ou foto.
+ */
+export type RejectedDraft = {
+  caseId: string;
+  chapter: "maos" | "linhas";
+  attempt: number;
+  outcome: string;
+  errors: string[];
+  text: string;
+};
+
+/** Limite por rascunho guardado (o necessário para diagnosticar). */
+export const REJECTED_DRAFT_MAX_CHARS = 6_000;
+
+const chapterOfRequest = (r: AiRequest): "maos" | "linhas" =>
+  /"id":\s*"maos"/u.test(r.user) ? "maos" : "linhas";
+
+/** Guarda o texto de cada resposta, em ordem, por capítulo. */
+function recording(inner: AiProvider, sink: Record<string, (string | null)[]>) {
+  return {
+    id: inner.id,
+    model: inner.model,
+    async generate(request: AiRequest) {
+      // Uma posição por chamada, mesmo sem resposta, para alinhar à tentativa.
+      const list = (sink[chapterOfRequest(request)] ??= []);
+      const slot = list.push(null) - 1;
+      const response = await inner.generate(request);
+      list[slot] = response.text;
+      return response;
+    },
+  } satisfies AiProvider;
+}
+
 export type CaseResult = {
   id: string;
   kind: EvalCase["kind"];
@@ -143,6 +181,8 @@ export async function runChaptersEvaluation(input: {
   budget: BudgetController;
   prices?: Record<string, ModelPrice>;
   now?: () => number;
+  /** Só avaliação: recebe os rascunhos reprovados (padrão: nada guardado). */
+  onRejectedDraft?: (draft: RejectedDraft) => void;
 }): Promise<ChaptersRun> {
   const prices = input.prices ?? MODEL_PRICES;
   const price = prices[input.provider.model];
@@ -150,7 +190,7 @@ export async function runChaptersEvaluation(input: {
     throw new Error(
       `Sem preço para ${input.provider.model}: gasto não controlável.`,
     );
-  const provider = withBudget(input.provider, input.budget, prices);
+  const budgeted = withBudget(input.provider, input.budget, prices);
   const run: ChaptersRun = {
     startedAt: new Date().toISOString(),
     model: input.provider.model,
@@ -183,6 +223,10 @@ export async function runChaptersEvaluation(input: {
       });
       continue;
     }
+    const responses: Record<string, (string | null)[]> = {};
+    const provider = input.onRejectedDraft
+      ? recording(budgeted, responses)
+      : budgeted;
     const generated = await generatePalmChapters(report, provider, {
       maxAttempts: CHAPTERS_EVAL_CONDITIONS.maxAttempts,
       maxOutputTokens: CHAPTERS_EVAL_CONDITIONS.maxOutputTokens,
@@ -207,6 +251,19 @@ export async function runChaptersEvaluation(input: {
         }));
       if (attempts.some((a) => a.outcome === "error:budget"))
         run.stoppedByBudget = true;
+      if (input.onRejectedDraft)
+        for (const a of attempts) {
+          const text = responses[g.id]?.[a.attempt - 1];
+          if (a.outcome === "ok" || typeof text !== "string") continue;
+          input.onRejectedDraft({
+            caseId: c.id,
+            chapter: g.id,
+            attempt: a.attempt,
+            outcome: a.outcome,
+            errors: a.errors,
+            text: text.slice(0, REJECTED_DRAFT_MAX_CHARS),
+          });
+        }
       const unused = Object.entries(c.observation.features)
         .filter(
           ([id, f]) =>

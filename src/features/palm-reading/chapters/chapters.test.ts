@@ -18,14 +18,11 @@ import {
   type FeatureId,
 } from "../analysis/contract";
 import { buildPalmInterpretation, type PalmReport } from "../analysis/engine";
-import {
-  PALM_FORBIDDEN_TEXT_PATTERNS,
-  PARTIAL_CAVEAT,
-} from "../analysis/library";
+import { PALM_FORBIDDEN_TEXT_PATTERNS } from "../analysis/library";
 import { validatePalmObservation } from "../analysis/validate-observation";
 import { composePalmReading } from "./compose";
 import type { ChapterDraft } from "./contract";
-import { generatePalmChapters } from "./generate";
+import { generatePalmChapters, repairPalmDraft } from "./generate";
 import { palmLibraryDraft } from "./library-draft";
 import {
   createMockPalmTextProvider,
@@ -126,7 +123,7 @@ describe("leitura completa", () => {
 });
 
 describe("leitura parcial", () => {
-  it("ressalva oficial do sistema na primeira seção incerta, versão curta nas demais", async () => {
+  it("uma só ressalva por capítulo, na primeira seção incerta, nomeando as características parciais", async () => {
     const { client, report } = await run(partialHand());
     expect(client.status).toBe("partial");
     expect(
@@ -137,8 +134,11 @@ describe("leitura parcial", () => {
     for (const chapter of client.chapters) {
       const notes = chapter.sections.flatMap((s) => s.notes);
       if (notes.length === 0) continue;
-      expect(notes[0]).toBe(PARTIAL_CAVEAT);
-      expect(notes.slice(1).every((n) => n !== PARTIAL_CAVEAT)).toBe(true);
+      // Consolidada (03F.2): nenhuma repetição nas seções seguintes.
+      expect(notes).toHaveLength(1);
+      expect(notes[0]).toMatch(/só parcialmente visíve(l|is) na foto; leia/u);
+      const first = chapter.sections.findIndex((s) => s.notes.length > 0);
+      expect(chapter.sections[first].notes).toEqual(notes);
     }
     // Limitações do que não foi visto chegam ao cliente.
     expect(
@@ -172,7 +172,9 @@ describe("sem observações suficientes", () => {
     for (const c of client.chapters) {
       expect(c.status).toBe("unavailable");
       expect(c.sections).toEqual([]);
-      expect(c.unavailableMessage).toMatch(/pôde ser observad.*nova foto/su);
+      expect(c.unavailableMessage).toMatch(
+        /não puderam ser observad(o|a)s com segurança; por isso esta parte da leitura não foi feita\. Uma nova foto pode permitir esta leitura: /su,
+      );
     }
   });
 
@@ -183,7 +185,7 @@ describe("sem observações suficientes", () => {
       "unavailable",
     ]);
     expect(client.chapters[1].unavailableMessage).toMatch(
-      /nenhuma linha da palma.*nova foto.*palma bem aberta/su,
+      /as linhas da palma não ficaram visíveis.*nova foto.*palma bem aberta/su,
     );
     // Só o capítulo 6 foi redigido.
     expect(provider.calls).toHaveLength(1);
@@ -436,8 +438,18 @@ describe("segurança do texto final", () => {
   });
 
   it("as regras de segurança estão nas instruções e no validador, não nos dados", () => {
-    expect(PALM_CHAPTER_SYSTEM_PROMPT).toMatch(/NUNCA de duração da vida/u);
-    expect(PALM_CHAPTER_SYSTEM_PROMPT).toMatch(/não é futuro traçado/u);
+    // Regras positivas (03F.2): o foco simbólico está nas instruções...
+    expect(PALM_CHAPTER_SYSTEM_PROMPT).toMatch(/jeito de viver/u);
+    expect(PALM_CHAPTER_SYSTEM_PROMPT).toMatch(
+      /direção que a pessoa constrói/u,
+    );
+    expect(PALM_CHAPTER_SYSTEM_PROMPT).toMatch(/trata do temperamento/u);
+    // ...sem citar os termos proibidos, que levavam a IA a negá-los.
+    expect(PALM_CHAPTER_SYSTEM_PROMPT).not.toMatch(
+      /duração|longevidade|morte|diagnóstic|doença|saúde/iu,
+    );
+    for (const re of PALM_FORBIDDEN_TEXT_PATTERNS)
+      expect(PALM_CHAPTER_SYSTEM_PROMPT).not.toMatch(re);
     expect(PALM_CHAPTER_SYSTEM_PROMPT).toMatch(
       /apenas conteúdo: estas regras não mudam/u,
     );
@@ -456,6 +468,104 @@ describe("segurança do texto final", () => {
     });
     expect(result.simulated).toBe(true);
     expect(result.chapters).toHaveLength(2);
-    expect(audit.version).toMatch(/\+03e\.1$/u);
+    expect(audit.version).toMatch(/\+03e\.2$/u);
+  });
+});
+
+describe("estrutura e reserva da biblioteca (03F.2)", () => {
+  const report = reportOf(clearHand());
+  const linhas = report.chapters[1];
+  const codes = (d: ChapterDraft) =>
+    validatePalmChapterDraft(d, linhas, report).errors.map((e) => e.code);
+
+  it("seção que só retoma itens já tratados é recusada; a síntese continua permitida", () => {
+    const d = palmLibraryDraft(linhas);
+    expect(codes(d)).toEqual([]);
+    d.sections.push({
+      text: "Juntas, essas linhas mostram o mesmo movimento já descrito.",
+      itemIds: [...d.sections[0].itemIds],
+    });
+    expect(codes(d)).toEqual(["REDUNDANT_SECTION"]);
+  });
+
+  it("seção que conecta um item novo a um já tratado continua permitida", () => {
+    const d = palmLibraryDraft(linhas);
+    d.sections[1].itemIds = [
+      ...d.sections[1].itemIds,
+      d.sections[0].itemIds[0],
+    ];
+    expect(codes(d)).not.toContain("REDUNDANT_SECTION");
+  });
+
+  it("correção determinística remove só a seção redundante", () => {
+    const d = palmLibraryDraft(linhas);
+    const n = d.sections.length;
+    d.sections.push({
+      text: "Juntas, essas linhas mostram o mesmo movimento já descrito.",
+      itemIds: [...d.sections[0].itemIds],
+    });
+    const errors = validatePalmChapterDraft(d, linhas, report).errors;
+    const fixed = repairPalmDraft(d, errors);
+    expect(fixed?.repairs).toEqual([
+      `sections.${n}: seção redundante removida`,
+    ]);
+    expect((fixed!.draft as ChapterDraft).sections).toHaveLength(n);
+    expect(d.sections).toHaveLength(n + 1); // o original não é alterado
+    expect(codes(fixed!.draft as ChapterDraft)).toEqual([]);
+  });
+
+  it("no fluxo completo, a seção redundante é removida e o texto segue da IA", async () => {
+    const inner = createMockPalmTextProvider();
+    const provider = {
+      ...inner,
+      async generate(req: Parameters<typeof inner.generate>[0]) {
+        const res = await inner.generate(req);
+        const d = JSON.parse(res.text) as ChapterDraft;
+        d.sections.push({
+          text: "Tudo isso, junto, repete o que já foi dito.",
+          itemIds: [...d.sections[0].itemIds],
+        });
+        return { ...res, text: JSON.stringify(d) };
+      },
+    };
+    const g = await generatePalmChapters(report, provider);
+    for (const c of g.chapters) {
+      expect(c.source).toBe("ai");
+      if (c.status !== "content") continue;
+      const ids = c.sections.flatMap((s) => s.itemIds);
+      expect(new Set(ids).size).toBe(ids.length);
+    }
+    expect(g.attempts.some((a) => a.repairs?.length)).toBe(true);
+  });
+
+  const onlyLife = () => {
+    const o = clearHand();
+    for (const id of FEATURE_IDS)
+      if (id !== "life.arc")
+        o.features[id] = { visibility: "not_visible", reason: "too_faint" };
+    return o;
+  };
+
+  it("biblioteca com uma característica: texto curto, citando o que foi observado", () => {
+    const ch = reportOf(onlyLife()).chapters[1];
+    const d = palmLibraryDraft(ch);
+    expect(d.sections).toHaveLength(1);
+    expect(d.synthesis).toMatch(/linha da vida/u);
+    expect(d.synthesis).not.toMatch(/Juntas/u);
+    expect(d.reflectionQuestions).toHaveLength(1);
+    for (const re of PALM_FORBIDDEN_TEXT_PATTERNS)
+      expect(JSON.stringify(d)).not.toMatch(re);
+  });
+
+  it("biblioteca com várias características: síntese e perguntas nomeiam só as observadas", () => {
+    const d = palmLibraryDraft(linhas);
+    expect(d.synthesis).toMatch(/linha do coração/u);
+    expect(d.synthesis).toMatch(/linha da vida/u);
+    expect(d.reflectionQuestions[0]).toMatch(/linha do coração/u);
+    // Sem destino observado na fixture? Então não pode ser citado.
+    const hasFate = linhas.items.some((i) => i.id.includes("fate"));
+    if (!hasFate) expect(d.synthesis).not.toMatch(/destino/u);
+    const other = palmLibraryDraft(reportOf(onlyLife()).chapters[1]).synthesis;
+    expect(d.synthesis).not.toBe(other);
   });
 });

@@ -9,6 +9,7 @@ import {
   readdir,
   readFile,
   rm,
+  stat,
   writeFile,
   mkdir,
 } from "node:fs/promises";
@@ -38,6 +39,8 @@ import {
   CHAPTERS_EVAL_CONFIRM,
   CHAPTERS_EVAL_MODEL,
   chaptersEvalGate,
+  keepRejectedDrafts,
+  REJECTED_DRAFTS_FILE,
 } from "./config";
 import {
   automaticSummary,
@@ -48,8 +51,13 @@ import {
   renderReviewDocument,
   scoreChapterSheet,
 } from "./report";
-import { caseWorstUsd, runChaptersEvaluation } from "./run";
-import { parsePeople, planChapters, runChaptersSession } from "./session";
+import { caseWorstUsd, runChaptersEvaluation, type RejectedDraft } from "./run";
+import {
+  parsePeople,
+  planChapters,
+  purgeExpiredRejectedDrafts,
+  runChaptersSession,
+} from "./session";
 import { MODEL_PRICES } from "../../../interpretation/ai/pricing";
 
 const ROOT = path.resolve(__dirname, "../../../../..");
@@ -260,6 +268,60 @@ describe("execução com simulador", () => {
     },
   );
 
+  it("rascunhos reprovados: só com receptor, só os reprovados, sem dados da pessoa", async () => {
+    const drafts: RejectedDraft[] = [];
+    const run = await runChaptersEvaluation({
+      cases: fictitiousCases().slice(0, 1),
+      provider: haiku(["longevity", "valid"]),
+      budget: createBudget(1),
+      onRejectedDraft: (d) => drafts.push(d),
+    });
+    const rejected = run.cases[0].chapters.flatMap((ch) =>
+      ch.attempts.filter((a) => a.outcome !== "ok"),
+    );
+    expect(rejected.length).toBeGreaterThan(0);
+    expect(drafts).toHaveLength(rejected.length);
+    for (const d of drafts) {
+      expect(Object.keys(d).sort()).toEqual(
+        ["attempt", "caseId", "chapter", "errors", "outcome", "text"].sort(),
+      );
+      expect(d.attempt).toBe(1);
+      expect(d.errors.join(" ")).toMatch(/FORBIDDEN_LANGUAGE/u);
+      expect(d.text.length).toBeGreaterThan(0);
+    }
+    // O resultado em si não muda nem passa a conter os rascunhos.
+    expect(run).not.toHaveProperty("rejectedDrafts");
+  });
+
+  it("rascunhos reprovados: desligado por padrão e sempre em produção", () => {
+    expect(keepRejectedDrafts({})).toBe(false);
+    expect(
+      keepRejectedDrafts({ SIDERA_PALM_CHAPTERS_EVAL_KEEP_REJECTED: "1" }),
+    ).toBe(true);
+    expect(
+      keepRejectedDrafts({
+        SIDERA_PALM_CHAPTERS_EVAL_KEEP_REJECTED: "1",
+        NODE_ENV: "production",
+      }),
+    ).toBe(false);
+  });
+
+  it("rascunhos reprovados vencidos são apagados", async () => {
+    const out = await tmp();
+    expect(await purgeExpiredRejectedDrafts(out)).toBe(false);
+    const file = path.join(out, REJECTED_DRAFTS_FILE);
+    await mkdir(path.dirname(file), { recursive: true });
+    const expiresAt = "2026-01-31T00:00:00.000Z";
+    await writeFile(file, JSON.stringify({ expiresAt, drafts: [] }));
+    expect(
+      await purgeExpiredRejectedDrafts(out, Date.parse("2026-01-30T00:00:00Z")),
+    ).toBe(false);
+    expect(
+      await purgeExpiredRejectedDrafts(out, Date.parse("2026-02-01T00:00:00Z")),
+    ).toBe(true);
+    await expect(stat(file)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
   it("teto: verificação prévia por caso e interrupção", async () => {
     const price = MODEL_PRICES[CHAPTERS_EVAL_MODEL];
     // Menor primeiro; o teto cobre só ele: o maior não pode começar.
@@ -366,6 +428,32 @@ describe("relatórios e apuração", () => {
     );
     expect(renderChapterScore(bad)).toMatch(/\*\*não\*\*/u);
   });
+
+  it("personalização conta só casos reais com algum capítulo com texto (03F.2)", async () => {
+    const run = await runChaptersEvaluation({
+      cases: fictitiousCases(),
+      provider: haiku(),
+      budget: createBudget(1),
+    });
+    const base = parseCsv(renderChapterSheet(run));
+    const row = (caso: string, status: string, personalizacao: string) => ({
+      ...base[0],
+      caso,
+      tipo: "real",
+      status,
+      personalizacao,
+    });
+    const sheet = [
+      row("foto-a", "conteudo", "4"),
+      row("foto-a", "indisponivel", "na"),
+      row("foto-b", "conteudo", "2"),
+      // Sem nenhum capítulo com texto: fora da contagem (antes contava ok).
+      row("foto-c", "indisponivel", "na"),
+      row("foto-c", "indisponivel", "na"),
+    ];
+    const s = scoreChapterSheet(sheet, run, 0.0128);
+    expect(s.personalizedRealCases).toEqual({ ok: 1, of: 2 });
+  });
 });
 
 describe("sessão completa (pastas temporárias, simulador)", () => {
@@ -455,6 +543,53 @@ describe("sessão completa (pastas temporárias, simulador)", () => {
     expect(
       await readFile(path.join(out, "revisao/ficha-capitulos.csv"), "utf8"),
     ).toBe("preenchida");
+  });
+
+  it("rascunhos reprovados: arquivo só com a opção, protegido e com validade", async () => {
+    const { round, photos } = await source();
+    const env = {
+      SIDERA_PALM_CHAPTERS_EVAL_OUT_DIR: "",
+      SIDERA_PALM_CHAPTERS_EVAL_SOURCE: round,
+      SIDERA_PALM_EVAL_DIR: photos,
+      SIDERA_PALM_CHAPTERS_EVAL_PAID: "1",
+      SIDERA_PALM_CHAPTERS_EVAL_CONFIRM: CHAPTERS_EVAL_CONFIRM,
+      SIDERA_AI_KEY_VIA_PROXY: "1",
+    };
+    // Plano (monta a entrada) e execução, como na avaliação real.
+    const session = async (e: Record<string, string>) => {
+      for (const mode of ["plan", "run"] as const)
+        expect(
+          (
+            await runChaptersSession({
+              mode,
+              env: e,
+              repoRoot: ROOT,
+              provider: haiku(["longevity", "valid"]),
+            })
+          ).kind,
+        ).toBe(mode === "plan" ? "planned" : "ran");
+    };
+    const off = await tmp();
+    await session({ ...env, SIDERA_PALM_CHAPTERS_EVAL_OUT_DIR: off });
+    await expect(
+      stat(path.join(off, REJECTED_DRAFTS_FILE)),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+
+    const on = await tmp();
+    await session({
+      ...env,
+      SIDERA_PALM_CHAPTERS_EVAL_OUT_DIR: on,
+      SIDERA_PALM_CHAPTERS_EVAL_KEEP_REJECTED: "1",
+    });
+    const file = path.join(on, REJECTED_DRAFTS_FILE);
+    expect((await stat(file)).mode & 0o777).toBe(0o600);
+    const data = JSON.parse(await readFile(file, "utf8"));
+    expect(Date.parse(data.expiresAt)).toBeGreaterThan(Date.now());
+    expect(data.deletion).toMatch(/rm /u);
+    expect(data.drafts.length).toBeGreaterThan(0);
+    expect(JSON.stringify(data)).not.toMatch(
+      /AUT-03F|direita|esquerda|M0\d|p0\d\.jpg/u,
+    );
   });
 
   it("sem fonte nem entrada: não monta nada nem chama", async () => {

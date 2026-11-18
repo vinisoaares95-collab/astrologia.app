@@ -13,7 +13,6 @@ import {
   linesMissing,
   partialHand,
 } from "../analysis/__fixtures__/observations";
-import { PARTIAL_CAVEAT } from "../analysis/library";
 import { validatePalmObservation } from "../analysis/validate-observation";
 import { composePalmReading } from "../chapters/compose";
 import { createMockPalmTextProvider } from "../chapters/mock-text-provider";
@@ -76,8 +75,10 @@ describe("capítulo redigido", () => {
     const chapter = result.chapters.find((c) =>
       c.sections.some((s) => s.notes.length > 0),
     )!;
+    const note = chapter.sections.flatMap((s) => s.notes)[0];
     render(<ChapterArticle chapter={chapter} />);
-    expect(screen.getByText(PARTIAL_CAVEAT)).toBeInTheDocument();
+    expect(screen.getByText(note)).toBeInTheDocument();
+    expect(note).toMatch(/só parcialmente visíve/u);
   });
 
   it("capítulo indisponível: mensagem específica, sem texto inventado", async () => {

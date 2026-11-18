@@ -9,13 +9,17 @@
  */
 import type { AiProvider } from "../../interpretation/ai/contract";
 import { generateValidatedDraft } from "../../interpretation/ai/generate-core";
-import { repairCrossReferences } from "../../interpretation/ai/validate";
+import {
+  repairCrossReferences,
+  type AiValidationError,
+} from "../../interpretation/ai/validate";
 import type {
   PalmChapter,
   PalmChapterId,
   PalmReport,
 } from "../analysis/engine";
-import { PARTIAL_CAVEAT } from "../analysis/library";
+import type { FeatureId } from "../analysis/contract";
+import { partialNote, unavailableMessage } from "../analysis/phrasing";
 import type {
   ChapterDraft,
   PalmGeneratedChapter,
@@ -35,12 +39,6 @@ export type PalmGenerateOptions = {
   now?: () => number;
 };
 
-const UNAVAILABLE: Record<PalmChapterId, string> = {
-  maos: "Nesta foto, o formato da mão não pôde ser observado com segurança, então esta parte da leitura não foi feita. Uma nova foto, com a mão inteira no quadro, dedos levemente afastados e luz natural, pode permitir esta leitura.",
-  linhas:
-    "Nesta foto, nenhuma linha da palma pôde ser observada com segurança, então esta parte da leitura não foi feita. Uma nova foto, com a palma bem aberta, de frente para a câmera e com luz natural sem reflexos, pode permitir esta leitura.",
-};
-
 /** Observações e ressalvas do SISTEMA para cada seção. */
 function sectionsOf(
   chapter: PalmChapter,
@@ -48,7 +46,17 @@ function sectionsOf(
 ): PalmGeneratedSection[] {
   const items = new Map(chapter.items.map((i) => [i.id, i]));
   const shownObservations = new Set<string>();
-  let caveats = 0;
+  // Uma só ressalva de parcialidade no capítulo (03F.2), na primeira seção
+  // com característica parcial, nomeando todas as parciais do capítulo.
+  const partial = [
+    ...new Set(
+      chapter.items
+        .filter((i) => i.certainty === "uncertain")
+        .flatMap((i) => i.factIds)
+        .filter((f): f is FeatureId => f !== "hand.type"),
+    ),
+  ];
+  let noted = false;
   return draft.sections.map((s) => {
     const cited = s.itemIds.map((id) => items.get(id)!).filter(Boolean);
     const observed = cited
@@ -56,9 +64,9 @@ function sectionsOf(
       .filter((o) => !shownObservations.has(o));
     observed.forEach((o) => shownObservations.add(o));
     const uncertain = cited.some((i) => i.certainty === "uncertain");
-    const notes = uncertain
-      ? [caveats++ === 0 ? PARTIAL_CAVEAT : REPEATED_PARTIAL]
-      : [];
+    const notes =
+      uncertain && !noted && partial.length ? [partialNote(partial)] : [];
+    if (notes.length) noted = true;
     return {
       text: s.text.trim(),
       itemIds: s.itemIds,
@@ -68,10 +76,6 @@ function sectionsOf(
     };
   });
 }
-
-/** Segunda ressalva do capítulo, mais curta (sem repetição literal). */
-const REPEATED_PARTIAL =
-  "Aqui também a característica ficou só parcialmente visível; vale a mesma reserva.";
 
 function chapterOf(
   chapter: PalmChapter,
@@ -95,7 +99,10 @@ function chapterOf(
   };
 }
 
-function unavailable(chapter: PalmChapter): PalmGeneratedChapter {
+function unavailable(
+  chapter: PalmChapter,
+  report: PalmReport,
+): PalmGeneratedChapter {
   return {
     id: chapter.id,
     number: chapter.number,
@@ -106,10 +113,38 @@ function unavailable(chapter: PalmChapter): PalmGeneratedChapter {
     synthesis: "",
     reflectionQuestions: [],
     limitations: chapter.limitations,
-    unavailableMessage: UNAVAILABLE[chapter.id],
+    unavailableMessage: unavailableMessage(
+      chapter.id,
+      chapter.unused,
+      report.issues,
+      report.status === "insufficient",
+    ),
     source: "none",
     fallbackReason: "Capítulo sem características observadas.",
   };
+}
+
+/**
+ * Reparos determinísticos na última tentativa, sempre seguidos de nova
+ * validação completa: referências cruzadas (02F.2) ou remoção de seções que
+ * só retomam itens já interpretados (03F.2) — nada é acrescentado ao texto.
+ */
+export function repairPalmDraft(
+  draft: unknown,
+  errors: AiValidationError[],
+): { draft: unknown; repairs: string[] } | null {
+  if (!errors.length) return null;
+  if (errors.every((e) => e.code === "REDUNDANT_SECTION")) {
+    const drop = new Set(errors.map((e) => Number(e.part?.split(".")[1])));
+    const copy = structuredClone(draft) as { sections: unknown[] };
+    if (!Array.isArray(copy?.sections)) return null;
+    copy.sections = copy.sections.filter((_, i) => !drop.has(i));
+    return {
+      draft: copy,
+      repairs: [...drop].map((i) => `sections.${i}: seção redundante removida`),
+    };
+  }
+  return repairCrossReferences(draft, errors);
 }
 
 export async function generatePalmChapters(
@@ -129,7 +164,7 @@ export async function generatePalmChapters(
   const attempts: PalmGeneratedReport["attempts"] = [];
   const chapters = await Promise.all(
     report.chapters.map(async (chapter) => {
-      if (chapter.items.length === 0) return unavailable(chapter);
+      if (chapter.items.length === 0) return unavailable(chapter, report);
       const outcome = await generateValidatedDraft<ChapterDraft, PalmChapterId>(
         {
           chapter: chapter.id,
@@ -139,7 +174,7 @@ export async function generatePalmChapters(
           }),
           provider,
           validate: (draft) => validatePalmChapterDraft(draft, chapter, report),
-          repair: repairCrossReferences,
+          repair: repairPalmDraft,
           maxAttempts: opts.maxAttempts,
           now: opts.now,
           metrics: attempts,

@@ -163,3 +163,103 @@ SIDERA_PALM_CHAPTERS_EVAL_PAID=1 \
 SIDERA_PALM_CHAPTERS_EVAL_CONFIRM=autorizo-capitulos-03f2-etapa-a \
 npx vitest run src/features/palm-reading/evaluation/chapters/chapters-eval.run.test.ts
 ```
+
+## Etapa A — resultado e correções editoriais (18/11/2026)
+
+**Execução paga única:** US$ 0,0125 (R$ 0,07). A revisão editorial foi
+assistida por IA.
+
+| Critério                                | Resultado                | Situação       |
+| --------------------------------------- | ------------------------ | -------------- |
+| Segurança e fidelidade                  | 0 invenções, 0 problemas | passaram       |
+| Mensagens de indisponibilidade corretas | 1/9                      | **não passou** |
+| Personalização                          | 4/7 casos reais          | **não passou** |
+| Qualidade editorial                     | 3,68 (naturalidade 2,78) | **não passou** |
+
+**Etapa A não aprovada.** Causas e plano estão em
+`avaliacao-ia/03f2-etapa-a/apuracao-e-plano.md`.
+
+### Correções implementadas
+
+Os modelos não mudaram. O validador continua estrito.
+
+1. **Linguagem sensível.**
+   - A biblioteca não nega mais "duração da vida" no arco da vida; o aviso
+     geral diz uma vez que a linha da vida é lida como modo de viver.
+   - O prompt (03e.2) usa regras positivas: tradição simbólica,
+     autoconhecimento, linha da vida como jeito de viver, destino como
+     direção construída. Não cita os termos proibidos, nem para negar
+     (há teste).
+2. **Ressalvas.** Uma por capítulo, na primeira seção incerta, nomeando as
+   linhas parciais (`analysis/phrasing.ts`).
+3. **Prompt.**
+   - Cada seção traz pelo menos um item novo, e retomar é papel da
+     síntese; com poucos itens, o texto fica curto.
+   - O modelo não escreve avisos próprios.
+   - Linguagem neutra, com verbos em vez de adjetivos.
+4. **Validação estrutural.**
+   - `REDUNDANT_SECTION` recusa a seção cujos itens já foram todos
+     tratados; a síntese não é afetada.
+   - Na última tentativa, a correção determinística remove só essa seção,
+     e o rascunho passa de novo pela validação completa.
+5. **Indisponibilidade.**
+   - A mensagem segue o motivo: foto insuficiente; aparece, mas não pôde
+     ser classificado; não identificada; não visível; ou a combinação.
+   - A orientação de nova foto segue os problemas apontados (inclinada →
+     palma de frente; cortada → mão inteira; reflexo, luz, foco…).
+6. **Limitações.**
+   - Uma frase por situação (indeterminadas, não identificadas, não
+     visíveis), com aspectos da mesma linha agrupados, mais a frase do
+     destino.
+   - Problemas de imagem aparecem como "a análise da foto apontou…", nunca
+     como fato.
+7. **Biblioteca.** Síntese e perguntas nomeiam só as características do
+   capítulo; com uma só característica, uma frase e uma pergunta.
+8. **Avaliação.**
+   - A personalização conta só casos reais com algum capítulo com texto.
+   - Rascunhos reprovados só são guardados com a opção explícita
+     `SIDERA_PALM_CHAPTERS_EVAL_KEEP_REJECTED=1`, e nunca em produção.
+   - Ficam em `restrito/rascunhos-reprovados.json` (pasta 700, arquivo
+     600), com caso, capítulo, tentativa, códigos e texto do modelo, sem
+     pessoa, mão, foto ou evidência.
+   - Expiram em 30 dias e são apagados na primeira sessão depois disso.
+
+### Reaplicação local (sem IA) aos 10 casos
+
+O detalhamento está em `avaliacao-ia/03f2-etapa-a/reaplicacao-local/`. Os
+resultados originais foram preservados.
+
+| Medida                                           | Antes  | Depois |
+| ------------------------------------------------ | ------ | ------ |
+| "Não observado" quando a característica aparece  | 6 de 9 | 0      |
+| Orientação de nova foto ligada ao problema       | 0 de 9 | 9 de 9 |
+| Frases de limitação (total / máx. por capítulo)  | 76 / 8 | 50 / 4 |
+| Ressalvas de parcialidade                        | 21     | 10     |
+| Problema de imagem como fato                     | 14     | 0      |
+| Seções redundantes                               | 3      | 0      |
+| Síntese da biblioteca citando as características | 0 de 2 | 2 de 2 |
+
+**Ainda depende de nova execução paga:** o efeito do prompt 03e.2 no
+texto do Haiku (reprovações, avisos próprios, gênero, naturalidade). A
+ortografia continua dependendo de revisão, e a disponibilidade, da
+captura.
+
+### Revalidação (paga, só com nova autorização)
+
+Mesma entrada, em pasta nova; os resultados originais não são tocados.
+
+Plano gratuito já calculado:
+
+- 11 capítulos, até 22 chamadas;
+- esperado ≈ US$ 0,0064 (R$ 0,04);
+- pior caso US$ 0,0517 (R$ 0,28);
+- teto da Etapa A: R$ 1,00.
+
+```bash
+SIDERA_PALM_CHAPTERS_EVAL_MODE=run \
+SIDERA_PALM_CHAPTERS_EVAL_OUT_DIR=avaliacao-ia/03f2-etapa-a-rev1 \
+SIDERA_PALM_CHAPTERS_EVAL_KEEP_REJECTED=1 \
+SIDERA_PALM_CHAPTERS_EVAL_PAID=1 \
+SIDERA_PALM_CHAPTERS_EVAL_CONFIRM=autorizo-capitulos-03f2-etapa-a \
+npx vitest run src/features/palm-reading/evaluation/chapters/chapters-eval.run.test.ts
+```

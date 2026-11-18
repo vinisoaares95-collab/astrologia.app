@@ -333,6 +333,22 @@ export function validatePalmChapterDraft(
     )
       return shape(part, "Seção sem texto ou sem itemIds.");
     const factIds: string[] = [];
+    // 03F.2: a seção precisa trazer pelo menos um item ainda não tratado;
+    // retomar itens já interpretados é papel da síntese.
+    const known = sec.itemIds.filter((id) => items.has(String(id)));
+    if (
+      index > 0 &&
+      known.length > 0 &&
+      known.every((id) => cited.has(String(id)))
+    )
+      push(part, [
+        {
+          code: "REDUNDANT_SECTION",
+          message:
+            "A seção só retoma itens já interpretados em seções anteriores.",
+          fix: "Remova esta seção ou leve a ideia para a síntese.",
+        },
+      ]);
     for (const id of sec.itemIds) {
       const item = items.get(String(id));
       if (!item)

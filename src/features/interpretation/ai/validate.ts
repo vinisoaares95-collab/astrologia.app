@@ -53,7 +53,9 @@ export type AiValidationError = {
     /** Mãos (03E): valor diferente do observado (ex.: "curta" para uma linha longa). */
     | "CONTRADICTION"
     /** Mãos (03E): idade, gênero, saúde, aparência ou outro atributo pessoal. */
-    | "SENSITIVE_ATTRIBUTE";
+    | "SENSITIVE_ATTRIBUTE"
+    /** Mãos (03F.2): seção que só retoma itens já interpretados. */
+    | "REDUNDANT_SECTION";
   chapter?: ChapterId;
   /** Parte do capítulo: "introduction", "sections.N", "synthesis", "reflectionQuestions.N". */
   part?: string;

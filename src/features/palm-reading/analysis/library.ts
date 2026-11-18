@@ -21,7 +21,8 @@
  */
 import type { FeatureId, FeatureValue } from "./contract";
 
-export const PALM_LIBRARY_VERSION = "03c.1";
+/** 03f2.1: sem a negação de "duração" nas interpretações do arco da vida. */
+export const PALM_LIBRARY_VERSION = "03f2.1";
 
 export type LibraryEntry = {
   definition: string;
@@ -178,7 +179,7 @@ export const PALM_LIBRARY: Library = {
       observation:
         "Linha da vida em arco amplo, avançando para o centro da palma.",
       symbolic:
-        "Na quiromancia, um arco amplo da linha da vida é associado ao entusiasmo e à abertura para novas experiências — uma leitura sobre o modo de viver, não sobre a duração da vida.",
+        "Na quiromancia, um arco amplo da linha da vida é associado ao entusiasmo e à abertura para novas experiências.",
     },
     close: {
       definition:
@@ -186,7 +187,7 @@ export const PALM_LIBRARY: Library = {
       observation:
         "Linha da vida em arco mais fechado, próxima à base do polegar.",
       symbolic:
-        "Um arco mais fechado da linha da vida é tradicionalmente lido como preferência por ambientes conhecidos e por um ritmo mais cuidadoso — uma leitura sobre o modo de viver, não sobre a duração da vida.",
+        "Um arco mais fechado da linha da vida é tradicionalmente lido como preferência por ambientes conhecidos e por um ritmo mais cuidadoso.",
     },
   },
   "fate.presence": {
@@ -272,7 +273,7 @@ export const PARTIAL_CAVEAT =
   "Esta característica ficou só parcialmente visível na foto; leia esta interpretação com reserva.";
 
 export const PALM_DISCLAIMER =
-  "As características descritas foram observadas numa fotografia e podem não corresponder exatamente à sua mão. Os significados vêm da tradição simbólica da quiromancia — não são fatos científicos, diagnósticos nem previsões.";
+  "As características descritas foram observadas numa fotografia e podem não corresponder exatamente à sua mão. Os significados vêm da tradição simbólica da quiromancia — não são fatos científicos, diagnósticos nem previsões. A linha da vida, em particular, é lida como um retrato do modo de viver.";
 
 /**
  * Temas que nenhum texto de quiromancia pode tocar (somam-se às listas do

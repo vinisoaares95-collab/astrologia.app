@@ -88,12 +88,16 @@ describe("biblioteca de quiromancia", () => {
     ).toBe(false);
   });
 
-  it("a linha da vida nunca fala de duração da vida (só para negá-la)", () => {
+  it("a linha da vida fala do modo de viver e nem menciona duração (03F.2)", () => {
     for (const v of FEATURE_VALUES["life.arc"]) {
       const t = PALM_LIBRARY["life.arc"][v].symbolic;
-      expect(t).toMatch(/não sobre a duração da vida/u);
-      expect(t).not.toMatch(/comprimento|curta|longa/iu);
+      // Nem negada: a negação na entrada levava a IA a reescrevê-la (03F.2).
+      expect(t).not.toMatch(
+        /duração|longev|morte|tempo de vida|comprimento|curta|longa/iu,
+      );
+      expect(t).toMatch(/linha da vida/u);
     }
+    expect(PALM_DISCLAIMER).toMatch(/linha da vida.*modo de viver/u);
   });
 
   it("linha do destino só tem leitura para 'presente'", () => {

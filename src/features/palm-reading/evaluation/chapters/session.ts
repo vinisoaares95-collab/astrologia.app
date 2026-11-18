@@ -9,7 +9,7 @@
  *   couber; usa orçamento exclusivo com teto = pior caso planejado.
  * - score: compara a ficha preenchida com os critérios aprovados.
  */
-import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { createAnthropicProvider } from "../../../interpretation/ai/anthropic-provider";
@@ -30,6 +30,9 @@ import {
   chaptersEvalBudgetBrl,
   chaptersEvalGate,
   chaptersEvalUsdBrl,
+  keepRejectedDrafts,
+  REJECTED_DRAFTS_FILE,
+  REJECTED_DRAFTS_RETENTION_DAYS,
 } from "./config";
 import {
   CHAPTER_GUIDE,
@@ -40,7 +43,12 @@ import {
   renderReviewDocument,
   scoreChapterSheet,
 } from "./report";
-import { caseWorstUsd, runChaptersEvaluation, type ChaptersRun } from "./run";
+import {
+  caseWorstUsd,
+  runChaptersEvaluation,
+  type ChaptersRun,
+  type RejectedDraft,
+} from "./run";
 
 type Env = Record<string, string | undefined>;
 
@@ -58,6 +66,27 @@ async function write(dir: string, file: string, content: string) {
   });
   await writeFile(path.join(dir, file), content, { mode: 0o600 });
 }
+/** Apaga os rascunhos reprovados vencidos (ou ilegíveis). */
+export async function purgeExpiredRejectedDrafts(
+  outDir: string,
+  now: number = Date.now(),
+): Promise<boolean> {
+  const file = path.join(outDir, REJECTED_DRAFTS_FILE);
+  let expiresAt: number;
+  try {
+    const data = JSON.parse(await readFile(file, "utf8")) as {
+      expiresAt?: string;
+    };
+    expiresAt = Date.parse(data.expiresAt ?? "");
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") return false;
+    expiresAt = Number.NaN;
+  }
+  if (Number.isFinite(expiresAt) && expiresAt > now) return false;
+  await rm(file, { force: true });
+  return true;
+}
+
 async function exists(p: string) {
   try {
     await access(p);
@@ -241,6 +270,7 @@ export async function runChaptersSession(input: {
   if (input.mode === "run" && !gate.canCall)
     return { kind: "blocked", reasons: gate.reasons };
   const outDir = gate.outDir;
+  await purgeExpiredRejectedDrafts(outDir);
 
   if (input.mode === "score") {
     const run = JSON.parse(
@@ -285,12 +315,37 @@ export async function runChaptersSession(input: {
         ? "injetada-pelo-proxy"
         : anthropicApiKey(input.env),
     });
+  const rejected: RejectedDraft[] = [];
   const run = await runChaptersEvaluation({
     cases: snapshot.cases,
     provider,
     budget: createBudget(plan.safeCapUsd),
     now: input.now,
+    onRejectedDraft: keepRejectedDrafts(input.env)
+      ? (d) => rejected.push(d)
+      : undefined,
   });
+  if (rejected.length) {
+    const at = Date.now();
+    await write(
+      outDir,
+      REJECTED_DRAFTS_FILE,
+      JSON.stringify(
+        {
+          purpose:
+            "Diagnóstico das reprovações do validador na avaliação 03F.2. Não usar fora da avaliação.",
+          createdAt: new Date(at).toISOString(),
+          expiresAt: new Date(
+            at + REJECTED_DRAFTS_RETENTION_DAYS * 86_400_000,
+          ).toISOString(),
+          deletion: `Apagado automaticamente na primeira sessão após expirar; apagar antes com: rm ${REJECTED_DRAFTS_FILE}`,
+          drafts: rejected,
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+  }
   const descriptions = Object.fromEntries(
     snapshot.cases.map((c) => [c.id, c.description]),
   );

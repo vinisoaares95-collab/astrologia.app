@@ -21,10 +21,8 @@ import {
   FEATURE_IDS,
   type FeatureId,
   type ImageIssue,
-  type NotVisibleReason,
 } from "./contract";
 import {
-  FEATURE_LABELS,
   HAND_TYPES,
   PALM_DISCLAIMER,
   PALM_LIBRARY,
@@ -34,6 +32,7 @@ import {
   type HandType,
   type LibraryEntry,
 } from "./library";
+import { condensedLimitations, imageIssuesNote, type Unused } from "./phrasing";
 import type {
   ReadingStatus,
   ValidatedObservation,
@@ -73,6 +72,8 @@ export type PalmChapter = {
   title: string;
   items: PalmItem[];
   limitations: string[];
+  /** Características não usadas, com o motivo (para a indisponibilidade). */
+  unused: Unused[];
 };
 
 export type PalmReport = {
@@ -80,6 +81,8 @@ export type PalmReport = {
   disclaimer: string;
   hand: PalmHand;
   status: ReadingStatus;
+  /** Problemas apontados pela análise automática (não verificados). */
+  issues: ImageIssue[];
   facts: PalmFact[];
   chapters: [PalmChapter, PalmChapter];
 };
@@ -99,37 +102,17 @@ export const PALM_CHAPTER_TITLES: Record<PalmChapterId, string> = {
   linhas: "As linhas da sua palma",
 };
 
-const ISSUE_TEXT: Partial<Record<ImageIssue, string>> = {
-  too_dark: "pouca luz",
-  overexposed: "luz forte demais",
-  glare: "reflexos",
-  blurry: "falta de nitidez",
-  hand_cropped: "parte da mão fora do enquadramento",
-  angled: "a mão inclinada em relação à câmera",
-  obstruction: "algo cobrindo parte da palma",
-};
-
-function limitationFor(id: FeatureId, reason: NotVisibleReason): string {
-  if (id === "fate.presence")
-    return "A linha do destino não foi identificada com clareza na foto e não foi interpretada; isso não quer dizer que ela não exista.";
-  const label = FEATURE_LABELS[id];
-  const o = label.startsWith("A ") ? "a" : "o";
-  // Traço visto, mas sem como classificar: diz isso, sem interpretar.
-  if (reason === "unclassifiable")
-    return `${label} aparece na foto, mas não pôde ser classificad${o} com segurança e não foi interpretad${o}.`;
-  return `${label} não pôde ser observad${o} na foto e não foi interpretad${o}.`;
-}
-
 export function buildPalmInterpretation(o: ValidatedObservation): PalmReport {
   const facts: PalmFact[] = [];
   const items: PalmItem[] = [];
   const limitations: Record<PalmChapterId, string[]> = { maos: [], linhas: [] };
+  const unused: Record<PalmChapterId, Unused[]> = { maos: [], linhas: [] };
 
   for (const id of FEATURE_IDS) {
     const f = o.features[id];
     const chapter = CHAPTER_OF[groupOf(id)];
     if (f.visibility === "not_visible") {
-      limitations[chapter].push(limitationFor(id, f.reason));
+      unused[chapter].push({ feature: id, reason: f.reason });
       continue;
     }
     const entry = (PALM_LIBRARY[id] as Record<string, LibraryEntry>)[f.value];
@@ -192,6 +175,11 @@ export function buildPalmInterpretation(o: ValidatedObservation): PalmReport {
     }
   }
 
+  // O que não foi usado: até 3 frases por capítulo (03F.2), sem repetir o
+  // mesmo molde para cada característica.
+  limitations.maos = condensedLimitations(unused.maos);
+  limitations.linhas = condensedLimitations(unused.linhas);
+
   // Proporções (palma, dedos): sempre com ressalva, mesmo quando "nítidas".
   if (
     o.features["hand.palmShape"].visibility !== "not_visible" ||
@@ -200,16 +188,15 @@ export function buildPalmInterpretation(o: ValidatedObservation): PalmReport {
     limitations.maos.push(PROPORTION_CAVEAT);
 
   // Qualidade da imagem: limitação comum aos dois capítulos.
-  const issues = o.issues.map((i) => ISSUE_TEXT[i]).filter(Boolean);
+  const issuesNote = imageIssuesNote(o.issues);
   if (o.status === "insufficient") {
     const note =
       "A foto não permitiu observar a palma com segurança. Para esta parte da leitura, é preciso uma nova foto.";
     limitations.maos = [note];
     limitations.linhas = [note];
-  } else if (issues.length) {
-    const note = `A foto tinha ${issues.join(", ")}; algumas características podem não ter sido observadas.`;
-    limitations.maos.unshift(note);
-    limitations.linhas.unshift(note);
+  } else if (issuesNote) {
+    limitations.maos.unshift(issuesNote);
+    limitations.linhas.unshift(issuesNote);
   }
 
   const chapter = (id: PalmChapterId, number: 6 | 7): PalmChapter => ({
@@ -218,6 +205,7 @@ export function buildPalmInterpretation(o: ValidatedObservation): PalmReport {
     title: PALM_CHAPTER_TITLES[id],
     items: items.filter((i) => i.chapter === id),
     limitations: limitations[id],
+    unused: unused[id],
   });
 
   return {
@@ -225,6 +213,7 @@ export function buildPalmInterpretation(o: ValidatedObservation): PalmReport {
     disclaimer: PALM_DISCLAIMER,
     hand: o.hand,
     status: o.status,
+    issues: [...o.issues],
     facts,
     chapters: [chapter("maos", 6), chapter("linhas", 7)],
   };
