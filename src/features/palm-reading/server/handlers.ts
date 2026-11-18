@@ -106,15 +106,15 @@ export function getProcessDeps(): PalmApiDeps {
           budget,
         )
       : null;
-  // Texto real só quando a visão real está autorizada; mesmo modelo e o
-  // MESMO teto do processo (visão + texto somados). Sem isso: simulado.
+  // Texto real só quando a visão real está autorizada; modelo de TEXTO do
+  // Sidera (não o de visão) e o MESMO teto do processo. Sem isso: simulado.
   const mockText = createMockPalmTextProvider(["valid"]);
   const realText =
     config.mode === "anthropic"
       ? withBudget(
           createAnthropicProvider({
-            model: config.model,
-            effort: config.effort,
+            model: config.textModel,
+            effort: config.textEffort,
             apiKey: anthropicApiKey(),
           }),
           budget,
@@ -316,10 +316,23 @@ export async function handleAnalysis(
     )
       return fail(429, "rate_limited");
 
+    // Teto por relatório (visão + capítulos), além do teto do processo.
+    // Só com provedores reais: o simulado não tem preço nem custo.
+    const report =
+      deps.config.mode === "anthropic"
+        ? createBudget(deps.config.reportBudgetUsd)
+        : null;
+    const vision = report
+      ? withVisionBudget(deps.provider(), report)
+      : deps.provider();
+    const text = report
+      ? withBudget(deps.textProvider(), report)
+      : deps.textProvider();
+
     const outcome = await analyzePalmImage({
       bytes,
       hand: receipt.hand,
-      provider: deps.provider(),
+      provider: vision,
     });
     bytes = null;
 
@@ -329,7 +342,7 @@ export async function handleAnalysis(
         // fica no servidor; o cliente recebe só os capítulos.
         const { result } = await composePalmReading({
           observation: outcome.observation,
-          textProvider: deps.textProvider(),
+          textProvider: text,
           simulated: deps.config.mode === "mock",
         });
         deps.cache.set(cacheKey, { expires: now + CACHE_TTL_MS, result });

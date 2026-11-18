@@ -386,3 +386,57 @@ já traz `revisor_duvida`.
 **Riscos:** a regra dos dedos é léxica (uma evidência pode citar ponta e
 pulso e ainda estar errada, como no caso restante do piloto); o efeito do
 prompt nas linhas não foi medido; `angled` depende de o modelo marcá-lo.
+
+## 9. Encerramento da 03F.1 (18/11/2026)
+
+**Decisão: Sonnet 5.5 é o modelo principal de análise visual das mãos no
+MVP** (`DEFAULT_VISION_MODEL`). Haiku 5.5 continua suportado por variável,
+mas não serve como motor nem reserva de visão (cobertura útil quase nula).
+
+Base: duas rodadas experimentais com as mesmas 8 fotos de 4 pessoas (duas
+mãos cada), câmeras comuns e fotos comprimidas, referência humana parcial
+(32 de 72 características) e auditorias de evidência **assistidas por IA,
+sem especialista independente**. Avaliação exploratória: os números
+orientam a decisão, não medem precisão.
+
+| Sonnet 5.5                     | Rodada 1 (03c.1/03d.1) | Rodada 2 (03c.2/03d.2) |
+| ------------------------------ | ---------------------- | ---------------------- |
+| Evidências sim / parcial / não | 12 / 13 / 1            | 7 / 16 / 0             |
+| Linhas afirmadas               | 13                     | 17                     |
+| Fotos com linha confirmada     | 5 de 8                 | 5 de 8                 |
+| Falsos visíveis (32 revisadas) | 2                      | 1                      |
+| `unclassifiable`               | —                      | 21                     |
+| Custo real (8 fotos)           | US$ 0,104              | US$ 0,102              |
+
+- Nenhuma linha inventada e nenhuma linha do destino afirmada nas duas
+  rodadas. Os falsos visíveis restantes são de comprimento dos dedos na
+  foto-05, onde a referência e a auditoria divergem.
+- **Nenhuma evidência rejeitada na rodada 2 não comprova precisão
+  perfeita:** 16 das 23 evidências foram só parcialmente confirmadas, a
+  amostra é pequena e a auditoria variou entre as rodadas (observações
+  iguais avaliadas `sim` e depois `parcial`).
+- As correções reduziram erros com ganho real no Sonnet (mais linhas
+  conferidas, menos falsos visíveis) e conservadorismo moderado (21
+  abstenções; 2 evidências confirmadas perdidas). No Haiku, o efeito foi
+  sobretudo conservadorismo.
+
+**Limitações conhecidas:** formato da palma e comprimento dos dedos são os
+pontos mais frágeis (proporções com perspectiva); a maioria das
+classificações é plausível, não certa; 2 de 8 fotos sem linha utilizável
+(capítulo 7 indisponível, com orientação); validador léxico; referência
+parcial e assistida por IA.
+
+**Preparação para a 03F.2 (feita nesta etapa):**
+
+- visão no Sonnet 5.5; redação dos capítulos 6 e 7 no modelo de **texto**
+  do Sidera (`SIDERA_AI_MODEL`, padrão Haiku 5.5), agora independente do
+  modelo de visão — antes, os capítulos usavam o modelo de visão;
+- teto **por relatório** de US$ 0,15 (visão + capítulos), conferido em
+  teste contra o pior caso reservado (≈ US$ 0,143: 2 tentativas de visão
+  no Sonnet + 2 de cada capítulo); teto do processo de US$ 1,00 (antes
+  US$ 0,10, que não cobria um único relatório no pior caso com o Sonnet);
+- ressalva fixa no capítulo 6 sempre que formato da palma ou comprimento
+  dos dedos são usados, mesmo "nítidos".
+
+Resultados das rodadas: `avaliacao-ia/03f-piloto/` e
+`avaliacao-ia/03f-rodada2/` (fora do Git).

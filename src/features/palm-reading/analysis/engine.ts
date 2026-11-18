@@ -30,6 +30,7 @@ import {
   PALM_LIBRARY,
   PALM_LIBRARY_VERSION,
   PARTIAL_CAVEAT,
+  PROPORTION_CAVEAT,
   type HandType,
   type LibraryEntry,
 } from "./library";
@@ -190,6 +191,13 @@ export function buildPalmInterpretation(o: ValidatedObservation): PalmReport {
       });
     }
   }
+
+  // Proporções (palma, dedos): sempre com ressalva, mesmo quando "nítidas".
+  if (
+    o.features["hand.palmShape"].visibility !== "not_visible" ||
+    o.features["hand.fingerLength"].visibility !== "not_visible"
+  )
+    limitations.maos.push(PROPORTION_CAVEAT);
 
   // Qualidade da imagem: limitação comum aos dois capítulos.
   const issues = o.issues.map((i) => ISSUE_TEXT[i]).filter(Boolean);

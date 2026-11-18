@@ -12,10 +12,11 @@ Status:
   19 e `docs/fase-03e-capitulos-das-maos.md`.
 - **03F.1 (preparação da avaliação visual): concluída, sem chamadas
   pagas**; ver seção 20 e `docs/fase-03f1-avaliacao-visual.md`.
-- **03F.1 piloto:** executado (8 fotos, Haiku × Sonnet, US$ 0,11); Sonnet
-  5.5 escolhido provisoriamente; correções 03c.2/03d.2 aplicadas (ver
-  `docs/fase-03f1-avaliacao-visual.md`, seção 8). Revalidação paga e
-  03F.2: aguardando autorização.
+- **03F.1: encerrada** (18/11/2026). Sonnet 5.5 é o modelo visual do MVP
+  (duas rodadas exploratórias; `docs/fase-03f1-avaliacao-visual.md`,
+  seção 9).
+- **03F.2 (capítulos 6 e 7 com IA real): plano em
+  `docs/fase-03f2-plano.md`, aguardando aprovação.**
 
 Nenhuma chamada paga foi feita na Fase 03. A integração com o mapa astral
 (capítulos 8–9) fica para a Fase 04.

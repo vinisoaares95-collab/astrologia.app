@@ -8,7 +8,20 @@ import {
   createMockVisionProvider,
   type MockVisionScenario,
 } from "../vision/mock-provider";
-import { readPalmAnalysisConfig } from "./config";
+import { PALM_REPORT_BUDGET_USD, readPalmAnalysisConfig } from "./config";
+import { worstCaseUsd } from "../../interpretation/ai/budget";
+import { MODEL_PRICES } from "../../interpretation/ai/pricing";
+import { clearHand } from "../analysis/__fixtures__/observations";
+import { buildPalmInterpretation } from "../analysis/engine";
+import { validatePalmObservation } from "../analysis/validate-observation";
+import { PALM_MAX_ATTEMPTS } from "../chapters/generate";
+import { buildPalmChapterRequest } from "../chapters/prompt";
+import {
+  VISION_MAX_ATTEMPTS,
+  VISION_MAX_OUTPUT_TOKENS,
+} from "../vision/analyze";
+import { visionWorstCaseUsd } from "../vision/budget";
+import { buildVisionRequest } from "../vision/prompt";
 import { issueReceipt, RECEIPT_TTL_MS } from "./consent-receipt";
 import {
   CONSENT_HEADER,
@@ -143,18 +156,72 @@ describe("desligado por padrão", () => {
       expect(readPalmAnalysisConfig({ ...full, [k]: v }).mode, k).toBe("mock");
   });
 
-  it("configuração de visão separada da astrológica (modelo e teto próprios)", () => {
-    const c = readPalmAnalysisConfig({
-      SIDERA_PALM_ANALYSIS_ENABLED: "1",
+  it("visão no Sonnet 5.5; capítulos no modelo de TEXTO do Sidera (separados)", () => {
+    const c = readPalmAnalysisConfig({ SIDERA_PALM_ANALYSIS_ENABLED: "1" });
+    expect(c.model).toBe("claude-sonnet-5-5");
+    expect(c.textModel).toBe("claude-haiku-5-5");
+    // Trocar o modelo de texto não muda o de visão, e vice-versa.
+    const t = readPalmAnalysisConfig({
       SIDERA_AI_MODEL: "claude-sonnet-5-5",
-      SIDERA_PALM_VISION_BUDGET_USD: "50",
+      SIDERA_PALM_VISION_MODEL: "claude-haiku-5-5",
     });
-    expect(c.model).toBe("claude-haiku-5-5");
-    expect(c.budgetUsd).toBe(1);
+    expect([t.model, t.textModel]).toEqual([
+      "claude-haiku-5-5",
+      "claude-sonnet-5-5",
+    ]);
     expect(
       readPalmAnalysisConfig({ SIDERA_PALM_VISION_MODEL: "claude-opus-5-5" })
         .model,
-    ).toBe("claude-haiku-5-5");
+    ).toBe("claude-sonnet-5-5");
+  });
+
+  it("tetos: processo até US$ 1; relatório US$ 0,15, só para baixo", () => {
+    expect(
+      readPalmAnalysisConfig({ SIDERA_PALM_VISION_BUDGET_USD: "50" }).budgetUsd,
+    ).toBe(1);
+    const c = readPalmAnalysisConfig({});
+    expect([c.budgetUsd, c.reportBudgetUsd]).toEqual([1, 0.15]);
+    expect(
+      readPalmAnalysisConfig({ SIDERA_PALM_REPORT_BUDGET_USD: "5" })
+        .reportBudgetUsd,
+    ).toBe(0.15);
+    expect(
+      readPalmAnalysisConfig({ SIDERA_PALM_REPORT_BUDGET_USD: "0.05" })
+        .reportBudgetUsd,
+    ).toBe(0.05);
+  });
+
+  it("o teto por relatório cobre o pior caso reservado (visão + 2 capítulos)", () => {
+    const c = readPalmAnalysisConfig({});
+    const vision =
+      VISION_MAX_ATTEMPTS *
+      visionWorstCaseUsd(
+        buildVisionRequest("right", "", {
+          maxOutputTokens: VISION_MAX_OUTPUT_TOKENS,
+          timeoutMs: 1,
+        }),
+        MODEL_PRICES[c.model],
+      );
+    // Capítulos com todas as características observadas (o maior pedido).
+    const v = validatePalmObservation(clearHand(), "right");
+    if (!v.ok) throw new Error("fixture inválida");
+    const report = buildPalmInterpretation(v.observation);
+    const text = report.chapters.reduce(
+      (n, ch) =>
+        n +
+        PALM_MAX_ATTEMPTS *
+          worstCaseUsd(
+            buildPalmChapterRequest(ch, {
+              maxOutputTokens: 4000,
+              timeoutMs: 1,
+            }),
+            MODEL_PRICES[c.textModel],
+          ),
+      0,
+    );
+    expect(vision + text).toBeLessThanOrEqual(PALM_REPORT_BUDGET_USD);
+    // Folga pequena: o teto não é frouxo.
+    expect(PALM_REPORT_BUDGET_USD / (vision + text)).toBeLessThan(1.2);
   });
 
   it("disponibilidade informa que a análise é simulada", async () => {
@@ -534,6 +601,38 @@ describe("análise: capítulos 6 e 7 (Fase 03E)", () => {
     await send();
     expect(text.calls).toHaveLength(2); // um por capítulo
     await send();
+    expect(text.calls).toHaveLength(2);
+  });
+});
+
+describe("teto por relatório (modo real, provedores simulados com preço)", () => {
+  const realDeps = (reportBudgetUsd: number) => {
+    const vision = createMockVisionProvider(["clear"], {
+      model: "claude-sonnet-5-5",
+    });
+    const text = createMockPalmTextProvider(["valid"], {
+      model: "claude-haiku-5-5",
+    });
+    const { d } = deps({
+      provider: () => vision,
+      textProvider: () => text,
+    });
+    d.config = { ...d.config, mode: "anthropic", reportBudgetUsd };
+    return { d, vision, text };
+  };
+
+  it("abaixo do pior caso de uma chamada de visão: nada é chamado", async () => {
+    const { d, vision } = realDeps(0.01);
+    const r = await read(await handleAnalysis(analysisRequest(goodJpeg()), d));
+    expect(r).toEqual({ status: 429, body: { error: "processing_limit" } });
+    expect(vision.calls).toHaveLength(0);
+  });
+
+  it("com o teto padrão: visão e os dois capítulos cabem", async () => {
+    const { d, vision, text } = realDeps(0.15);
+    const r = await read(await handleAnalysis(analysisRequest(goodJpeg()), d));
+    expect(r.status).toBe(200);
+    expect(vision.calls).toHaveLength(1);
     expect(text.calls).toHaveLength(2);
   });
 });

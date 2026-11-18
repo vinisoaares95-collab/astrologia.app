@@ -7,7 +7,7 @@ import {
   partialHand,
 } from "./__fixtures__/observations";
 import { buildPalmInterpretation, type PalmReport } from "./engine";
-import { PALM_LIBRARY, PARTIAL_CAVEAT } from "./library";
+import { PALM_LIBRARY, PARTIAL_CAVEAT, PROPORTION_CAVEAT } from "./library";
 import { validatePalmObservation } from "./validate-observation";
 
 function reportOf(raw: unknown, hand: "right" | "left" = "right"): PalmReport {
@@ -44,7 +44,9 @@ describe("mão nítida", () => {
       "linhas:life.arc:wide",
       "linhas:fate.presence:present",
     ]);
-    expect(r.chapters.every((c) => c.limitations.length === 0)).toBe(true);
+    // Só a ressalva fixa de proporções (palma e dedos estimados a olho).
+    expect(r.chapters[0].limitations).toEqual([PROPORTION_CAVEAT]);
+    expect(r.chapters[1].limitations).toEqual([]);
   });
 
   it("cada item é rastreável até fatos existentes e coerente com a observação", () => {
@@ -196,5 +198,27 @@ describe("traço visto sem classificar (03c.2)", () => {
     expect(
       lim.some((l) => /linha do destino não foi identificada/u.test(l)),
     ).toBe(true);
+  });
+});
+
+describe("ressalva de proporções (03F.1)", () => {
+  it("palma ou dedos usados, mesmo nítidos: ressalva no capítulo 6", () => {
+    const r = reportOf(clearHand());
+    expect(r.chapters[0].limitations).toContain(PROPORTION_CAVEAT);
+  });
+
+  it("sem palma nem dedos observados: sem a ressalva", () => {
+    const raw = clearHand();
+    raw.features["hand.palmShape"] = {
+      visibility: "not_visible",
+      reason: "out_of_frame",
+    };
+    raw.features["hand.fingerLength"] = {
+      visibility: "not_visible",
+      reason: "out_of_frame",
+    };
+    expect(reportOf(raw).chapters[0].limitations).not.toContain(
+      PROPORTION_CAVEAT,
+    );
   });
 });

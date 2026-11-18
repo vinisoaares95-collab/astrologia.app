@@ -15,6 +15,7 @@ import "server-only";
  * Em produção, o recibo de consentimento exige SIDERA_CONSENT_SECRET.
  */
 import { anthropicApiKey } from "../../interpretation/ai/api-key";
+import { readAiConfig } from "../../interpretation/ai/config";
 import type { AnthropicEffort } from "../../interpretation/ai/anthropic-provider";
 import {
   isMockVisionScenario,
@@ -23,12 +24,30 @@ import {
 
 type Env = Record<string, string | undefined>;
 
-/** Modelos com preço e avaliação prevista (03F compara os dois). */
+/** Modelos com preço e avaliação mantidos. */
 export const VISION_MODELS = ["claude-haiku-5-5", "claude-sonnet-5-5"] as const;
-export const DEFAULT_VISION_MODEL = "claude-haiku-5-5";
+/**
+ * Sonnet 5.5: escolhido na Fase 03F.1 (duas rodadas, 8 fotos, 4 pessoas;
+ * docs/fase-03f1-avaliacao-visual.md, seção 9). Haiku 5.5 continua
+ * suportado por SIDERA_PALM_VISION_MODEL, mas teve cobertura útil quase nula.
+ */
+export const DEFAULT_VISION_MODEL = "claude-sonnet-5-5";
 
-/** Teto padrão por processo (US$) e teto máximo aceito por variável. */
-export const DEFAULT_VISION_BUDGET_USD = 0.1;
+/**
+ * Teto por RELATÓRIO (visão + capítulos 6 e 7), em US$: cobre o pior caso
+ * reservado pelo orçamento (2 tentativas de visão no Sonnet + 2 tentativas
+ * de cada capítulo no modelo de texto padrão), conferido em teste. Uma
+ * variável só pode baixá-lo.
+ */
+export const PALM_REPORT_BUDGET_USD = 0.15;
+
+/**
+ * Teto por processo (US$): soma de todos os relatórios enquanto o servidor
+ * vive (estado em memória; não substitui um teto diário compartilhado antes
+ * de uso público). US$ 1 ≈ 6 relatórios no pior caso, ≈ 70 no custo real
+ * observado na 03F.1. Teto máximo aceito por variável: o mesmo.
+ */
+export const DEFAULT_VISION_BUDGET_USD = 1;
 export const MAX_VISION_BUDGET_USD = 1;
 
 export type PalmAnalysisConfig = {
@@ -36,7 +55,17 @@ export type PalmAnalysisConfig = {
   mode: "mock" | "anthropic";
   model: string;
   effort: AnthropicEffort;
+  /** Teto do processo (visão + texto, todos os relatórios). */
   budgetUsd: number;
+  /** Teto de cada relatório (visão + capítulos). */
+  reportBudgetUsd: number;
+  /**
+   * Redação dos capítulos 6 e 7: o MESMO modelo de texto do Sidera
+   * (SIDERA_AI_MODEL, padrão Haiku 5.5, escolhido na 02F.1), independente
+   * do modelo de visão.
+   */
+  textModel: string;
+  textEffort: AnthropicEffort;
   mockScenario: MockVisionScenario;
   /** Por que a chamada real não está ativa (só para diagnóstico interno). */
   realDisabledReason: string | null;
@@ -61,6 +90,12 @@ export function readPalmAnalysisConfig(
     Number.isFinite(requested) && requested > 0
       ? Math.min(requested, MAX_VISION_BUDGET_USD)
       : DEFAULT_VISION_BUDGET_USD;
+  const report = Number(env.SIDERA_PALM_REPORT_BUDGET_USD);
+  const reportBudgetUsd =
+    Number.isFinite(report) && report > 0
+      ? Math.min(report, PALM_REPORT_BUDGET_USD)
+      : PALM_REPORT_BUDGET_USD;
+  const text = readAiConfig(env);
   const realDisabledReason = !enabled
     ? "Análise desligada (SIDERA_PALM_ANALYSIS_ENABLED)."
     : env.SIDERA_PALM_VISION_PROVIDER !== "anthropic"
@@ -78,6 +113,9 @@ export function readPalmAnalysisConfig(
     model,
     effort,
     budgetUsd,
+    reportBudgetUsd,
+    textModel: text.model,
+    textEffort: text.effort,
     mockScenario: isMockVisionScenario(env.SIDERA_PALM_VISION_MOCK_SCENARIO)
       ? env.SIDERA_PALM_VISION_MOCK_SCENARIO
       : "clear",

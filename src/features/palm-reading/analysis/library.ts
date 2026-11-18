@@ -260,6 +260,14 @@ export const FEATURE_LABELS: Record<FeatureId, string> = {
 };
 
 /** Ressalva do sistema para características só parcialmente visíveis. */
+/**
+ * Formato da palma e comprimento dos dedos são proporções estimadas a olho
+ * (03F.1: os pontos mais frágeis do piloto, inclusive quando "nítidos").
+ * Ressalva do sistema no capítulo 6 sempre que uma delas é usada.
+ */
+export const PROPORTION_CAVEAT =
+  "O formato da palma e o comprimento dos dedos são proporções estimadas a olho na foto; ângulo, perspectiva e enquadramento podem alterá-las.";
+
 export const PARTIAL_CAVEAT =
   "Esta característica ficou só parcialmente visível na foto; leia esta interpretação com reserva.";
 
