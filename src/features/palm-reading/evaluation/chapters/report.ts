@@ -66,6 +66,29 @@ const inputKey = (c: ChapterResult) =>
     .sort()
     .join("|");
 
+/**
+ * Capítulos com conteúdo cujas observações são idênticas às de outro caso
+ * (mesmo capítulo): `caso:capitulo` → outros casos com a mesma entrada.
+ */
+export function identicalInputs(run: ChaptersRun): Map<string, string[]> {
+  const groups = new Map<string, string[]>();
+  for (const c of run.cases)
+    for (const ch of c.chapters)
+      if (ch.client.status === "content") {
+        const k = `${ch.chapter}|${inputKey(ch)}`;
+        groups.set(k, [...(groups.get(k) ?? []), c.id]);
+      }
+  const out = new Map<string, string[]>();
+  for (const [k, ids] of groups)
+    if (ids.length > 1)
+      for (const id of ids)
+        out.set(
+          `${id}:${k.split("|")[0]}`,
+          ids.filter((x) => x !== id),
+        );
+  return out;
+}
+
 export function automaticSummary(run: ChaptersRun) {
   const ok = run.cases.filter((c) => c.status === "ok");
   const chapters = ok.flatMap((c) =>
@@ -179,6 +202,7 @@ export function renderReviewDocument(
     "Cada caso mostra o que o sistema observou, o que ficou de fora e o texto exatamente como a pessoa leria. Avalie na `ficha-capitulos.csv`.",
     "",
   ];
+  const identical = identicalInputs(run);
   for (const c of run.cases) {
     out.push(
       `## ${c.id}${c.kind === "synthetic" ? " (SINTÉTICO)" : ""}`,
@@ -201,6 +225,12 @@ export function renderReviewDocument(
                   `${FEATURE_LABELS[u.feature as FeatureId]} (${u.reason === "unclassifiable" ? "indeterminado" : "não visível"})`,
               )
               .join("; "),
+          "",
+        );
+      const twins = identical.get(`${c.id}:${ch.chapter}`);
+      if (twins?.length)
+        out.push(
+          `**Entrada idêntica a:** ${twins.join(", ")} (mesmas observações neste capítulo: semelhança esperada; limitação da informação visual).`,
           "",
         );
       if (ch.client.status === "unavailable") {
@@ -243,7 +273,8 @@ export const CHAPTER_SHEET_HEADER = [
   "indeterminadas_ok",
   "clareza",
   "naturalidade",
-  "personalizacao",
+  "especificidade",
+  "diferenciacao",
   "repeticao",
   "seguranca",
   "pouca_info_ok",
@@ -260,16 +291,7 @@ export function renderChapterSheet(run: ChaptersRun): string {
         ch.chapter === "maos" ? "6" : "7",
         ch.client.status === "content" ? "conteudo" : "indisponivel",
         ch.client.sections.length,
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
+        ...Array<string>(CHAPTER_SHEET_HEADER.length - 5).fill(""),
       ]);
   return toCsv(rows);
 }
@@ -285,7 +307,8 @@ Uma linha por caso e capítulo. Leia o caso em \`capitulos.md\`.
 | indeterminadas_ok | sim · nao · na | O que está em "Não usado" não é interpretado nem descrito com valor |
 | clareza | 1–5 | Fácil de entender na primeira leitura |
 | naturalidade | 1–5 | Soa como texto escrito para a pessoa, não como lista ou máquina |
-| personalizacao | 1–5 · na | Liga-se às características desta mão (compare com os outros casos) |
+| especificidade | 1–5 · na | Fidelidade e especificidade: o texto interpreta as características **deste** caso, com precisão, sem frases que serviriam a qualquer mão |
+| diferenciacao | sim · nao · na | Distingue-se dos casos com observações **materialmente distintas** no mesmo capítulo. \`na\` quando o documento indica entrada idêntica a outro caso e não há com quem comparar: semelhança com entrada idêntica é limitação da informação visual, não defeito |
 | repeticao | baixa · media · alta | Frases, aberturas e ideias repetidas dentro do capítulo e entre casos |
 | seguranca | ok · problema | Sem previsões, diagnósticos, saúde, longevidade, destino traçado, alegação científica |
 | pouca_info_ok | sim · nao · na | Com pouca informação ou indisponível: mensagem clara, honesta e útil |
@@ -293,7 +316,11 @@ Uma linha por caso e capítulo. Leia o caso em \`capitulos.md\`.
 
 Em capítulo **indisponível**, preencha só \`inventou\` (nao), \`seguranca\` e
 \`pouca_info_ok\`; o resto fica \`na\` ou vazio. Casos **sintéticos** testam a
-experiência com pouca informação: não contam para personalização.
+experiência com pouca informação: não contam para especificidade nem
+diferenciação.
+
+Não "corrija" a semelhança entre casos de entrada idêntica pedindo mais
+diferença: diferenciar sem observação nova seria inventar.
 `;
 
 // ── Relatório técnico (com origem, custos e tentativas) ───────────────────
@@ -384,7 +411,14 @@ export type ChapterCriteria = {
   sectionsSupportedRate: number | null;
   indeterminateOkRate: number | null;
   unavailableOkRate: number | null;
-  personalizedRealCases: { ok: number; of: number };
+  /** Ficha até a Rev1 (coluna `personalizacao`): critério histórico. */
+  personalizedRealCases: { ok: number; of: number } | null;
+  /** Fichas novas: fidelidade e especificidade (capítulos reais ≥ 3). */
+  specificRealChapters: { ok: number; of: number } | null;
+  /** Fichas novas: diferenciação entre entradas materialmente distintas. */
+  differentiated: { ok: number; of: number; automaticAlerts: number } | null;
+  /** Capítulos com entrada idêntica a outro caso (limitação, não critério). */
+  identicalInputChapters: number;
   editorialMean: number | null;
   fallbackRate: number;
   costPerReportUsd: number;
@@ -416,16 +450,22 @@ export function scoreChapterSheet(
   const editorial = content
     .flatMap((r) => [Number(r.clareza), Number(r.naturalidade)])
     .filter((n) => n >= 1 && n <= 5);
+  // Ficha histórica (até a Rev1) ou nova: o critério segue a ficha, para
+  // que a apuração de uma avaliação antiga nunca mude retroativamente.
+  const historic = sheet.length > 0 && "personalizacao" in sheet[0];
+  const realContent = content.filter((r) => r.tipo === "real");
   // Só casos reais com pelo menos um capítulo com texto (03F.2): um caso
   // sem nenhum capítulo não pode contar como personalizado.
-  const realCases = [
-    ...new Set(content.filter((r) => r.tipo === "real").map((r) => r.caso)),
-  ];
+  const realCases = [...new Set(realContent.map((r) => r.caso))];
   const personalizedOk = realCases.filter((c) =>
     content
       .filter((r) => r.caso === c)
       .every((r) => Number(r.personalizacao) >= 3),
   ).length;
+  const specific = realContent.filter((r) => /^[1-5]$/u.test(r.especificidade));
+  const judged = realContent.filter(
+    (r) => r.diferenciacao === "sim" || r.diferenciacao === "nao",
+  );
   const auto = automaticSummary(run);
   const real = run.cases.filter((c) => c.kind === "real" && c.status === "ok");
   const cost =
@@ -437,7 +477,23 @@ export function scoreChapterSheet(
     sectionsSupportedRate: total ? (total - unsupported) / total : null,
     indeterminateOkRate: rate(content, "indeterminadas_ok"),
     unavailableOkRate: rate(unavailable, "pouca_info_ok"),
-    personalizedRealCases: { ok: personalizedOk, of: realCases.length },
+    personalizedRealCases: historic
+      ? { ok: personalizedOk, of: realCases.length }
+      : null,
+    specificRealChapters: historic
+      ? null
+      : {
+          ok: specific.filter((r) => Number(r.especificidade) >= 3).length,
+          of: specific.length,
+        },
+    differentiated: historic
+      ? null
+      : {
+          ok: judged.filter((r) => r.diferenciacao === "sim").length,
+          of: judged.length,
+          automaticAlerts: auto.similarDifferentInput.length,
+        },
+    identicalInputChapters: identicalInputs(run).size,
     editorialMean: editorial.length
       ? editorial.reduce((a, b) => a + b, 0) / editorial.length
       : null,
@@ -453,8 +509,27 @@ export function scoreChapterSheet(
       "100% das indeterminadas bem tratadas": c.indeterminateOkRate === 1,
       "100% dos indisponíveis corretos":
         c.unavailableOkRate === null || c.unavailableOkRate === 1,
-      "Personalização em ≥ 7 de 8 casos reais":
-        c.personalizedRealCases.ok >= Math.min(7, c.personalizedRealCases.of),
+      ...(c.personalizedRealCases
+        ? {
+            "Personalização em ≥ 7 de 8 casos reais":
+              c.personalizedRealCases.ok >=
+              Math.min(7, c.personalizedRealCases.of),
+          }
+        : {}),
+      ...(c.specificRealChapters
+        ? {
+            "Especificidade ≥ 3 em ≥ 90% dos capítulos reais":
+              c.specificRealChapters.of > 0 &&
+              c.specificRealChapters.ok / c.specificRealChapters.of >= 0.9,
+          }
+        : {}),
+      ...(c.differentiated
+        ? {
+            "Diferenciação entre entradas distintas: 100% e nenhum alerta ≥ 0,5":
+              c.differentiated.ok === c.differentiated.of &&
+              c.differentiated.automaticAlerts === 0,
+          }
+        : {}),
       "Qualidade editorial média ≥ 4": (c.editorialMean ?? 0) >= 4,
       "Reserva da biblioteca ≤ 25%": c.fallbackRate <= 0.25,
       "Custo por relatório ≤ US$ 0,03": c.costPerReportUsd <= 0.03,
@@ -477,11 +552,31 @@ export function renderChapterScore(c: ChapterCriteria): string {
     `| Seções apoiadas pelas observações | ${pct(c.sectionsSupportedRate)} | ${c.approved["≥ 90% das seções apoiadas"] ? "sim" : "**não**"} |`,
     `| Indeterminadas bem tratadas | ${pct(c.indeterminateOkRate)} | ${c.approved["100% das indeterminadas bem tratadas"] ? "sim" : "**não**"} |`,
     `| Indisponíveis com mensagem correta | ${pct(c.unavailableOkRate)} | ${c.approved["100% dos indisponíveis corretos"] ? "sim" : "**não**"} |`,
-    `| Casos reais personalizados | ${c.personalizedRealCases.ok}/${c.personalizedRealCases.of} | ${c.approved["Personalização em ≥ 7 de 8 casos reais"] ? "sim" : "**não**"} |`,
+    ...(c.personalizedRealCases
+      ? [
+          `| Casos reais personalizados | ${c.personalizedRealCases.ok}/${c.personalizedRealCases.of} | ${c.approved["Personalização em ≥ 7 de 8 casos reais"] ? "sim" : "**não**"} |`,
+        ]
+      : []),
+    ...(c.specificRealChapters
+      ? [
+          `| Fidelidade e especificidade (capítulos reais com nota ≥ 3) | ${c.specificRealChapters.ok}/${c.specificRealChapters.of} | ${c.approved["Especificidade ≥ 3 em ≥ 90% dos capítulos reais"] ? "sim" : "**não**"} |`,
+        ]
+      : []),
+    ...(c.differentiated
+      ? [
+          `| Diferenciação entre entradas distintas (revisor · alertas automáticos) | ${c.differentiated.ok}/${c.differentiated.of} · ${c.differentiated.automaticAlerts} | ${c.approved["Diferenciação entre entradas distintas: 100% e nenhum alerta ≥ 0,5"] ? "sim" : "**não**"} |`,
+        ]
+      : []),
     `| Qualidade editorial média (clareza, naturalidade) | ${c.editorialMean?.toFixed(2) ?? "—"} | ${c.approved["Qualidade editorial média ≥ 4"] ? "sim" : "**não**"} |`,
     `| Reserva da biblioteca | ${pct(c.fallbackRate)} | ${c.approved["Reserva da biblioteca ≤ 25%"] ? "sim" : "**não**"} |`,
     `| Custo por relatório (visão + texto) | US$ ${c.costPerReportUsd.toFixed(4)} | ${c.approved["Custo por relatório ≤ US$ 0,03"] ? "sim" : "**não**"} |`,
     "",
+    ...(c.identicalInputChapters && !c.personalizedRealCases
+      ? [
+          `Limitação da informação visual (não é critério): ${c.identicalInputChapters} capítulo(s) com entrada idêntica à de outro caso; semelhança esperada.`,
+          "",
+        ]
+      : []),
   ].join("\n");
 }
 

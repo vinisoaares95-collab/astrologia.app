@@ -23,12 +23,18 @@ import {
 import { buildPalmInterpretation } from "../../analysis/engine";
 import { buildPalmChapterRequest } from "../../chapters/prompt";
 import type { PalmHand } from "../../consent";
-import { buildSnapshot, checkSnapshot, type Snapshot } from "./cases";
+import {
+  buildSnapshot,
+  checkSnapshot,
+  selectedChapter,
+  type Snapshot,
+} from "./cases";
 import {
   CHAPTERS_EVAL_CONDITIONS,
   CHAPTERS_EVAL_MODEL,
   chaptersEvalBudgetBrl,
   chaptersEvalGate,
+  chaptersEvalOnly,
   chaptersEvalUsdBrl,
   keepRejectedDrafts,
   REJECTED_DRAFTS_FILE,
@@ -104,7 +110,9 @@ export function planChapters(
   const price = MODEL_PRICES[CHAPTERS_EVAL_MODEL];
   const perCase = snapshot.cases.map((c) => {
     const report = buildPalmInterpretation(c.observation);
-    const calls = report.chapters.filter((ch) => ch.items.length > 0);
+    const calls = report.chapters.filter(
+      (ch) => ch.items.length > 0 && selectedChapter(c, ch.id),
+    );
     const expected = calls.reduce((n, ch) => {
       const r = buildPalmChapterRequest(ch, {
         maxOutputTokens: CHAPTERS_EVAL_CONDITIONS.maxOutputTokens,
@@ -299,7 +307,28 @@ export async function runChaptersSession(input: {
       kind: "no_input",
       reasons: [loaded.error ?? "Entrada indisponível."],
     };
-  const snapshot = loaded.snapshot;
+  // Revalidação direcionada: só os casos e capítulos selecionados, a partir
+  // da MESMA entrada registrada (nada é remontado).
+  const only = chaptersEvalOnly(input.env);
+  const snapshot =
+    only instanceof Map
+      ? {
+          ...loaded.snapshot,
+          cases: loaded.snapshot.cases
+            .filter((c) => only.has(c.id))
+            .map((c) => ({ ...c, chapters: only.get(c.id) })),
+        }
+      : loaded.snapshot;
+  if (only instanceof Map) {
+    const missing = [...only.keys()].filter(
+      (id) => !snapshot.cases.some((c) => c.id === id),
+    );
+    if (missing.length)
+      return {
+        kind: "no_input",
+        reasons: [`Casos ausentes da entrada: ${missing.join(", ")}.`],
+      };
+  }
   const usdBrl = chaptersEvalUsdBrl(input.env);
   const plan = planChapters(snapshot, usdBrl, chaptersEvalBudgetBrl(input.env));
   await write(outDir, "plano.md", renderChaptersPlan(plan));

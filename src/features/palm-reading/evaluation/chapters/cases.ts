@@ -35,7 +35,12 @@ export type EvalCase = {
   person: string | null;
   description: string;
   observation: ValidatedObservation;
+  /** Revalidação direcionada: só estes capítulos (padrão: os dois). */
+  chapters?: ("maos" | "linhas")[];
 };
+
+export const selectedChapter = (c: EvalCase, id: "maos" | "linhas") =>
+  !c.chapters || c.chapters.includes(id);
 
 export type Snapshot = {
   version: typeof SNAPSHOT_VERSION;

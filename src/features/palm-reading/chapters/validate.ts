@@ -26,6 +26,7 @@ import type { FeatureId } from "../analysis/contract";
 import type { PalmChapter, PalmFact, PalmReport } from "../analysis/engine";
 import { PALM_FORBIDDEN_TEXT_PATTERNS } from "../analysis/library";
 import { PALM_SENSITIVE_PATTERNS } from "../analysis/validate-observation";
+import { presumedGender } from "./editorial";
 
 type Issue = Omit<AiValidationError, "chapter" | "part" | "paragraph">;
 
@@ -159,6 +160,13 @@ function checkText(
   suggestFor: (g: Group) => string[],
 ): Issue[] {
   const out: Issue[] = [];
+  // 03F.2: adjetivo com gênero descrevendo a pessoa (não as palavras em si).
+  for (const g of presumedGender(text))
+    out.push({
+      code: "PRESUMED_GENDER",
+      message: `"${g}" presume o gênero da pessoa.`,
+      fix: 'Reescreva com verbo ou construção neutra (ex.: "você se guia", "você se sente à vontade", "você tende a").',
+    });
   const nev = text.match(NEVER);
   if (nev)
     out.push({

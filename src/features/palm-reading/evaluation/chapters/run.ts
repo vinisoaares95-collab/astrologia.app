@@ -35,7 +35,7 @@ import {
 import { buildPalmChapterRequest } from "../../chapters/prompt";
 import { validatePalmChapterDraft } from "../../chapters/validate";
 import type { PalmGeneratedChapter } from "../../chapters/contract";
-import type { EvalCase } from "./cases";
+import { selectedChapter, type EvalCase } from "./cases";
 import { CHAPTERS_EVAL_CONDITIONS } from "./config";
 
 /** Folga para o texto de correção anexado à nova tentativa (como na 02F.1). */
@@ -56,10 +56,9 @@ export function chapterWorstUsd(
 }
 
 export function caseWorstUsd(c: EvalCase, price: ModelPrice): number {
-  return buildPalmInterpretation(c.observation).chapters.reduce(
-    (n, ch) => n + chapterWorstUsd(ch, price),
-    0,
-  );
+  return buildPalmInterpretation(c.observation)
+    .chapters.filter((ch) => selectedChapter(c, ch.id))
+    .reduce((n, ch) => n + chapterWorstUsd(ch, price), 0);
 }
 
 export type ChapterResult = {
@@ -227,77 +226,91 @@ export async function runChaptersEvaluation(input: {
     const provider = input.onRejectedDraft
       ? recording(budgeted, responses)
       : budgeted;
-    const generated = await generatePalmChapters(report, provider, {
+    // Capítulo fora da seleção: sem itens, não chama a IA (e sai do resultado).
+    const target: PalmReport = c.chapters
+      ? {
+          ...report,
+          chapters: report.chapters.map((ch) =>
+            selectedChapter(c, ch.id) ? ch : { ...ch, items: [] },
+          ) as PalmReport["chapters"],
+        }
+      : report;
+    const generated = await generatePalmChapters(target, provider, {
       maxAttempts: CHAPTERS_EVAL_CONDITIONS.maxAttempts,
       maxOutputTokens: CHAPTERS_EVAL_CONDITIONS.maxOutputTokens,
       timeoutMs: CHAPTERS_EVAL_CONDITIONS.timeoutMs,
       now: input.now,
     });
-    const chapters = generated.chapters.map((g, i): ChapterResult => {
-      const chapter = report.chapters[i];
-      const client = toClientPalmChapter(g);
-      const text = textOf(client);
-      const attempts = generated.attempts
-        .filter((a) => a.chapter === g.id)
-        .map((a) => ({
-          attempt: a.attempt,
-          outcome: a.outcome,
-          errors: a.errors,
-          model: a.model,
-          inputTokens: a.usage?.inputTokens ?? 0,
-          outputTokens: a.usage?.outputTokens ?? 0,
-          costUsd: a.costUsd,
-          latencyMs: a.latencyMs,
-        }));
-      if (attempts.some((a) => a.outcome === "error:budget"))
-        run.stoppedByBudget = true;
-      if (input.onRejectedDraft)
-        for (const a of attempts) {
-          const text = responses[g.id]?.[a.attempt - 1];
-          if (a.outcome === "ok" || typeof text !== "string") continue;
-          input.onRejectedDraft({
-            caseId: c.id,
-            chapter: g.id,
+    const chapters = generated.chapters
+      .filter((g) => selectedChapter(c, g.id))
+      .map((g): ChapterResult => {
+        const i = report.chapters.findIndex((ch) => ch.id === g.id);
+        const chapter = report.chapters[i];
+        const client = toClientPalmChapter(g);
+        const text = textOf(client);
+        const attempts = generated.attempts
+          .filter((a) => a.chapter === g.id)
+          .map((a) => ({
             attempt: a.attempt,
             outcome: a.outcome,
             errors: a.errors,
-            text: text.slice(0, REJECTED_DRAFT_MAX_CHARS),
-          });
-        }
-      const unused = Object.entries(c.observation.features)
-        .filter(
-          ([id, f]) =>
-            f.visibility === "not_visible" &&
-            (g.id === "maos"
-              ? id.startsWith("hand.")
-              : !id.startsWith("hand.")),
-        )
-        .map(([feature, f]) => ({
-          feature,
-          reason: f.visibility === "not_visible" ? f.reason : "",
-        }));
-      return {
-        chapter: g.id,
-        client,
-        items: chapter.items.map((it) => ({
-          id: it.id,
-          certainty: it.certainty,
-          observation: it.observation,
-          symbolic: it.symbolic,
-        })),
-        unused,
-        source: g.source,
-        fallbackReason: g.fallbackReason,
-        attempts,
-        recheckCodes: recheck(chapter, report, g),
-        languageCodes:
-          g.status === "content" ? languageIssues(text).map((x) => x.code) : [],
-        forbiddenMatches: PALM_FORBIDDEN_TEXT_PATTERNS.map(
-          (re) => text.match(re)?.[0],
-        ).filter((x): x is string => Boolean(x)),
-        words: text.split(/\s+/u).filter(Boolean).length,
-      };
-    });
+            model: a.model,
+            inputTokens: a.usage?.inputTokens ?? 0,
+            outputTokens: a.usage?.outputTokens ?? 0,
+            costUsd: a.costUsd,
+            latencyMs: a.latencyMs,
+          }));
+        if (attempts.some((a) => a.outcome === "error:budget"))
+          run.stoppedByBudget = true;
+        if (input.onRejectedDraft)
+          for (const a of attempts) {
+            const text = responses[g.id]?.[a.attempt - 1];
+            if (a.outcome === "ok" || typeof text !== "string") continue;
+            input.onRejectedDraft({
+              caseId: c.id,
+              chapter: g.id,
+              attempt: a.attempt,
+              outcome: a.outcome,
+              errors: a.errors,
+              text: text.slice(0, REJECTED_DRAFT_MAX_CHARS),
+            });
+          }
+        const unused = Object.entries(c.observation.features)
+          .filter(
+            ([id, f]) =>
+              f.visibility === "not_visible" &&
+              (g.id === "maos"
+                ? id.startsWith("hand.")
+                : !id.startsWith("hand.")),
+          )
+          .map(([feature, f]) => ({
+            feature,
+            reason: f.visibility === "not_visible" ? f.reason : "",
+          }));
+        return {
+          chapter: g.id,
+          client,
+          items: chapter.items.map((it) => ({
+            id: it.id,
+            certainty: it.certainty,
+            observation: it.observation,
+            symbolic: it.symbolic,
+          })),
+          unused,
+          source: g.source,
+          fallbackReason: g.fallbackReason,
+          attempts,
+          recheckCodes: recheck(chapter, report, g),
+          languageCodes:
+            g.status === "content"
+              ? languageIssues(text).map((x) => x.code)
+              : [],
+          forbiddenMatches: PALM_FORBIDDEN_TEXT_PATTERNS.map(
+            (re) => text.match(re)?.[0],
+          ).filter((x): x is string => Boolean(x)),
+          words: text.split(/\s+/u).filter(Boolean).length,
+        };
+      });
     run.cases.push({
       ...base,
       status: "ok",

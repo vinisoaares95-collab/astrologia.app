@@ -123,22 +123,26 @@ describe("leitura completa", () => {
 });
 
 describe("leitura parcial", () => {
-  it("uma só ressalva por capítulo, na primeira seção incerta, nomeando as características parciais", async () => {
-    const { client, report } = await run(partialHand());
+  it("uma só ressalva por capítulo, depois da última seção com característica parcial", async () => {
+    const { client, report, generated } = await run(partialHand());
     expect(client.status).toBe("partial");
-    expect(
+    const uncertain = new Set(
       report.chapters
         .flatMap((c) => c.items)
-        .some((i) => i.certainty === "uncertain"),
-    ).toBe(true);
-    for (const chapter of client.chapters) {
+        .filter((i) => i.certainty === "uncertain")
+        .map((i) => i.id),
+    );
+    expect(uncertain.size).toBeGreaterThan(0);
+    for (const chapter of generated.chapters) {
       const notes = chapter.sections.flatMap((s) => s.notes);
       if (notes.length === 0) continue;
-      // Consolidada (03F.2): nenhuma repetição nas seções seguintes.
+      // Consolidada (03F.2): uma só, nomeando as parciais.
       expect(notes).toHaveLength(1);
       expect(notes[0]).toMatch(/só parcialmente visíve(l|is) na foto; leia/u);
-      const first = chapter.sections.findIndex((s) => s.notes.length > 0);
-      expect(chapter.sections[first].notes).toEqual(notes);
+      const last = chapter.sections.findLastIndex((s) =>
+        s.itemIds.some((id) => uncertain.has(id)),
+      );
+      expect(chapter.sections[last].notes).toEqual(notes);
     }
     // Limitações do que não foi visto chegam ao cliente.
     expect(
@@ -185,7 +189,8 @@ describe("sem observações suficientes", () => {
       "unavailable",
     ]);
     expect(client.chapters[1].unavailableMessage).toMatch(
-      /as linhas da palma não ficaram visíveis.*nova foto.*palma bem aberta/su,
+      // O arco da vida está "obscured": a orientação segue esse motivo.
+      /as linhas da palma não ficaram visíveis.*nova foto.*nada cobrindo a palma/su,
     );
     // Só o capítulo 6 foi redigido.
     expect(provider.calls).toHaveLength(1);

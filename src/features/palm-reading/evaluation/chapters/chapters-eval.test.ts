@@ -38,12 +38,17 @@ import {
 import {
   CHAPTERS_EVAL_CONFIRM,
   CHAPTERS_EVAL_MODEL,
+  CHAPTERS_TARGETED_CONFIRM,
+  chaptersEvalBudgetBrl,
   chaptersEvalGate,
+  chaptersEvalOnly,
   keepRejectedDrafts,
   REJECTED_DRAFTS_FILE,
 } from "./config";
 import {
   automaticSummary,
+  CHAPTER_GUIDE,
+  identicalInputs,
   jaccard,
   parseCsv,
   renderChapterScore,
@@ -601,5 +606,220 @@ describe("sessão completa (pastas temporárias, simulador)", () => {
       provider: haiku(),
     });
     expect(r.kind).toBe("no_input");
+  });
+});
+
+describe("personalização separada (avaliações futuras)", () => {
+  async function scored(fill: (r: Record<string, string>) => void) {
+    const cases = fictitiousCases();
+    // Duas cópias da mesma entrada: limitação, não critério.
+    const twin = { ...cases[0], id: "foto-09" };
+    const run = await runChaptersEvaluation({
+      cases: [...cases, twin],
+      provider: haiku(),
+      budget: createBudget(1),
+    });
+    const sheet = parseCsv(renderChapterSheet(run)).map((r) => {
+      const row: Record<string, string> = {
+        ...r,
+        secoes_sem_apoio: "0",
+        inventou: "nao",
+        indeterminadas_ok: r.status === "conteudo" ? "sim" : "na",
+        clareza: "5",
+        naturalidade: "4",
+        especificidade: r.status === "conteudo" ? "4" : "na",
+        diferenciacao: r.status === "conteudo" ? "sim" : "na",
+        repeticao: "baixa",
+        seguranca: "ok",
+        pouca_info_ok: "sim",
+      };
+      fill(row);
+      return row;
+    });
+    return { run, score: scoreChapterSheet(sheet, run, 0.0128) };
+  }
+
+  it("ficha nova: especificidade e diferenciação em critérios separados", async () => {
+    const { run, score } = await scored(() => {});
+    expect(score.personalizedRealCases).toBeNull();
+    expect(score.specificRealChapters!.ok).toBe(score.specificRealChapters!.of);
+    expect(Object.keys(score.approved)).toEqual(
+      expect.arrayContaining([
+        "Especificidade ≥ 3 em ≥ 90% dos capítulos reais",
+        "Diferenciação entre entradas distintas: 100% e nenhum alerta ≥ 0,5",
+      ]),
+    );
+    expect(Object.keys(score.approved)).not.toContain(
+      "Personalização em ≥ 7 de 8 casos reais",
+    );
+    // Entrada idêntica documentada como limitação, sem reprovar.
+    expect(score.identicalInputChapters).toBeGreaterThan(0);
+    expect(renderChapterScore(score)).toMatch(
+      /Limitação da informação visual/u,
+    );
+    expect(renderReviewDocument(run, {})).toMatch(
+      /\*\*Entrada idêntica a:\*\* foto-09/u,
+    );
+    expect(identicalInputs(run).get("foto-09:linhas")).toEqual(["foto-01"]);
+  });
+
+  it("ficha nova: diferenciação reprovada é independente da especificidade", async () => {
+    const { score } = await scored((r) => {
+      if (r.caso === "foto-02" && r.status === "conteudo")
+        r.diferenciacao = "nao";
+    });
+    expect(
+      score.approved["Especificidade ≥ 3 em ≥ 90% dos capítulos reais"],
+    ).toBe(true);
+    expect(
+      score.approved[
+        "Diferenciação entre entradas distintas: 100% e nenhum alerta ≥ 0,5"
+      ],
+    ).toBe(false);
+  });
+
+  it("ficha histórica (com personalizacao) mantém o critério antigo", async () => {
+    const { score } = await scored((r) => {
+      r.personalizacao = r.status === "conteudo" ? "2" : "na";
+      delete r.especificidade;
+      delete r.diferenciacao;
+    });
+    expect(score.specificRealChapters).toBeNull();
+    expect(score.differentiated).toBeNull();
+    expect(score.personalizedRealCases!.ok).toBe(0);
+    expect(score.approved["Personalização em ≥ 7 de 8 casos reais"]).toBe(
+      false,
+    );
+  });
+
+  it("o guia explica a separação e proíbe diferenciação artificial", () => {
+    expect(CHAPTER_GUIDE).toMatch(/especificidade/u);
+    expect(CHAPTER_GUIDE).toMatch(/materialmente distintas/u);
+    expect(CHAPTER_GUIDE).toMatch(/seria inventar/u);
+  });
+});
+
+describe("revalidação direcionada (só capítulos selecionados)", () => {
+  it("seleção: formato, confirmação própria e teto de R$ 0,50", () => {
+    const env = {
+      SIDERA_PALM_CHAPTERS_EVAL_ONLY: "foto-03:7, foto-05:7,foto-06:6",
+    };
+    const only = chaptersEvalOnly(env) as Map<string, string[]>;
+    expect([...only]).toEqual([
+      ["foto-03", ["linhas"]],
+      ["foto-05", ["linhas"]],
+      ["foto-06", ["maos"]],
+    ]);
+    expect(
+      chaptersEvalOnly({ SIDERA_PALM_CHAPTERS_EVAL_ONLY: "foto-03" }),
+    ).toBeInstanceOf(Error);
+    expect(chaptersEvalBudgetBrl(env)).toBe(0.5);
+    expect(
+      chaptersEvalBudgetBrl({
+        ...env,
+        SIDERA_PALM_CHAPTERS_EVAL_BUDGET_BRL: "3",
+      }),
+    ).toBe(0.5);
+    expect(chaptersEvalBudgetBrl({})).toBe(1);
+    const paid = {
+      ...env,
+      SIDERA_PALM_CHAPTERS_EVAL_PAID: "1",
+      SIDERA_AI_KEY_VIA_PROXY: "1",
+    };
+    // A frase da Etapa A completa não autoriza a direcionada, e vice-versa.
+    expect(
+      chaptersEvalGate(
+        { ...paid, SIDERA_PALM_CHAPTERS_EVAL_CONFIRM: CHAPTERS_EVAL_CONFIRM },
+        ROOT,
+      ).canCall,
+    ).toBe(false);
+    expect(
+      chaptersEvalGate(
+        {
+          ...paid,
+          SIDERA_PALM_CHAPTERS_EVAL_CONFIRM: CHAPTERS_TARGETED_CONFIRM,
+        },
+        ROOT,
+      ).canCall,
+    ).toBe(true);
+    expect(
+      chaptersEvalGate(
+        {
+          SIDERA_PALM_CHAPTERS_EVAL_PAID: "1",
+          SIDERA_AI_KEY_VIA_PROXY: "1",
+          SIDERA_PALM_CHAPTERS_EVAL_CONFIRM: CHAPTERS_TARGETED_CONFIRM,
+        },
+        ROOT,
+      ).canCall,
+    ).toBe(false);
+  });
+
+  it("só os capítulos selecionados chamam a IA, custam e aparecem", async () => {
+    const all = fictitiousCases();
+    const cases = all
+      .filter((c) => c.id === "foto-01" || c.id === "foto-02")
+      .map((c) => ({
+        ...c,
+        chapters: [c.id === "foto-01" ? "linhas" : "maos"] as (
+          "maos" | "linhas"
+        )[],
+      }));
+    const provider = haiku();
+    const run = await runChaptersEvaluation({
+      cases,
+      provider,
+      budget: createBudget(1),
+    });
+    expect(provider.calls).toHaveLength(2);
+    expect(run.cases.map((c) => c.chapters.map((ch) => ch.chapter))).toEqual([
+      ["linhas"],
+      ["maos"],
+    ]);
+    const price = MODEL_PRICES[CHAPTERS_EVAL_MODEL];
+    const full = all.find((c) => c.id === "foto-01")!;
+    expect(caseWorstUsd(cases[0], price)).toBeLessThan(
+      caseWorstUsd(full, price),
+    );
+    expect(caseWorstUsd(cases[0], price)).toBeGreaterThan(0);
+  });
+
+  it("sessão direcionada: plano a partir da mesma entrada, sem montar nada", async () => {
+    const out = await tmp();
+    const snapshot = {
+      version: "03f2a.1",
+      source: "fixture",
+      model: "claude-sonnet-5-5",
+      observationVersion: "",
+      cases: fictitiousCases(),
+    };
+    const { OBSERVATION_VERSION } = await import("../../analysis/contract");
+    snapshot.observationVersion = OBSERVATION_VERSION;
+    await mkdir(path.join(out, "entrada"), { recursive: true });
+    await writeFile(
+      path.join(out, "entrada/observacoes.json"),
+      JSON.stringify(snapshot),
+    );
+    const env = {
+      SIDERA_PALM_CHAPTERS_EVAL_OUT_DIR: out,
+      SIDERA_PALM_CHAPTERS_EVAL_ONLY: "foto-01:7,foto-02:6",
+    };
+    const r = await runChaptersSession({
+      mode: "plan",
+      env,
+      repoRoot: ROOT,
+      provider: haiku(),
+    });
+    expect(r.kind).toBe("planned");
+    if (r.kind !== "planned") return;
+    expect(r.plan.budgetBrl).toBe(0.5);
+    expect(r.plan.chapterCalls).toBe(2);
+    expect(r.plan.perCase.map((c) => c.id)).toEqual(["foto-01", "foto-02"]);
+    const missing = await runChaptersSession({
+      mode: "plan",
+      env: { ...env, SIDERA_PALM_CHAPTERS_EVAL_ONLY: "foto-77:7" },
+      repoRoot: ROOT,
+      provider: haiku(),
+    });
+    expect(missing.kind).toBe("no_input");
   });
 });

@@ -134,12 +134,29 @@ const DEFAULT_GUIDANCE = {
     "palma bem aberta, de frente para a câmera, com luz natural e sem reflexos",
 } as const;
 
+/**
+ * Motivo de cada característica não usada → problema de captura que ele
+ * indica (03F.2). Complementa a lista de problemas da imagem, que pode não
+ * trazer o problema (ex.: dedos fora do quadro sem `hand_cropped`).
+ */
+const REASON_ISSUE: Partial<Record<NotVisibleReason, ImageIssue>> = {
+  out_of_frame: "hand_cropped",
+  obscured: "obstruction",
+};
+
 export function retakeGuidance(
   chapter: "maos" | "linhas",
   issues: readonly ImageIssue[],
+  reasons: readonly NotVisibleReason[] = [],
 ): string {
+  // Primeiro o que explica as características deste capítulo.
+  const fromReasons = reasons
+    .map((r) => REASON_ISSUE[r])
+    .filter((i): i is ImageIssue => Boolean(i));
   const g = [
-    ...new Set(issues.map((i) => ISSUE_GUIDANCE[i]).filter(Boolean)),
+    ...new Set(
+      [...fromReasons, ...issues].map((i) => ISSUE_GUIDANCE[i]).filter(Boolean),
+    ),
   ] as string[];
   const text = g.length ? g.slice(0, 3).join("; ") : DEFAULT_GUIDANCE[chapter];
   return `Uma nova foto pode permitir esta leitura: ${text}.`;
@@ -191,7 +208,11 @@ export function unavailableMessage(
   } else {
     first = `Nesta foto, ${what} não ficaram visíveis com segurança`;
   }
-  return `${first}; por isso esta parte da leitura não foi feita. ${retakeGuidance(chapter, issues)}`;
+  return `${first}; por isso esta parte da leitura não foi feita. ${retakeGuidance(
+    chapter,
+    issues,
+    own.map((u) => u.reason),
+  )}`;
 }
 
 /**

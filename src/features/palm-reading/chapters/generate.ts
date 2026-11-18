@@ -26,6 +26,7 @@ import type {
   PalmGeneratedReport,
   PalmGeneratedSection,
 } from "./contract";
+import { stripDisclaimers } from "./editorial";
 import { palmLibraryDraft } from "./library-draft";
 import { buildPalmChapterRequest, PALM_PROMPT_VERSION } from "./prompt";
 import { validatePalmChapterDraft } from "./validate";
@@ -46,8 +47,8 @@ function sectionsOf(
 ): PalmGeneratedSection[] {
   const items = new Map(chapter.items.map((i) => [i.id, i]));
   const shownObservations = new Set<string>();
-  // Uma só ressalva de parcialidade no capítulo (03F.2), na primeira seção
-  // com característica parcial, nomeando todas as parciais do capítulo.
+  // Uma só ressalva de parcialidade no capítulo (03F.2), nomeando todas as
+  // características parciais do capítulo.
   const partial = [
     ...new Set(
       chapter.items
@@ -56,17 +57,23 @@ function sectionsOf(
         .filter((f): f is FeatureId => f !== "hand.type"),
     ),
   ];
-  let noted = false;
-  return draft.sections.map((s) => {
+  // Depois da última seção com característica parcial (03F.2): a ressalva
+  // vem quando todas as leituras a que se refere já foram apresentadas.
+  const lastUncertain = draft.sections.reduce(
+    (last, s, i) =>
+      s.itemIds.some((id) => items.get(id)?.certainty === "uncertain")
+        ? i
+        : last,
+    -1,
+  );
+  return draft.sections.map((s, index) => {
     const cited = s.itemIds.map((id) => items.get(id)!).filter(Boolean);
     const observed = cited
       .map((i) => i.observation)
       .filter((o) => !shownObservations.has(o));
     observed.forEach((o) => shownObservations.add(o));
-    const uncertain = cited.some((i) => i.certainty === "uncertain");
     const notes =
-      uncertain && !noted && partial.length ? [partialNote(partial)] : [];
-    if (notes.length) noted = true;
+      index === lastUncertain && partial.length ? [partialNote(partial)] : [];
     return {
       text: s.text.trim(),
       itemIds: s.itemIds,
@@ -165,6 +172,21 @@ export async function generatePalmChapters(
   const chapters = await Promise.all(
     report.chapters.map(async (chapter) => {
       if (chapter.items.length === 0) return unavailable(chapter, report);
+      // Avisos redundantes saem do texto aprovado; o resultado é validado
+      // de novo e, se não passar, fica o texto aprovado original.
+      const withoutDisclaimers = (draft: ChapterDraft) => {
+        const stripped = stripDisclaimers(draft);
+        if (
+          !stripped ||
+          !validatePalmChapterDraft(stripped.draft, chapter, report).ok
+        )
+          return draft;
+        const ok = attempts.findLast(
+          (a) => a.chapter === chapter.id && a.outcome === "ok",
+        );
+        if (ok) ok.repairs = [...(ok.repairs ?? []), ...stripped.removed];
+        return stripped.draft;
+      };
       const outcome = await generateValidatedDraft<ChapterDraft, PalmChapterId>(
         {
           chapter: chapter.id,
@@ -181,7 +203,7 @@ export async function generatePalmChapters(
         },
       );
       return outcome.ok
-        ? chapterOf(chapter, outcome.draft, "ai", null)
+        ? chapterOf(chapter, withoutDisclaimers(outcome.draft), "ai", null)
         : chapterOf(
             chapter,
             palmLibraryDraft(chapter),

@@ -33,11 +33,41 @@ export const CHAPTERS_EVAL_BUDGET_BRL = 1;
 export const CHAPTERS_EVAL_DEFAULT_USD_BRL = 5.5;
 export const CHAPTERS_EVAL_CONFIRM = "autorizo-capitulos-03f2-etapa-a";
 
+/**
+ * Revalidação direcionada (03F.2, Rev2): só os capítulos listados em
+ * SIDERA_PALM_CHAPTERS_EVAL_ONLY ("foto-03:7,foto-05:7,foto-06:6"), com
+ * confirmação própria e teto absoluto menor.
+ */
+export const CHAPTERS_TARGETED_CONFIRM = "autorizo-capitulos-03f2-etapa-a-rev2";
+export const CHAPTERS_TARGETED_BUDGET_BRL = 0.5;
+
+export type ChapterSelection = Map<string, ("maos" | "linhas")[]>;
+
+/** null = todos os capítulos; Error = lista inválida. */
+export function chaptersEvalOnly(env: Env): ChapterSelection | null | Error {
+  const raw = env.SIDERA_PALM_CHAPTERS_EVAL_ONLY?.trim();
+  if (!raw) return null;
+  const out: ChapterSelection = new Map();
+  for (const entry of raw
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean)) {
+    const m = entry.match(/^([a-z]+-\d{2}):(6|7)$/u);
+    if (!m)
+      return new Error(`Seleção inválida: "${entry}" (use caso:6 ou caso:7).`);
+    const ch: "maos" | "linhas" = m[2] === "6" ? "maos" : "linhas";
+    out.set(m[1], [...new Set([...(out.get(m[1]) ?? []), ch])]);
+  }
+  return out.size ? out : null;
+}
+
 export function chaptersEvalBudgetBrl(env: Env): number {
+  const cap =
+    chaptersEvalOnly(env) instanceof Map
+      ? CHAPTERS_TARGETED_BUDGET_BRL
+      : CHAPTERS_EVAL_BUDGET_BRL;
   const v = Number(env.SIDERA_PALM_CHAPTERS_EVAL_BUDGET_BRL);
-  return Number.isFinite(v) && v > 0
-    ? Math.min(v, CHAPTERS_EVAL_BUDGET_BRL)
-    : CHAPTERS_EVAL_BUDGET_BRL;
+  return Number.isFinite(v) && v > 0 ? Math.min(v, cap) : cap;
 }
 
 export function chaptersEvalUsdBrl(env: Env): number {
@@ -68,14 +98,19 @@ export function chaptersEvalGate(env: Env, repoRoot: string): ChaptersEvalGate {
     reasons.push(
       "Relatórios só em avaliacao-ia/ (ignorada pelo Git) ou fora do repositório.",
     );
+  const only = chaptersEvalOnly(env);
+  if (only instanceof Error) reasons.push(only.message);
   const canPlan = reasons.length === 0;
   if (env.SIDERA_PALM_CHAPTERS_EVAL_PAID !== "1")
     reasons.push(
       "Sem autorização explícita para chamadas pagas (SIDERA_PALM_CHAPTERS_EVAL_PAID=1).",
     );
-  if (env.SIDERA_PALM_CHAPTERS_EVAL_CONFIRM !== CHAPTERS_EVAL_CONFIRM)
+  // A autorização de uma avaliação não abre a outra.
+  const confirm =
+    only instanceof Map ? CHAPTERS_TARGETED_CONFIRM : CHAPTERS_EVAL_CONFIRM;
+  if (env.SIDERA_PALM_CHAPTERS_EVAL_CONFIRM !== confirm)
     reasons.push(
-      `Confirmação ausente (SIDERA_PALM_CHAPTERS_EVAL_CONFIRM=${CHAPTERS_EVAL_CONFIRM}).`,
+      `Confirmação ausente (SIDERA_PALM_CHAPTERS_EVAL_CONFIRM=${confirm}).`,
     );
   const keyViaProxy = env.SIDERA_AI_KEY_VIA_PROXY === "1";
   if (!anthropicApiKey(env) && !keyViaProxy)

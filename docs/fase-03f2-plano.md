@@ -263,3 +263,96 @@ SIDERA_PALM_CHAPTERS_EVAL_PAID=1 \
 SIDERA_PALM_CHAPTERS_EVAL_CONFIRM=autorizo-capitulos-03f2-etapa-a \
 npx vitest run src/features/palm-reading/evaluation/chapters/chapters-eval.run.test.ts
 ```
+
+## Etapa A — Rev1 e ajustes finais (18/11/2026)
+
+### Revalidação paga Rev1
+
+US$ 0,0092 (R$ 0,05).
+
+- **Técnico:** 11 de 11 capítulos com texto da IA, sem reprovação e sem
+  biblioteca.
+- **Apuração oficial:** 7 de 9 critérios aprovados (qualidade editorial
+  4,05).
+- **Reprovados:**
+  - indisponíveis: 8/9 (sint-02);
+  - personalização: 4/7, mantido como resultado histórico.
+- **Problemas que persistiram:**
+  - gênero presumido: 4 ocorrências;
+  - avisos próprios do modelo: 6;
+  - posição da ressalva.
+
+### Ajustes finais (aprovados)
+
+Os modelos não mudaram e os controles continuam.
+
+1. **Orientação de nova foto:** usa também o motivo de cada
+   característica. Fora do quadro pede a mão inteira; coberta pede nada
+   sobre a palma. Corrige sint-02, cuja lista de problemas da imagem não
+   trazia `hand_cropped`.
+2. **Gênero presumido (`PRESUMED_GENDER`):** o validador recusa só o
+   adjetivo com gênero que descreve a pessoa. Os casos cobertos são:
+   - reflexivo de estado ("se sente seguro");
+   - "você … é/está/fica + adjetivo";
+   - "estar/ficar + adjetivo que só se usa para pessoas" ("está mais
+     guiado").
+
+   Palavras com gênero sobre coisas continuam livres. A nova tentativa
+   recebe a orientação de usar verbo ou construção neutra.
+3. **Avisos redundantes:** saem só as orações ", sem definir quem você é",
+   ", e não uma definição fechada"… O resto da frase fica, e o texto é
+   validado de novo; se não passar, fica o original. A remoção é
+   registrada na trilha de auditoria.
+4. **Ressalva única:** vai depois da última seção com característica
+   parcial.
+
+### Personalização (avaliações futuras)
+
+A apuração histórica não muda: uma ficha com a coluna `personalizacao`
+continua com o critério antigo. As fichas novas separam:
+
+- **especificidade** (1–5): fidelidade e especificidade às observações do
+  próprio caso. Critério: ≥ 3 em ≥ 90% dos capítulos reais.
+- **diferenciação** (sim · nao · na): distinção entre entradas com
+  observações materialmente distintas. Critério: 100%, sem nenhum alerta
+  automático de similaridade ≥ 0,5.
+
+O documento de revisão marca **"Entrada idêntica a: …"**. A semelhança
+entre esses casos é limitação da informação visual, não é critério e não
+deve ser compensada com diferenciação artificial.
+
+### Validação gratuita
+
+- **Testes:** 1052 aprovados; lint, TypeScript e build sem erro.
+- **Reaplicação local** aos textos da Rev1 e da primeira execução:
+  - indisponíveis 9/9;
+  - 15 avisos removidos sem perda de conteúdo;
+  - ressalva na última seção parcial;
+  - gênero: 5/5 detectados e 0 falsos positivos (20 textos e biblioteca).
+
+### Revalidação direcionada Rev2 (paga, só com nova autorização)
+
+- **Capítulos:** só os afetados por gênero (foto-03 c7, foto-05 c7,
+  foto-06 c6), da mesma entrada registrada, sem foto.
+- **Controles próprios:** frase de confirmação própria e teto absoluto de
+  R$ 0,50 fixado no código.
+- **Plano gratuito:** 3 chamadas, até 6 com novas tentativas; esperado
+  US$ 0,0018 (R$ 0,01); **pior caso US$ 0,0143 (R$ 0,08)**.
+
+```bash
+SIDERA_PALM_CHAPTERS_EVAL_MODE=run \
+SIDERA_PALM_CHAPTERS_EVAL_OUT_DIR=avaliacao-ia/03f2-etapa-a-rev2 \
+SIDERA_PALM_CHAPTERS_EVAL_ONLY=foto-03:7,foto-05:7,foto-06:6 \
+SIDERA_PALM_CHAPTERS_EVAL_KEEP_REJECTED=1 \
+SIDERA_PALM_CHAPTERS_EVAL_PAID=1 \
+SIDERA_PALM_CHAPTERS_EVAL_CONFIRM=autorizo-capitulos-03f2-etapa-a-rev2 \
+npx vitest run src/features/palm-reading/evaluation/chapters/chapters-eval.run.test.ts
+```
+
+**Critério de encerramento da Etapa A:**
+
+- os 4 ajustes validados;
+- os 3 capítulos sem gênero presumido;
+- fidelidade e segurança aprovadas;
+- limitações editoriais restantes documentadas: naturalidade, entradas
+  idênticas, resíduo "convite à reflexão", disponibilidade.
