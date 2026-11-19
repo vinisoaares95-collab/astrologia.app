@@ -638,3 +638,36 @@ modo carrega, vale o texto de quem envia a foto.
 **Limite conhecido:** a interrupção é do lado do Sidera. O provedor pode
 ter processado, e cobrado, parte de uma chamada interrompida; por isso o
 teto já reserva o pior caso.
+
+## Etapa B — execução real (19/11/2026)
+
+Execução paga única pelo fluxo dos handlers (código `45d7885`, Sonnet 5.5
+e Haiku 5.5): US$ 0,0632 (R$ 0,35) de R$ 3,00.
+
+| Foto    | Leitura                          | Capítulos                                                | Espera | Custo     |
+| ------- | -------------------------------- | -------------------------------------------------------- | ------ | --------- |
+| foto-05 | completa                         | 6 e 7 pelo Haiku (o 7 na 2ª tentativa)                   | 36,2 s | US$ 0,031 |
+| foto-01 | parcial, nova foto sugerida      | 7 pelo Haiku; 6 indisponível (proporções indeterminadas) | 11,3 s | US$ 0,026 |
+| foto-04 | insuficiente, nova foto sugerida | nenhum, com orientação de captura                        | 3,3 s  | US$ 0,006 |
+
+- **Resultados gerais:**
+  - biblioteca: 0 capítulos;
+  - gênero presumido: nenhum;
+  - erros de provedor e chamadas interrompidas: 0;
+  - análises: 1 consumida por relatório.
+- **Custo da visão:** a primeira foto de cada mão grava o cache do prompt
+  (≈ US$ 0,016). Por isso o relatório "frio" custa ≈ US$ 0,03 e o
+  "quente" ≈ US$ 0,01.
+- **Etapa B:** aguarda a auditoria da ficha.
+
+**Fotos:** depois da auditoria, apagar `/tmp/sidera-fotos-03f` (fotos,
+manifesto e mapa) e registrar a exclusão.
+
+## Pendência para a Fase 03G: retenção pelo provedor
+
+A documentação oficial da Anthropic (informada pelo responsável em
+19/11/2026) indica retenção padrão de até 30 dias para entradas e saídas
+da API comercial, sujeita a exceções. Antes de atualizar o consentimento
+público, é preciso confirmar se isso se aplica ao serviço e à conta
+usados, e quais exceções valem. Hoje o consentimento diz apenas que o
+prazo "será confirmado antes do lançamento".
