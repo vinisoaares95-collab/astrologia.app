@@ -9,6 +9,7 @@ import {
   RefreshCw,
   ShieldCheck,
   Trash2,
+  Undo2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -50,7 +51,7 @@ import { usePalmPhoto } from "../palm-photo-context";
 type Run =
   | { kind: "idle" }
   | { kind: "running" }
-  | { kind: "needs-decision"; result: PalmAnalysisResult }
+  | { kind: "decision"; result: PalmAnalysisResult }
   | { kind: "error"; code: AnalysisErrorCode };
 
 type Status =
@@ -59,12 +60,25 @@ type Status =
   | { kind: "cancelled" }
   | { kind: "error"; message: string };
 
+/** Conferência antes de analisar: curta, para ler no celular. */
 const selfCheck = [
-  "É a palma (não o dorso) da mão que você escolheu",
-  "A palma inteira aparece, do pulso aos dedos",
-  "As linhas estão nítidas, sem tremor",
-  "A luz está uniforme, sem reflexos fortes",
+  "É a palma da mão escolhida, não o dorso",
+  "Mão inteira: do pulso às pontas dos dedos",
+  "Palma de frente, dedos levemente afastados",
+  "Celular paralelo à palma, sem inclinar",
+  "Foto nítida, com boa luz e sem reflexos",
 ];
+
+/**
+ * Antes de seguir, a pessoa decide (03F.2, Etapa B) quando algum capítulo
+ * ficou indisponível ou a leitura ficou parcial com pouco observado.
+ */
+export function needsDecision(result: PalmAnalysisResult): boolean {
+  return (
+    result.retakeRecommended ||
+    result.chapters.some((c) => c.status === "unavailable")
+  );
+}
 
 export function PhotoCapture() {
   const { consent, hand } = usePalmPhoto();
@@ -93,12 +107,27 @@ function ConsentRequired() {
 
 function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
   const router = useRouter();
-  const { photo, setPhoto, clearPhoto, receipt, setAnalysis } = usePalmPhoto();
+  const {
+    photo,
+    setPhoto,
+    clearPhoto,
+    receipt,
+    analysis,
+    setAnalysis,
+    previous,
+    restorePrevious,
+    remaining,
+    setRemaining,
+  } = usePalmPhoto();
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const availability = useAnalysisAvailability();
   const canAnalyze = availability.status === "ready" && availability.enabled;
   const simulated = canAnalyze && availability.simulated;
-  const [run, setRun] = useState<Run>({ kind: "idle" });
+  // Voltando da prévia com a foto já analisada, a decisão continua aberta.
+  const [run, setRun] = useState<Run>(() =>
+    analysis ? { kind: "decision", result: analysis } : { kind: "idle" },
+  );
+  const decisionRef = useRef<HTMLDivElement>(null);
 
   async function analyze() {
     if (!photo) return;
@@ -108,15 +137,23 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
     }
     setRun({ kind: "running" });
     const r = await requestPalmAnalysis(photo.blob, receipt);
+    if (r.remaining !== null) setRemaining(r.remaining);
     if (!r.ok) {
       setRun({ kind: "error", code: r.error });
       return;
     }
     setAnalysis(r.result);
-    if (r.result.status === "insufficient" || r.result.retakeRecommended)
-      setRun({ kind: "needs-decision", result: r.result });
+    if (needsDecision(r.result)) setRun({ kind: "decision", result: r.result });
     else router.push(routes.palmPreview);
   }
+
+  // A decisão aparece no topo: a pessoa lê o motivo antes das ações.
+  useEffect(() => {
+    if (run.kind !== "decision") return;
+    decisionRef.current?.scrollIntoView?.({ block: "start" });
+    decisionRef.current?.focus({ preventScroll: true });
+  }, [run.kind]);
+
   const [dragging, setDragging] = useState(false);
   const cameraInput = useRef<HTMLInputElement>(null);
   const galleryInput = useRef<HTMLInputElement>(null);
@@ -168,8 +205,12 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
   }
 
   const loading = status.kind === "loading";
+  const running = run.kind === "running";
   const openCamera = () => cameraInput.current?.click();
   const openGallery = () => galleryInput.current?.click();
+  const decision = run.kind === "decision" ? run.result : null;
+  const hasContent = decision?.chapters.some((c) => c.status === "content");
+  const noneLeft = remaining === 0;
 
   return (
     <div className="flex flex-1 flex-col gap-6">
@@ -182,6 +223,7 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
         className="sr-only"
         tabIndex={-1}
         aria-hidden
+        data-testid="camera-input"
         onChange={onInputChange}
       />
       <input
@@ -195,6 +237,14 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
         onChange={onInputChange}
       />
 
+      {photo && decision && (
+        <DecisionPanel
+          ref={decisionRef}
+          result={decision}
+          remaining={remaining}
+        />
+      )}
+
       {photo ? (
         <div className="animate-fade-up space-y-5">
           <figure className="relative overflow-hidden rounded-3xl bg-bg-deep edge-light">
@@ -202,68 +252,108 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
             <img
               src={photo.url}
               alt="Pré-visualização da foto da sua palma"
-              className="mx-auto max-h-[46vh] w-auto object-contain"
+              className={cn(
+                "mx-auto w-auto object-contain",
+                decision ? "max-h-[28vh]" : "max-h-[46vh]",
+              )}
             />
             <FrameCorners />
             <figcaption className="absolute top-5 left-5">
-              <Badge tone="success" dot>
-                Foto pronta
+              <Badge tone={decision ? "neutral" : "success"} dot>
+                {decision ? "Foto analisada" : "Foto pronta"}
               </Badge>
             </figcaption>
           </figure>
 
-          <div className="grid grid-cols-2 gap-x-3 gap-y-4 rounded-2xl bg-surface/80 p-4 edge-light">
-            <Stat label="Mão" value={handLabel} />
-            <Stat label="Resolução" value={`${photo.width}×${photo.height}`} />
-            <Stat label="Tamanho" value={formatFileSize(photo.sizeBytes)} />
-            <Stat label="EXIF/GPS" value="Removidos" />
+          {/* Ações secundárias fora do rodapé fixo: ele não cobre o texto em telas pequenas. */}
+          <div className="-mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+            {previous && !decision && !running && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  restorePrevious();
+                  setRun({ kind: "decision", result: previous.analysis });
+                }}
+              >
+                <Undo2 aria-hidden className="size-4" />
+                Voltar à foto analisada antes
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={running}
+              onClick={() => {
+                clearPhoto();
+                setStatus({ kind: "idle" });
+                setRun({ kind: "idle" });
+              }}
+            >
+              <Trash2 aria-hidden className="size-4" />
+              Descartar foto
+            </Button>
           </div>
-          <p className="-mt-2 px-1 text-xs leading-relaxed text-fg-subtle">
-            A foto foi redesenhada neste aparelho, sem dados de localização nem
-            do celular, e continua só aqui.
-          </p>
 
-          {photo.hints.map((hint) => (
-            <Callout key={hint} tone="info">
-              {hint}
-            </Callout>
-          ))}
+          {!decision && (
+            <>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-4 rounded-2xl bg-surface/80 p-4 edge-light">
+                <Stat label="Mão" value={handLabel} />
+                <Stat
+                  label="Resolução"
+                  value={`${photo.width}×${photo.height}`}
+                />
+                <Stat label="Tamanho" value={formatFileSize(photo.sizeBytes)} />
+                <Stat label="EXIF/GPS" value="Removidos" />
+              </div>
+              <p className="-mt-2 px-1 text-xs leading-relaxed text-fg-subtle">
+                A foto foi redesenhada neste aparelho, sem dados de localização
+                nem do celular, e continua só aqui.
+              </p>
 
-          <Callout tone="info" title="Verificação automática (aproximada)">
-            {photo.quality.length > 0 ? (
-              <ul className="list-disc space-y-1.5 pl-4">
-                {photo.quality.map((q) => (
-                  <li key={q.code}>{q.message}</li>
-                ))}
-              </ul>
-            ) : (
-              "Não encontramos sinais evidentes de pouca luz, reflexo ou falta de foco."
-            )}{" "}
-            <span className="mt-2 block text-fg-subtle">
-              Esta verificação é aproximada e não garante que as linhas poderão
-              ser identificadas. Confira a foto você também.
-            </span>
-          </Callout>
-
-          <div className="space-y-2">
-            <p className="font-mono text-[0.65rem] tracking-[0.16em] text-fg-subtle uppercase">
-              Confira antes de seguir
-            </p>
-            <ul className="divide-y divide-line-soft rounded-2xl bg-surface/80 edge-light">
-              {selfCheck.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-center gap-3 px-4 py-3 text-sm text-fg-muted"
-                >
-                  <CheckCircle2
-                    aria-hidden
-                    className="size-4 shrink-0 text-accent"
-                  />
-                  {item}
-                </li>
+              {photo.hints.map((hint) => (
+                <Callout key={hint} tone="info">
+                  {hint}
+                </Callout>
               ))}
-            </ul>
-          </div>
+
+              <Callout tone="info" title="Verificação automática (aproximada)">
+                {photo.quality.length > 0 ? (
+                  <ul className="list-disc space-y-1.5 pl-4">
+                    {photo.quality.map((q) => (
+                      <li key={q.code}>{q.message}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  "Não encontramos sinais evidentes de pouca luz, reflexo ou falta de foco."
+                )}{" "}
+                <span className="mt-2 block text-fg-subtle">
+                  Esta verificação é aproximada: não percebe mão inclinada nem
+                  cortada. Confira a foto você também.
+                </span>
+              </Callout>
+
+              <div className="space-y-2">
+                <p className="font-mono text-[0.65rem] tracking-[0.16em] text-fg-subtle uppercase">
+                  Confira antes de seguir
+                </p>
+                <ul className="divide-y divide-line-soft rounded-2xl bg-surface/80 edge-light">
+                  {selfCheck.map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-fg-muted"
+                    >
+                      <CheckCircle2
+                        aria-hidden
+                        className="size-4 shrink-0 text-accent"
+                      />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
         </div>
       ) : (
         <div
@@ -295,10 +385,10 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
             <PalmIllustration
               showLines={false}
               animated={false}
-              className="h-[45%] opacity-60"
+              className="h-[40%] opacity-60"
             />
           )}
-          <div className="space-y-1" aria-live="polite">
+          <div className="space-y-1.5" aria-live="polite">
             <p className="font-semibold text-fg">
               {loading
                 ? "Preparando a foto neste aparelho…"
@@ -314,6 +404,12 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
                 trocar
               </Link>
             </p>
+            {!loading && (
+              <p className="text-xs leading-relaxed text-fg">
+                Palma de frente · celular paralelo à mão · mão inteira, do pulso
+                às pontas dos dedos
+              </p>
+            )}
             <p className="text-xs text-fg-muted">
               <span className="pointer-coarse:hidden">
                 Arraste a imagem para cá ou escolha um arquivo.{" "}
@@ -337,82 +433,133 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
         </Callout>
       )}
 
-      {photo && <AnalysisFeedback run={run} simulated={simulated} />}
+      {photo && !decision && (
+        <AnalysisFeedback
+          run={run}
+          simulated={simulated}
+          remaining={canAnalyze ? remaining : null}
+        />
+      )}
 
       <ActionDock>
         {photo ? (
           <>
-            {canAnalyze ? (
-              run.kind === "needs-decision" &&
-              run.result.status !== "insufficient" ? (
-                <Button
-                  size="lg"
-                  fullWidth
-                  onClick={() => router.push(routes.palmPreview)}
-                >
-                  Seguir com esta análise
-                </Button>
+            {decision ? (
+              !noneLeft ? (
+                <>
+                  {/* Nova foto como ação principal: câmera no celular; no
+                      computador, o mesmo campo abre a escolha de arquivo. */}
+                  <Button
+                    size="lg"
+                    fullWidth
+                    onClick={openCamera}
+                    disabled={loading}
+                  >
+                    <Camera
+                      aria-hidden
+                      className="size-4 pointer-fine:hidden"
+                    />
+                    <ImageUp
+                      aria-hidden
+                      className="hidden size-4 pointer-fine:block"
+                    />
+                    <span className="pointer-fine:hidden">
+                      Tirar outra foto
+                    </span>
+                    <span className="hidden pointer-fine:inline">
+                      Escolher outra foto
+                    </span>
+                  </Button>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <Button
+                      variant="secondary"
+                      onClick={openGallery}
+                      disabled={loading}
+                      className={cn(
+                        "pointer-fine:hidden",
+                        !hasContent && "col-span-2",
+                      )}
+                    >
+                      <ImageUp aria-hidden className="size-4" />
+                      Da galeria
+                    </Button>
+                    {hasContent && (
+                      <Button
+                        variant="secondary"
+                        onClick={() => router.push(routes.palmPreview)}
+                        className="pointer-fine:col-span-2"
+                      >
+                        Seguir com esta leitura
+                      </Button>
+                    )}
+                  </div>
+                </>
               ) : (
-                <Button
-                  size="lg"
-                  fullWidth
-                  onClick={() => void analyze()}
-                  disabled={
-                    run.kind === "running" ||
-                    (run.kind === "needs-decision" &&
-                      run.result.status === "insufficient")
-                  }
-                >
-                  {run.kind === "running" && (
-                    <LoaderCircle aria-hidden className="size-4 animate-spin" />
-                  )}
-                  {run.kind === "running"
-                    ? "Analisando a foto…"
-                    : simulated
-                      ? "Analisar a foto (simulação)"
-                      : "Analisar a foto"}
-                </Button>
+                hasContent && (
+                  <Button
+                    size="lg"
+                    fullWidth
+                    onClick={() => router.push(routes.palmPreview)}
+                  >
+                    Seguir com esta leitura
+                  </Button>
+                )
               )
             ) : (
-              <Button
-                size="lg"
-                fullWidth
-                onClick={() => router.push(routes.palmPreview)}
-              >
-                Usar esta foto
-              </Button>
+              <>
+                {canAnalyze ? (
+                  <Button
+                    size="lg"
+                    fullWidth
+                    onClick={() => void analyze()}
+                    disabled={running || noneLeft}
+                  >
+                    {running && (
+                      <LoaderCircle
+                        aria-hidden
+                        className="size-4 animate-spin"
+                      />
+                    )}
+                    {running
+                      ? "Analisando a foto…"
+                      : simulated
+                        ? "Analisar a foto (simulação)"
+                        : "Analisar a foto"}
+                  </Button>
+                ) : (
+                  <Button
+                    size="lg"
+                    fullWidth
+                    onClick={() => router.push(routes.palmPreview)}
+                  >
+                    Usar esta foto
+                  </Button>
+                )}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <Button
+                    variant="secondary"
+                    onClick={openCamera}
+                    disabled={loading || running}
+                    className="pointer-fine:hidden"
+                  >
+                    <Camera aria-hidden className="size-4" />
+                    Tirar outra
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={openGallery}
+                    disabled={loading || running}
+                    className="pointer-fine:col-span-2"
+                  >
+                    <RefreshCw aria-hidden className="size-4" />
+                    <span className="pointer-fine:hidden">Da galeria</span>
+                    <span className="hidden pointer-fine:inline">
+                      Trocar foto
+                    </span>
+                  </Button>
+                </div>
+              </>
             )}
-            <div className="grid grid-cols-2 gap-2.5">
-              <Button
-                variant="secondary"
-                onClick={openCamera}
-                disabled={loading}
-                className="pointer-fine:hidden"
-              >
-                <Camera aria-hidden className="size-4" />
-                Tirar outra
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={openGallery}
-                disabled={loading}
-                className="pointer-coarse:hidden"
-              >
-                <RefreshCw aria-hidden className="size-4" />
-                Trocar foto
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  clearPhoto();
-                  setStatus({ kind: "idle" });
-                  setRun({ kind: "idle" });
-                }}
-              >
-                <Trash2 aria-hidden className="size-4" />
-                Descartar
-              </Button>
-            </div>
           </>
         ) : (
           <>
@@ -444,67 +591,152 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
   );
 }
 
-/** Mensagens da análise: andamento, resultado parcial/insuficiente, erros. */
+const remainingText = (n: number) =>
+  n === 1
+    ? "Resta 1 análise nesta sessão."
+    : `Restam ${n} análises nesta sessão.`;
+
+/**
+ * Resultado que pede decisão: o que cada capítulo trouxe, por que algum
+ * ficou indisponível e como tirar uma foto melhor. Nada é interpretado
+ * aqui: as mensagens vêm do resultado.
+ */
+function DecisionPanel({
+  ref,
+  result,
+  remaining,
+}: {
+  ref: React.Ref<HTMLDivElement>;
+  result: PalmAnalysisResult;
+  remaining: number | null;
+}) {
+  const unavailable = result.chapters.filter((c) => c.status === "unavailable");
+  const none = unavailable.length === result.chapters.length;
+  const complete = !unavailable.length && !result.retakeRecommended;
+  const title = none
+    ? "Esta foto não permitiu a leitura"
+    : unavailable.length
+      ? "Uma parte da leitura não pôde ser feita"
+      : complete
+        ? "Sua leitura está pronta"
+        : "A leitura ficou parcial";
+  return (
+    <div
+      ref={ref}
+      tabIndex={-1}
+      aria-live="polite"
+      className="scroll-mt-24 space-y-3 outline-none"
+    >
+      <Callout tone={none ? "danger" : "info"} title={title}>
+        {none
+          ? "Nenhum dos dois capítulos pôde ser feito com esta foto. Com uma nova foto, a leitura pode ser completada."
+          : unavailable.length
+            ? "Você pode seguir com o que foi lido ou tirar outra foto para completar."
+            : complete
+              ? "Se quiser tentar outra foto, esta leitura fica guardada até você decidir."
+              : "Algumas características não ficaram visíveis e não foram interpretadas. Uma nova foto pode completar a leitura."}
+      </Callout>
+      <ul className="space-y-2" aria-label="Capítulos desta análise">
+        {result.chapters.map((c) => (
+          <li
+            key={c.number}
+            className="space-y-1.5 rounded-2xl bg-surface/80 p-4 edge-light"
+          >
+            <p className="flex items-center justify-between gap-3 text-sm font-semibold text-fg">
+              <span>
+                Capítulo {c.number} · {c.title}
+              </span>
+              <Badge tone={c.status === "content" ? "success" : "neutral"}>
+                {c.status === "content" ? "Pronto" : "Indisponível"}
+              </Badge>
+            </p>
+            {c.status === "unavailable" && c.unavailableMessage && (
+              <p className="text-xs leading-relaxed text-fg-muted">
+                {c.unavailableMessage}
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+      {remaining !== null && (
+        <p className="px-1 text-xs text-fg-muted">
+          {remaining > 0
+            ? remainingText(remaining)
+            : none
+              ? "Você usou as análises desta sessão. Tente mais tarde, com uma nova foto."
+              : "Você usou as análises desta sessão. Siga com a leitura obtida."}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Mensagens antes e durante a análise e erros (a decisão tem painel próprio). */
 function AnalysisFeedback({
   run,
   simulated,
+  remaining,
 }: {
   run: Run;
   simulated: boolean;
+  remaining: number | null;
 }) {
+  const left =
+    remaining === null ? null : (
+      <p className="px-1 text-xs text-fg-muted" data-testid="remaining">
+        {remaining > 0
+          ? `${remaining === 1 ? "1 análise disponível" : `${remaining} análises disponíveis`} nesta sessão. Falhas técnicas não contam.`
+          : "Você usou as análises disponíveis nesta sessão."}
+      </p>
+    );
   if (run.kind === "idle")
-    return simulated ? (
-      <Callout tone="demo" title="Análise simulada">
-        Nesta versão interna, a análise usa um simulador: a foto é conferida
-        pelo servidor, mas nenhuma inteligência artificial a observa e o
-        resultado é fictício.
-      </Callout>
-    ) : null;
+    return (
+      <>
+        {simulated && (
+          <Callout tone="demo" title="Análise simulada">
+            Nesta versão interna, a análise usa um simulador: a foto é conferida
+            pelo servidor, mas nenhuma inteligência artificial a observa e o
+            resultado é fictício.
+          </Callout>
+        )}
+        {left}
+      </>
+    );
   if (run.kind === "running")
     return (
       <div aria-live="polite">
         <Callout tone="info" title="Analisando a foto">
-          Isso pode levar alguns segundos. A foto não é guardada pelo Sidera.
+          A análise e a redação da leitura costumam levar de 20 a 40 segundos.
+          Mantenha esta tela aberta. A foto não é guardada pelo Sidera.
         </Callout>
       </div>
     );
   if (run.kind === "error") {
     const m = ANALYSIS_ERROR_MESSAGES[run.code];
     return (
-      <Callout tone="danger" title={m.title}>
-        {m.body}
-        {m.reconsent && (
-          <>
-            {" "}
-            <Link
-              href={routes.palmConsent}
-              className="underline underline-offset-2"
-            >
-              Confirmar consentimento
-            </Link>
-          </>
-        )}
-        {m.retake && (
-          <span className="mt-1 block">
-            Use &quot;Tirar outra&quot; ou &quot;Trocar foto&quot; abaixo.
-          </span>
-        )}
-      </Callout>
+      <>
+        <Callout tone="danger" title={m.title}>
+          {m.body}
+          {m.reconsent && (
+            <>
+              {" "}
+              <Link
+                href={routes.palmConsent}
+                className="underline underline-offset-2"
+              >
+                Confirmar consentimento
+              </Link>
+            </>
+          )}
+          {m.retake && (
+            <span className="mt-1 block">
+              Use &quot;Tirar outra&quot; ou &quot;Da galeria&quot; abaixo.
+            </span>
+          )}
+        </Callout>
+        {left}
+      </>
     );
   }
-  const { result } = run;
-  if (result.status === "insufficient")
-    return (
-      <Callout tone="danger" title="A foto não permitiu a análise">
-        Não foi possível observar a palma com segurança. Tire outra foto: palma
-        aberta e de frente, mão inteira no quadro, com luz natural e sem
-        reflexos.
-      </Callout>
-    );
-  return (
-    <Callout tone="info" title="Só parte da palma pôde ser observada">
-      Algumas características não ficaram visíveis e não serão interpretadas.
-      Recomendamos tirar outra foto, mas você pode seguir com esta análise.
-    </Callout>
-  );
+  return null;
 }

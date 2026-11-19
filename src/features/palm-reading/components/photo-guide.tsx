@@ -1,32 +1,33 @@
-import { Focus, Hand, Scan, Sun, X } from "lucide-react";
+import { Hand, Scan, Smartphone, Sun, X } from "lucide-react";
 
 const tips = [
   {
-    icon: Sun,
-    title: "Luz natural",
-    text: "Perto da janela, sem flash nem sombras fortes.",
+    icon: Scan,
+    title: "Mão inteira",
+    text: "Do pulso às pontas dos dedos, ocupando a foto.",
   },
   {
     icon: Hand,
-    title: "Palma aberta",
-    text: "Dedos levemente afastados, sem forçar.",
+    title: "Palma de frente",
+    text: "Aberta, com os dedos levemente afastados.",
   },
   {
-    icon: Scan,
-    title: "Mão inteira",
-    text: "Do pulso à ponta dos dedos, ocupando a foto.",
+    icon: Smartphone,
+    title: "Celular paralelo",
+    text: "Reto sobre a palma, a ~25 cm, sem inclinar.",
   },
   {
-    icon: Focus,
-    title: "De frente",
-    text: "Câmera paralela, a ~25 cm. Confira a nitidez.",
+    icon: Sun,
+    title: "Luz e foco",
+    text: "Luz natural, sem reflexos. Toque na palma para focar.",
   },
 ];
 
 const avoid = [
+  "Mão ou celular inclinados",
+  "Dedos ou pulso cortados",
+  "Flash e reflexos",
   "Anéis e relógios",
-  "Fundo estampado",
-  "Foto tremida ou cortada",
 ];
 
 export function PhotoGuide() {

@@ -26,6 +26,8 @@ import { buildVisionRequest } from "./prompt";
 export const VISION_MAX_ATTEMPTS = 2;
 export const VISION_MAX_OUTPUT_TOKENS = 4000;
 export const VISION_TIMEOUT_MS = 45_000;
+/** Uma nova tentativa de visão só começa com pelo menos este tempo. */
+export const VISION_MIN_ATTEMPT_MS = 10_000;
 
 export type AttemptAudit = {
   attempt: number;
@@ -54,6 +56,13 @@ export async function analyzePalmImage(input: {
   hand: PalmHand;
   provider: VisionProvider;
   maxAttempts?: number;
+  /**
+   * Prazo total da análise (03F.2, Etapa B), no relógio de `now`: cada
+   * tentativa usa no máximo o tempo que resta, e uma nova tentativa só
+   * começa se ainda houver pelo menos `VISION_MIN_ATTEMPT_MS`.
+   */
+  deadlineAt?: number;
+  now?: () => number;
 }): Promise<AnalysisOutcome> {
   const { bytes, hand, provider } = input;
   const audit: AttemptAudit[] = [];
@@ -71,10 +80,27 @@ export async function analyzePalmImage(input: {
     const maxAttempts = Math.min(input.maxAttempts ?? VISION_MAX_ATTEMPTS, 3);
     let lastError: AiErrorKind | null = null;
 
+    const now = input.now ?? (() => Date.now());
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      let timeoutMs = request.timeoutMs;
+      if (input.deadlineAt !== undefined) {
+        const left = input.deadlineAt - now();
+        if (attempt > 1 && left < VISION_MIN_ATTEMPT_MS) {
+          audit.push({
+            attempt,
+            outcome: "error:timeout",
+            usage: null,
+            codes: [],
+            notes: [],
+          });
+          lastError = "timeout";
+          break;
+        }
+        timeoutMs = Math.max(1_000, Math.min(timeoutMs, left));
+      }
       let response;
       try {
-        response = await provider.analyze(request);
+        response = await provider.analyze({ ...request, timeoutMs });
       } catch (error) {
         const err =
           error instanceof AiProviderError

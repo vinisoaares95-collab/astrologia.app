@@ -124,7 +124,17 @@ describe("PhotoCapture", () => {
     expect(screen.getByText("Removidos")).toBeInTheDocument();
     expect(screen.getByText("Mão direita")).toBeInTheDocument();
     expect(screen.getByText("A foto parece escura.")).toBeInTheDocument();
-    expect(screen.getByText(/não garante que as linhas/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/não percebe mão inclinada nem cortada/i),
+    ).toBeInTheDocument();
+    // Conferência com as orientações que mais evitam capítulos indisponíveis.
+    for (const item of [
+      /do pulso às pontas dos dedos/i,
+      /palma de frente, dedos levemente afastados/i,
+      /celular paralelo à palma, sem inclinar/i,
+      /boa luz e sem reflexos/i,
+    ])
+      expect(screen.getByText(item)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /descartar/i }));
     expect(

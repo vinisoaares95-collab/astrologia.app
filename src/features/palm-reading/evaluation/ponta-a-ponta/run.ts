@@ -89,6 +89,8 @@ export type E2ECase = {
   costUsd: number;
   /** Do envio da foto à resposta (o que a pessoa espera na tela). */
   latencyMs: number;
+  /** Análises restantes que o aparelho mostraria depois deste resultado. */
+  remaining: number | null;
 };
 
 export type E2ERun = {
@@ -260,6 +262,7 @@ export async function runE2EEvaluation(input: {
       calls: [],
       costUsd: 0,
       latencyMs: 0,
+      remaining: null,
     };
     const free =
       input.budget.limitUsd -
@@ -310,6 +313,7 @@ export async function runE2EEvaluation(input: {
     const body = (await response.json()) as {
       result?: PalmAnalysisResult;
       error?: string;
+      remaining?: number;
     };
     const recorded = [...calls];
     const trail = audit as PalmReadingAudit | null;
@@ -344,6 +348,7 @@ export async function runE2EEvaluation(input: {
       calls: recorded,
       costUsd: recorded.reduce((n, c) => n + (c.costUsd ?? 0), 0),
       latencyMs,
+      remaining: body.remaining ?? null,
     });
   }
   run.spentUsd = input.budget.spentUsd();

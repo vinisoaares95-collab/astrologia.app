@@ -29,9 +29,19 @@ type PalmPhotoContextValue = {
   /** Recibo assinado pelo servidor (só quando a análise está habilitada). */
   receipt: ConsentReceiptToken | null;
   setReceipt: (receipt: ConsentReceiptToken | null) => void;
-  /** Resultado da análise da foto atual (apagado ao trocar a foto). */
+  /** Resultado da análise da foto atual. */
   analysis: PalmAnalysisResult | null;
   setAnalysis: (analysis: PalmAnalysisResult | null) => void;
+  /**
+   * Foto já analisada que foi substituída (03F.2, Etapa B): fica só na
+   * memória desta tela enquanto a pessoa decide, para poder voltar a ela.
+   * Sai ao restaurar, ao trocar de novo, ao descartar ou ao sair do fluxo.
+   */
+  previous: { photo: LocalPhoto; analysis: PalmAnalysisResult } | null;
+  restorePrevious: () => void;
+  /** Análises ainda disponíveis com o recibo atual (informadas pelo servidor). */
+  remaining: number | null;
+  setRemaining: (remaining: number | null) => void;
 };
 
 const PalmPhotoContext = createContext<PalmPhotoContextValue | null>(null);
@@ -60,29 +70,52 @@ export function PalmPhotoProvider({
     initialReceipt,
   );
   const [analysis, setAnalysis] = useState<PalmAnalysisResult | null>(null);
-  const currentUrl = useRef<string | null>(null);
-
+  const [previous, setPrevious] = useState<{
+    photo: LocalPhoto;
+    analysis: PalmAnalysisResult;
+  } | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(
+    initialReceipt?.remaining ?? null,
+  );
+  // URLs locais vivas (foto atual e, no máximo, a anterior analisada).
+  const urls = useRef(new Set<string>());
+  const revoke = useCallback((url: string | undefined) => {
+    if (url && urls.current.delete(url)) URL.revokeObjectURL(url);
+  }, []);
   const release = useCallback(() => {
-    if (currentUrl.current) {
-      URL.revokeObjectURL(currentUrl.current);
-      currentUrl.current = null;
-    }
+    for (const url of urls.current) URL.revokeObjectURL(url);
+    urls.current.clear();
   }, []);
 
   const setPhoto = useCallback(
     (next: LocalPhoto) => {
-      release();
-      currentUrl.current = next.url;
+      urls.current.add(next.url);
+      if (photo && analysis) {
+        // A foto analisada fica guardada para a pessoa poder voltar a ela.
+        if (previous) revoke(previous.photo.url);
+        setPrevious({ photo, analysis });
+      } else if (photo) {
+        revoke(photo.url);
+      }
       setPhotoState(next);
       setAnalysis(null);
     },
-    [release],
+    [photo, analysis, previous, revoke],
   );
+
+  const restorePrevious = useCallback(() => {
+    if (!previous) return;
+    if (photo) revoke(photo.url);
+    setPhotoState(previous.photo);
+    setAnalysis(previous.analysis);
+    setPrevious(null);
+  }, [photo, previous, revoke]);
 
   const clearPhoto = useCallback(() => {
     release();
     setPhotoState(null);
     setAnalysis(null);
+    setPrevious(null);
   }, [release]);
 
   const accept = useCallback((next: PalmConsent, nextHand: PalmHand) => {
@@ -97,7 +130,17 @@ export function PalmPhotoProvider({
     setHand(null);
     setReceipt(null);
     setAnalysis(null);
+    setPrevious(null);
+    setRemaining(null);
   }, [release]);
+
+  const setReceiptAndRemaining = useCallback(
+    (next: ConsentReceiptToken | null) => {
+      setReceipt(next);
+      setRemaining(next?.remaining ?? null);
+    },
+    [],
+  );
 
   useEffect(() => release, [release]);
 
@@ -111,9 +154,13 @@ export function PalmPhotoProvider({
       accept,
       withdraw,
       receipt,
-      setReceipt,
+      setReceipt: setReceiptAndRemaining,
       analysis,
       setAnalysis,
+      previous,
+      restorePrevious,
+      remaining,
+      setRemaining,
     }),
     [
       photo,
@@ -124,7 +171,11 @@ export function PalmPhotoProvider({
       accept,
       withdraw,
       receipt,
+      setReceiptAndRemaining,
       analysis,
+      previous,
+      restorePrevious,
+      remaining,
     ],
   );
 

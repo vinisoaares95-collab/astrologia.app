@@ -39,6 +39,9 @@ export function correctionFeedback(errors: AiValidationError[]): string {
     .join("\n")}`;
 }
 
+/** Uma tentativa de redação só começa com pelo menos este tempo. */
+export const MIN_ATTEMPT_MS = 5_000;
+
 export type DraftValidation = { ok: boolean; errors: AiValidationError[] };
 
 export type DraftOutcome<D> =
@@ -57,6 +60,11 @@ export async function generateValidatedDraft<D, C extends string>(input: {
   maxAttempts: number;
   now: () => number;
   metrics: AttemptMetrics<C>[];
+  /**
+   * Prazo total (no relógio de `now`): cada tentativa usa no máximo o tempo
+   * que resta; sem tempo mínimo para uma tentativa, para (03F.2, Etapa B).
+   */
+  deadlineAt?: number;
 }): Promise<DraftOutcome<D>> {
   const { chapter, request, provider, validate, metrics } = input;
   let lastReason = "";
@@ -75,13 +83,24 @@ export async function generateValidatedDraft<D, C extends string>(input: {
         ...m,
       } as AttemptMetrics<C>);
 
+    let timeoutMs = request.timeoutMs;
+    if (input.deadlineAt !== undefined) {
+      const left = input.deadlineAt - input.now();
+      if (left < MIN_ATTEMPT_MS) {
+        lastReason = lastReason
+          ? `${lastReason} Sem tempo para nova tentativa.`
+          : "Tempo esgotado antes da redação.";
+        break;
+      }
+      timeoutMs = Math.min(timeoutMs, left);
+    }
     let response;
     try {
-      response = await provider.generate(
-        feedback
-          ? { ...request, user: `${request.user}\n\n${feedback}` }
-          : request,
-      );
+      response = await provider.generate({
+        ...request,
+        timeoutMs,
+        ...(feedback && { user: `${request.user}\n\n${feedback}` }),
+      });
     } catch (error) {
       const err =
         error instanceof AiProviderError

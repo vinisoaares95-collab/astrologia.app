@@ -46,6 +46,14 @@ export const MAX_IMAGE_BYTES = MAX_PREPARED_BYTES;
 const MAX_CONSENT_BODY_BYTES = 2048;
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const CACHE_MAX = 200;
+/**
+ * Prazo total de uma análise no servidor (visão + capítulos), abaixo dos
+ * 70 s em que o aparelho desiste (03F.2, Etapa B): a resposta chega antes
+ * de o aparelho abandonar a espera. Se o prazo acaba durante a redação, o
+ * capítulo usa a biblioteca; durante a visão, a análise falha sem consumir
+ * a tentativa da pessoa.
+ */
+export const ANALYSIS_DEADLINE_MS = 55_000;
 
 export type PalmApiError =
   | "not_found"
@@ -82,7 +90,15 @@ export type PalmApiDeps = {
    * pelo processo do produto; nunca vai ao cliente.
    */
   onAudit?: (audit: PalmReadingAudit) => void;
+  /**
+   * Análises em andamento (mesma foto, mesmo recibo): um pedido repetido —
+   * por exemplo, depois de o aparelho desistir da espera — aguarda o mesmo
+   * resultado, sem nova chamada nem novo crédito.
+   */
+  inflight?: Map<string, Promise<Outcome>>;
 };
+
+type Outcome = { status: number; body: Record<string, unknown> };
 
 export type PalmReadingAudit = Awaited<
   ReturnType<typeof composePalmReading>
@@ -245,13 +261,30 @@ export async function handleConsent(
       deps.secret,
       deps.now(),
     );
-    return json(200, { token, expiresAt: receipt.exp });
+    return json(200, {
+      token,
+      expiresAt: receipt.exp,
+      remaining: remainingFor(
+        deps,
+        sha256(`receipt:${receipt.nonce}`),
+        clientKey(request),
+      ),
+    });
   } catch {
     return fail(500, "internal");
   }
 }
 
 // ── Análise ───────────────────────────────────────────────────────────────
+
+/** Análises que a pessoa ainda pode fazer com este recibo (e deste cliente). */
+function remainingFor(deps: PalmApiDeps, receiptKey: string, client: string) {
+  const now = deps.now();
+  return Math.min(
+    deps.limits.analysisPerReceipt.remaining(receiptKey, now),
+    deps.limits.analysisPerClient.remaining(client, now),
+  );
+}
 
 export function handleAvailability(deps: PalmApiDeps): Response {
   if (!deps.config.enabled) return fail(404, "not_found");
@@ -285,12 +318,15 @@ export async function handleAnalysis(
     const now = deps.now();
     const client = clientKey(request);
     const receiptKey = sha256(`receipt:${receipt.nonce}`);
+    const remaining = () => remainingFor(deps, receiptKey, client);
+    const limited = () =>
+      json(429, { error: "rate_limited", remaining: remaining() });
     if (deps.limits.analysisPerReceipt.remaining(receiptKey, now) === 0)
-      return fail(429, "rate_limited");
+      return limited();
     if (deps.limits.analysisPerClient.remaining(client, now) === 0)
-      return fail(429, "rate_limited");
+      return limited();
     if (deps.limits.analysisGlobal.remaining("global", now) === 0)
-      return fail(429, "rate_limited");
+      return limited();
 
     const body = await readCapped(request, MAX_IMAGE_BYTES);
     if (body === "too_large") return fail(413, "too_large");
@@ -315,17 +351,71 @@ export async function handleAnalysis(
     const cached = deps.cache.get(cacheKey);
     if (cached && cached.expires > now) {
       bytes.fill(0);
-      return json(200, { result: cached.result });
+      return json(200, { result: cached.result, remaining: remaining() });
+    }
+    // Já em andamento: espera o mesmo resultado (sem nova chamada nem
+    // crédito). Ex.: o aparelho desistiu da espera e a pessoa tentou de novo.
+    const inflight = (deps.inflight ??= new Map());
+    const running = inflight.get(cacheKey);
+    if (running) {
+      bytes.fill(0);
+      bytes = null;
+      const r = await running;
+      return json(r.status, { ...r.body, remaining: remaining() });
     }
 
     // Conta o uso só quando a chamada vai mesmo acontecer.
     if (
       !deps.limits.analysisPerReceipt.take(receiptKey, now) ||
-      !deps.limits.analysisPerClient.take(client, now) ||
-      !deps.limits.analysisGlobal.take("global", now)
+      !deps.limits.analysisPerClient.take(client, now)
     )
-      return fail(429, "rate_limited");
+      return limited();
+    if (!deps.limits.analysisGlobal.take("global", now)) {
+      deps.limits.analysisPerReceipt.refund(receiptKey);
+      deps.limits.analysisPerClient.refund(client);
+      return limited();
+    }
 
+    const photo = bytes;
+    bytes = null;
+    const job = runAnalysis(photo, receipt.hand, cacheKey, deps).then((r) => {
+      // Falha técnica (provedor, formato, teto, prazo): a pessoa não
+      // recebeu resultado e não perde a tentativa. O teto global continua
+      // contando, porque protege o gasto.
+      if (r.technicalFailure) {
+        deps.limits.analysisPerReceipt.refund(receiptKey);
+        deps.limits.analysisPerClient.refund(client);
+      }
+      return r.outcome;
+    });
+    inflight.set(cacheKey, job);
+    try {
+      const r = await job;
+      return json(r.status, { ...r.body, remaining: remaining() });
+    } finally {
+      inflight.delete(cacheKey);
+    }
+  } catch {
+    return fail(500, "internal");
+  } finally {
+    bytes?.fill(0);
+  }
+}
+
+/** A análise propriamente dita: visão → capítulos (com prazo e tetos). */
+async function runAnalysis(
+  bytes: Uint8Array,
+  hand: "right" | "left",
+  cacheKey: string,
+  deps: PalmApiDeps,
+): Promise<{ outcome: Outcome; technicalFailure: boolean }> {
+  const failure = (status: number, error: PalmApiError) => ({
+    outcome: { status, body: { error } },
+    technicalFailure: true,
+  });
+  try {
+    const started = deps.now();
+    const deadlineAt = started + ANALYSIS_DEADLINE_MS;
     // Teto por relatório (visão + capítulos), além do teto do processo.
     // Só com provedores reais: o simulado não tem preço nem custo.
     const report =
@@ -341,44 +431,57 @@ export async function handleAnalysis(
 
     const outcome = await analyzePalmImage({
       bytes,
-      hand: receipt.hand,
+      hand,
       provider: vision,
+      deadlineAt,
+      now: deps.now,
     });
-    bytes = null;
 
     switch (outcome.kind) {
       case "ok": {
         // A trilha de auditoria (origem, motivo da reserva, tentativas)
-        // fica no servidor; o cliente recebe só os capítulos.
+        // fica no servidor; o cliente recebe só os capítulos. Sem tempo
+        // para a redação, o capítulo usa a biblioteca.
         const { result, audit } = await composePalmReading({
           observation: outcome.observation,
           textProvider: text,
           simulated: deps.config.mode === "mock",
+          options: { deadlineAt, now: deps.now },
         });
         deps.onAudit?.(audit);
-        deps.cache.set(cacheKey, { expires: now + CACHE_TTL_MS, result });
+        deps.cache.set(cacheKey, {
+          expires: deps.now() + CACHE_TTL_MS,
+          result,
+        });
         if (deps.cache.size > CACHE_MAX)
           deps.cache.delete(deps.cache.keys().next().value!);
-        return json(200, { result });
+        return {
+          outcome: { status: 200, body: { result } },
+          technicalFailure: false,
+        };
       }
       case "refused":
-        return fail(422, "retake_required");
+        // O modelo examinou a foto e pediu outra: conta como tentativa.
+        return {
+          outcome: { status: 422, body: { error: "retake_required" } },
+          technicalFailure: false,
+        };
       case "invalid_output":
-        return fail(502, "analysis_failed");
+        return failure(502, "analysis_failed");
       case "provider_error":
-        if (outcome.error === "budget") return fail(429, "processing_limit");
+        if (outcome.error === "budget") return failure(429, "processing_limit");
         if (
           ["timeout", "unavailable", "network", "rate_limit"].includes(
             outcome.error,
           )
         )
-          return fail(503, "temporarily_unavailable");
-        return fail(502, "analysis_failed");
+          return failure(503, "temporarily_unavailable");
+        return failure(502, "analysis_failed");
     }
-    return fail(500, "internal");
+    return failure(500, "internal");
   } catch {
-    return fail(500, "internal");
+    return failure(500, "internal");
   } finally {
-    bytes?.fill(0);
+    bytes.fill(0);
   }
 }

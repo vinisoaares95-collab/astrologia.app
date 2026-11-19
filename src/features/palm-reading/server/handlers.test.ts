@@ -29,6 +29,7 @@ import {
   handleAnalysis,
   handleAvailability,
   handleConsent,
+  ANALYSIS_DEADLINE_MS,
   MAX_IMAGE_BYTES,
   type PalmApiDeps,
 } from "./handlers";
@@ -376,7 +377,10 @@ describe("análise: consentimento e acesso", () => {
     expect((await send(syntheticJpeg(1201, 1600))).status).toBe(200);
     expect((await send(syntheticJpeg(1202, 1600))).status).toBe(200);
     const fourth = await read(await send(syntheticJpeg(1203, 1600)));
-    expect(fourth).toEqual({ status: 429, body: { error: "rate_limited" } });
+    expect(fourth).toEqual({
+      status: 429,
+      body: { error: "rate_limited", remaining: expect.any(Number) },
+    });
     expect(provider.calls).toHaveLength(3);
   });
 
@@ -514,11 +518,11 @@ describe("análise: resultados e falhas do provedor", () => {
   it("conteúdo sensível ou JSON inválido nas duas tentativas → 502", async () => {
     expect(await status(["sensitive"])).toEqual({
       status: 502,
-      body: { error: "analysis_failed" },
+      body: { error: "analysis_failed", remaining: expect.any(Number) },
     });
     expect(await status(["invalid-json"])).toEqual({
       status: 502,
-      body: { error: "analysis_failed" },
+      body: { error: "analysis_failed", remaining: expect.any(Number) },
     });
   });
 
@@ -530,7 +534,7 @@ describe("análise: resultados e falhas do provedor", () => {
   it("recusa do modelo → pede outra foto (422)", async () => {
     expect(await status(["refusal"])).toEqual({
       status: 422,
-      body: { error: "retake_required" },
+      body: { error: "retake_required", remaining: expect.any(Number) },
     });
   });
 
@@ -538,7 +542,10 @@ describe("análise: resultados e falhas do provedor", () => {
     for (const s of ["error:timeout", "error:unavailable"] as const)
       expect(await status([s])).toEqual({
         status: 503,
-        body: { error: "temporarily_unavailable" },
+        body: {
+          error: "temporarily_unavailable",
+          remaining: expect.any(Number),
+        },
       });
   });
 
@@ -552,7 +559,7 @@ describe("análise: resultados e falhas do provedor", () => {
       await read(await handleAnalysis(analysisRequest(goodJpeg()), d)),
     ).toEqual({
       status: 429,
-      body: { error: "processing_limit" },
+      body: { error: "processing_limit", remaining: expect.any(Number) },
     });
     expect(inner.calls).toHaveLength(0);
   });
@@ -564,7 +571,10 @@ describe("análise: resultados e falhas do provedor", () => {
       },
     });
     const r = await handleAnalysis(analysisRequest(goodJpeg()), d);
-    expect(await read(r)).toEqual({ status: 500, body: { error: "internal" } });
+    expect(await read(r)).toEqual({
+      status: 500,
+      body: { error: "internal", remaining: expect.any(Number) },
+    });
   });
 });
 
@@ -624,7 +634,10 @@ describe("teto por relatório (modo real, provedores simulados com preço)", () 
   it("abaixo do pior caso de uma chamada de visão: nada é chamado", async () => {
     const { d, vision } = realDeps(0.01);
     const r = await read(await handleAnalysis(analysisRequest(goodJpeg()), d));
-    expect(r).toEqual({ status: 429, body: { error: "processing_limit" } });
+    expect(r).toEqual({
+      status: 429,
+      body: { error: "processing_limit", remaining: expect.any(Number) },
+    });
     expect(vision.calls).toHaveLength(0);
   });
 
@@ -659,5 +672,146 @@ describe("trilha de auditoria só para a avaliação (03F.2, Etapa B)", () => {
     // getProcessDeps lê a configuração do ambiente: sem análise ligada,
     // a dependência criada não tem o gancho.
     expect("onAudit" in mod.getProcessDeps()).toBe(false);
+  });
+});
+
+describe("tentativas e confiabilidade (03F.2, Etapa B)", () => {
+  const sendWith = (d: PalmApiDeps, t: string) => (img: Uint8Array) =>
+    handleAnalysis(analysisRequest(img, { [CONSENT_HEADER]: t }), d).then(read);
+
+  it("o recibo informa as análises disponíveis", async () => {
+    const { d } = deps();
+    const r = await read(await handleConsent(consentRequest(validConsent), d));
+    expect(r.body.remaining).toBe(3);
+  });
+
+  it("falha técnica do provedor não consome a tentativa; resultado e recusa consomem", async () => {
+    const { d } = deps({
+      scenarios: [
+        "error:unavailable",
+        "error:unavailable",
+        "invalid-json",
+        "invalid-json",
+        "clear",
+        "refusal",
+      ],
+    });
+    const send = sendWith(d, token());
+    const a = await send(syntheticJpeg(1200, 1600));
+    expect(a).toMatchObject({ status: 503, body: { remaining: 3 } });
+    const b = await send(syntheticJpeg(1201, 1600));
+    expect(b).toMatchObject({ status: 502, body: { remaining: 3 } });
+    const c = await send(syntheticJpeg(1202, 1600));
+    expect(c).toMatchObject({ status: 200, body: { remaining: 2 } });
+    const e = await send(syntheticJpeg(1203, 1600));
+    expect(e).toMatchObject({ status: 422, body: { remaining: 1 } });
+  });
+
+  it("teto de gasto e erro inesperado também devolvem a tentativa", async () => {
+    const inner = createMockVisionProvider(["clear"], {
+      model: "claude-haiku-5-5",
+    });
+    const { d } = deps({
+      provider: () => withVisionBudget(inner, createBudget(0.000001)),
+    });
+    const r = await sendWith(d, token())(goodJpeg());
+    expect(r).toMatchObject({ status: 429, body: { remaining: 3 } });
+  });
+
+  it("limite atingido informa zero disponíveis", async () => {
+    const { d } = deps();
+    const send = sendWith(d, token());
+    for (const w of [1200, 1201, 1202]) await send(syntheticJpeg(w, 1600));
+    expect(await send(syntheticJpeg(1203, 1600))).toEqual({
+      status: 429,
+      body: { error: "rate_limited", remaining: 0 },
+    });
+  });
+
+  it("pedido repetido durante a análise aguarda o mesmo resultado, sem nova chamada nem crédito", async () => {
+    const provider = createMockVisionProvider(["clear"], { delayMs: 30 });
+    const { d } = deps({ provider: () => provider });
+    const send = sendWith(d, token());
+    const [first, retry] = await Promise.all([
+      send(goodJpeg()),
+      send(goodJpeg()),
+    ]);
+    expect(first.status).toBe(200);
+    expect(retry.status).toBe(200);
+    expect(retry.body.result).toEqual(first.body.result);
+    expect(provider.calls).toHaveLength(1);
+    expect(retry.body.remaining).toBe(2);
+    expect(d.inflight?.size).toBe(0);
+  });
+
+  it("falha durante a análise: o pedido repetido recebe a mesma falha e nada é consumido", async () => {
+    const provider = createMockVisionProvider(["error:unavailable"], {
+      delayMs: 30,
+    });
+    const { d } = deps({ provider: () => provider });
+    const send = sendWith(d, token());
+    const [a, b] = await Promise.all([send(goodJpeg()), send(goodJpeg())]);
+    expect(a.status).toBe(503);
+    expect(b.status).toBe(503);
+    expect(b.body.remaining).toBe(3);
+  });
+
+  it("prazo total abaixo da espera do aparelho; cada tentativa usa só o tempo que resta", async () => {
+    const { ANALYSIS_TIMEOUT_MS } = await import("../lib/analysis-client");
+    expect(ANALYSIS_DEADLINE_MS + 10_000).toBeLessThanOrEqual(
+      ANALYSIS_TIMEOUT_MS,
+    );
+    let now = clock;
+    const timeouts: number[] = [];
+    const inner = createMockVisionProvider(["invalid-json", "clear"]);
+    const slow = {
+      ...inner,
+      async analyze(req: Parameters<typeof inner.analyze>[0]) {
+        timeouts.push(req.timeoutMs);
+        now += 40_000; // cada tentativa leva 40 s
+        return inner.analyze(req);
+      },
+    };
+    const text = createMockPalmTextProvider(["valid"]);
+    const { d } = deps({
+      now: () => now,
+      provider: () => slow,
+      textProvider: () => text,
+    });
+    const r = await read(
+      await handleAnalysis(
+        analysisRequest(goodJpeg(), { [CONSENT_HEADER]: token("left", now) }),
+        d,
+      ),
+    );
+    // 1ª tentativa: 40 s; sobram 15 s ≥ 10 s → 2ª tentativa limitada a 15 s.
+    expect(timeouts).toEqual([45_000, 15_000]);
+    // A 2ª leva 40 s (simulado): sem tempo para a redação → biblioteca.
+    expect(r.status).toBe(200);
+    expect(text.calls).toHaveLength(0);
+    const chapters = (r.body.result as { chapters: { status: string }[] })
+      .chapters;
+    expect(chapters.every((c) => c.status === "content")).toBe(true);
+  });
+
+  it("sem tempo para nova tentativa de visão: falha temporária, tentativa devolvida", async () => {
+    let now = clock;
+    const inner = createMockVisionProvider(["invalid-json", "clear"]);
+    const slow = {
+      ...inner,
+      async analyze(req: Parameters<typeof inner.analyze>[0]) {
+        now += 50_000;
+        return inner.analyze(req);
+      },
+    };
+    const { d } = deps({ now: () => now, provider: () => slow });
+    const r = await read(
+      await handleAnalysis(
+        analysisRequest(goodJpeg(), { [CONSENT_HEADER]: token("left", now) }),
+        d,
+      ),
+    );
+    expect(inner.calls).toHaveLength(1);
+    expect(r).toMatchObject({ status: 502, body: { remaining: 3 } });
   });
 });

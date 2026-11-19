@@ -29,7 +29,7 @@ const traditionNotes: Record<(typeof palmLines)[number]["id"], string> = {
   heart:
     "Tradicionalmente associada ao mundo afetivo: como se sente, se expressa e se vincula.",
   head: "Tradicionalmente associada ao modo de pensar, aprender e tomar decisões.",
-  life: "Tradicionalmente associada à vitalidade e à forma de viver as mudanças — não à duração da vida.",
+  life: "Tradicionalmente associada ao jeito de viver e de lidar com as mudanças.",
 };
 
 const lockedChapters = reportParts
@@ -60,14 +60,28 @@ export function DemoPreview() {
     );
   }
 
+  // Com análise: só o que foi gerado para esta foto (03F.2, Etapa B).
+  if (analysis)
+    return (
+      <PersonalPreview
+        photoUrl={photo.url}
+        handLabel={hand ? HAND_LABELS[hand] : null}
+        analysis={analysis}
+        onRetake={() => router.push(routes.palmPhoto)}
+        onDiscard={() => {
+          withdraw();
+          router.push(routes.home);
+        }}
+      />
+    );
+
+  // Sem análise: área de demonstração, separada e identificada.
   return (
     <div className="flex flex-1 flex-col gap-6">
-      {!analysis && (
-        <Callout tone="demo" title="Demonstração — sua foto não foi analisada">
-          Nenhuma inteligência artificial processou sua imagem. O conteúdo
-          abaixo é um texto fixo, igual para todas as pessoas.
-        </Callout>
-      )}
+      <Callout tone="demo" title="Demonstração — sua foto não foi analisada">
+        Nenhuma inteligência artificial processou sua imagem. O conteúdo abaixo
+        é um texto fixo, igual para todas as pessoas.
+      </Callout>
 
       {/* Destaque: foto dentro da mandala */}
       <Card
@@ -126,8 +140,6 @@ export function DemoPreview() {
         ))}
       </ul>
 
-      {analysis && <PalmChapters analysis={analysis} />}
-
       {/* O que o relatório completo adiciona */}
       <section className="space-y-3" aria-labelledby="no-relatorio">
         <div className="flex items-center justify-between">
@@ -140,26 +152,24 @@ export function DemoPreview() {
           </Badge>
         </div>
         <ul className="space-y-2">
-          {lockedChapters
-            .filter((chapter) => !analysis || chapter.number > 7)
-            .map((chapter) => (
-              <li
-                key={chapter.number}
-                className="flex items-center gap-3.5 rounded-2xl bg-surface/60 px-4 py-3 edge-light"
-              >
-                <span className="font-mono text-sm text-accent">
-                  {String(chapter.number).padStart(2, "0")}
-                </span>
-                <div className="flex-1 space-y-2">
-                  <p className="text-sm font-medium text-fg">{chapter.title}</p>
-                  <div aria-hidden className="space-y-1.5 blur-[1.5px]">
-                    <span className="block h-1.5 w-11/12 rounded-full bg-surface-bright" />
-                    <span className="block h-1.5 w-2/3 rounded-full bg-surface-bright" />
-                  </div>
+          {lockedChapters.map((chapter) => (
+            <li
+              key={chapter.number}
+              className="flex items-center gap-3.5 rounded-2xl bg-surface/60 px-4 py-3 edge-light"
+            >
+              <span className="font-mono text-sm text-accent">
+                {String(chapter.number).padStart(2, "0")}
+              </span>
+              <div className="flex-1 space-y-2">
+                <p className="text-sm font-medium text-fg">{chapter.title}</p>
+                <div aria-hidden className="space-y-1.5 blur-[1.5px]">
+                  <span className="block h-1.5 w-11/12 rounded-full bg-surface-bright" />
+                  <span className="block h-1.5 w-2/3 rounded-full bg-surface-bright" />
                 </div>
-                <Lock aria-hidden className="size-4 text-fg-subtle" />
-              </li>
-            ))}
+              </div>
+              <Lock aria-hidden className="size-4 text-fg-subtle" />
+            </li>
+          ))}
         </ul>
         <p className="text-xs leading-relaxed text-fg-subtle">
           Na versão final, a prévia descreverá características observadas na sua
@@ -179,6 +189,105 @@ export function DemoPreview() {
             router.push(routes.home);
           }}
         >
+          Descartar foto e sair
+        </Button>
+      </ActionDock>
+    </div>
+  );
+}
+
+/** Prévia personalizada: foto, capítulos 6 e 7 e o que vem no relatório. */
+function PersonalPreview({
+  photoUrl,
+  handLabel,
+  analysis,
+  onRetake,
+  onDiscard,
+}: {
+  photoUrl: string;
+  handLabel: string | null;
+  analysis: PalmAnalysisResult;
+  onRetake: () => void;
+  onDiscard: () => void;
+}) {
+  const locked = lockedChapters.filter((c) => c.number > 7);
+  const hasContent = analysis.chapters.some((c) => c.status === "content");
+  return (
+    <div className="flex flex-1 flex-col gap-6">
+      <div className="flex items-center gap-4 rounded-3xl bg-surface/70 p-3 edge-light">
+        {/* eslint-disable-next-line @next/next/no-img-element -- URL blob local; next/image não se aplica */}
+        <img
+          src={photoUrl}
+          alt="Sua foto, mantida apenas neste dispositivo"
+          className="size-20 shrink-0 rounded-2xl object-cover"
+        />
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap gap-2">
+            {handLabel && <Badge>{handLabel}</Badge>}
+            <Badge
+              tone={analysis.status === "complete" ? "success" : "neutral"}
+            >
+              {analysis.status === "complete"
+                ? "Leitura completa"
+                : analysis.status === "partial"
+                  ? "Leitura parcial"
+                  : "Sem leitura"}
+            </Badge>
+          </div>
+          <p className="text-xs leading-relaxed text-fg-muted">
+            A foto continua só neste aparelho.
+          </p>
+        </div>
+      </div>
+
+      <PalmChapters analysis={analysis} />
+
+      {locked.length > 0 && (
+        <section className="space-y-3" aria-labelledby="no-relatorio">
+          <div className="flex items-center justify-between">
+            <h2 id="no-relatorio" className="text-lg font-semibold text-fg">
+              No relatório completo
+            </h2>
+            <Badge tone="accent">
+              <Lock aria-hidden className="size-3" />
+              Bloqueado
+            </Badge>
+          </div>
+          <ul className="space-y-2">
+            {locked.map((chapter) => (
+              <li
+                key={chapter.number}
+                className="flex items-center gap-3.5 rounded-2xl bg-surface/60 px-4 py-3 edge-light"
+              >
+                <span className="font-mono text-sm text-accent">
+                  {String(chapter.number).padStart(2, "0")}
+                </span>
+                <p className="flex-1 text-sm font-medium text-fg">
+                  {chapter.title}
+                </p>
+                <Lock aria-hidden className="size-4 text-fg-subtle" />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <ActionDock>
+        {hasContent ? (
+          <ButtonLink href={routes.birthData} size="lg" fullWidth>
+            Continuar: dados de nascimento
+          </ButtonLink>
+        ) : (
+          <Button size="lg" fullWidth onClick={onRetake}>
+            Tirar outra foto
+          </Button>
+        )}
+        {hasContent && (
+          <Button variant="secondary" onClick={onRetake}>
+            Tirar outra foto
+          </Button>
+        )}
+        <Button variant="ghost" onClick={onDiscard}>
           Descartar foto e sair
         </Button>
       </ActionDock>

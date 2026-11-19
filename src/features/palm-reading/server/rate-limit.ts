@@ -11,6 +11,11 @@ export type Limiter = {
   take(key: string, now?: number): boolean;
   /** Quantas tentativas ainda restam na janela. */
   remaining(key: string, now?: number): number;
+  /**
+   * Devolve a tentativa mais recente (03F.2, Etapa B): para falhas técnicas
+   * que não entregaram resultado à pessoa.
+   */
+  refund(key: string): void;
 };
 
 export function createLimiter(config: {
@@ -38,6 +43,12 @@ export function createLimiter(config: {
     },
     remaining(key, now = Date.now()) {
       return Math.max(0, config.limit - recent(key, now).length);
+    },
+    refund(key) {
+      const list = hits.get(key);
+      if (!list?.length) return;
+      list.pop();
+      if (!list.length) hits.delete(key);
     },
   };
 }

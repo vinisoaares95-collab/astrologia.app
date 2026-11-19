@@ -7,12 +7,18 @@ import type { PalmHand, PalmConsent } from "../consent";
 import type { PalmAnalysisResult } from "../chapters/presentation";
 
 const BASE = "/api/leitura-das-maos";
-const ANALYSIS_TIMEOUT_MS = 70_000;
+/** O aparelho desiste depois disto; o servidor responde antes (55 s). */
+export const ANALYSIS_TIMEOUT_MS = 70_000;
 
 export type AnalysisAvailability =
   { enabled: false } | { enabled: true; simulated: boolean };
 
-export type ConsentReceiptToken = { token: string; expiresAt: number };
+export type ConsentReceiptToken = {
+  token: string;
+  expiresAt: number;
+  /** Análises disponíveis com este recibo, informadas pelo servidor. */
+  remaining?: number;
+};
 
 export type AnalysisErrorCode =
   | "not_found"
@@ -28,11 +34,17 @@ export type AnalysisErrorCode =
   | "analysis_failed"
   | "unavailable"
   | "internal"
-  | "network";
+  | "network"
+  | "timeout";
 
 export type AnalysisCall =
-  | { ok: true; result: PalmAnalysisResult }
-  | { ok: false; error: AnalysisErrorCode };
+  | { ok: true; result: PalmAnalysisResult; remaining: number | null }
+  | { ok: false; error: AnalysisErrorCode; remaining: number | null };
+
+const remainingOf = (body: unknown): number | null => {
+  const n = (body as { remaining?: unknown } | null)?.remaining;
+  return typeof n === "number" && Number.isFinite(n) && n >= 0 ? n : null;
+};
 
 const KNOWN = new Set<AnalysisErrorCode>([
   "not_found",
@@ -119,11 +131,36 @@ export async function requestPalmAnalysis(
       body: photo,
       signal: controller.signal,
     });
-    if (!r.ok) return { ok: false, error: await errorOf(r) };
-    const body = (await r.json()) as { result: PalmAnalysisResult };
-    return { ok: true, result: body.result };
+    let body: unknown = null;
+    try {
+      body = await r.json();
+    } catch {
+      body = null;
+    }
+    const remaining = remainingOf(body);
+    if (!r.ok) {
+      const code = (body as { error?: string } | null)?.error;
+      return {
+        ok: false,
+        error: KNOWN.has(code as AnalysisErrorCode)
+          ? (code as AnalysisErrorCode)
+          : "internal",
+        remaining,
+      };
+    }
+    return {
+      ok: true,
+      result: (body as { result: PalmAnalysisResult }).result,
+      remaining,
+    };
   } catch {
-    return { ok: false, error: "network" };
+    // O aparelho desistiu da espera (o servidor responde antes, em 55 s):
+    // a mesma foto pode ser enviada de novo sem gastar outra análise.
+    return {
+      ok: false,
+      error: controller.signal.aborted ? "timeout" : "network",
+      remaining: null,
+    };
   } finally {
     clearTimeout(timer);
   }
@@ -166,26 +203,32 @@ export const ANALYSIS_ERROR_MESSAGES: Record<
   },
   rate_limited: {
     title: "Limite de análises atingido",
-    body: "Você já usou as análises disponíveis por agora. Tente mais tarde.",
+    body: "Você já usou as análises disponíveis nesta sessão. Siga com a leitura obtida ou tente mais tarde.",
     retake: false,
     reconsent: false,
   },
   processing_limit: {
     title: "Limite de processamento atingido",
-    body: "A análise está temporariamente indisponível por limite de processamento. Tente mais tarde.",
+    body: "A análise está temporariamente indisponível por limite de processamento. Tente mais tarde; esta tentativa não foi contada.",
     retake: false,
     reconsent: false,
   },
   temporarily_unavailable: {
     title: "Falha temporária",
-    body: "A análise não respondeu a tempo. Tente de novo em instantes.",
+    body: "O serviço de análise está indisponível ou não respondeu a tempo. Tente de novo em instantes; esta tentativa não foi contada.",
     retake: false,
     reconsent: false,
   },
   analysis_failed: {
     title: "Não conseguimos concluir a análise",
-    body: "Tente de novo em instantes. Se continuar, tire outra foto.",
+    body: "Tente de novo em instantes; esta tentativa não foi contada. Se continuar, tire outra foto.",
     retake: true,
+    reconsent: false,
+  },
+  timeout: {
+    title: "A análise demorou mais que o esperado",
+    body: "Tente de novo com a mesma foto: se a análise anterior tiver terminado, o resultado é aproveitado e não conta como nova análise.",
+    retake: false,
     reconsent: false,
   },
   network: {

@@ -38,6 +38,8 @@ export type PalmGenerateOptions = {
   maxOutputTokens?: number;
   timeoutMs?: number;
   now?: () => number;
+  /** Prazo total da redação, no relógio de `now` (03F.2, Etapa B). */
+  deadlineAt?: number;
 };
 
 /** Observações e ressalvas do SISTEMA para cada seção. */
@@ -200,6 +202,7 @@ export async function generatePalmChapters(
           maxAttempts: opts.maxAttempts,
           now: opts.now,
           metrics: attempts,
+          deadlineAt: options.deadlineAt,
         },
       );
       return outcome.ok

@@ -508,3 +508,83 @@ npx vitest run src/features/palm-reading/evaluation/ponta-a-ponta/e2e.run.test.t
 **Exclusão das fotos:** depois da apuração da Etapa B, apagar
 `/tmp/sidera-fotos-03f` (originais, manifesto e mapa) e registrar a
 exclusão.
+
+## Etapa B — correções de UX e confiabilidade (19/11/2026, sem chamadas pagas)
+
+### Prévia
+
+Com análise, a prévia mostra só o que foi gerado para a foto:
+
+- miniatura da foto e estado da leitura;
+- capítulos 6 e 7;
+- capítulos bloqueados do relatório.
+
+O cartão "Exemplo fixo", os textos fixos das três linhas e "Na versão
+final…" ficam só na demonstração, separada e identificada, usada quando
+não há análise. A demonstração também deixou de citar a duração da vida.
+Com os dois capítulos indisponíveis, a prévia não leva à próxima etapa;
+oferece nova foto.
+
+### Captura
+
+As orientações ficaram curtas:
+
+- mão inteira, do pulso às pontas dos dedos;
+- palma de frente, com os dedos levemente afastados;
+- celular paralelo à palma, sem inclinar;
+- luz, foco e nada de reflexos.
+
+Elas aparecem na introdução, na tela vazia e na conferência. A
+verificação automática diz que não percebe mão inclinada nem cortada.
+
+### Decisão antes de seguir
+
+Quando algum capítulo fica indisponível ou a leitura fica parcial com
+pouco observado, aparece um painel no topo:
+
+- estado de cada capítulo;
+- motivo e orientação, que vêm do resultado;
+- análises restantes.
+
+Nova foto é a ação principal. Seguir é opcional e não existe quando os
+dois capítulos ficam indisponíveis. A análise anterior fica em memória e
+pode ser retomada ("Voltar à foto analisada antes"); ela é descartada ao
+trocar de novo, ao descartar ou ao sair.
+
+### Tentativas e confiabilidade (endpoint)
+
+|                                                          | Antes                                                | Depois                                                                                    |
+| -------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Falha técnica (provedor, formato, teto, erro inesperado) | consumia 1 das 3 análises                            | devolvida (o teto global continua contando)                                               |
+| Recusa do modelo ou resultado entregue                   | consumia                                             | consome                                                                                   |
+| Mesmo pedido repetido durante a análise                  | nova análise e novo crédito                          | aguarda a mesma análise, sem chamada nem crédito                                          |
+| Mesmo pedido depois do resultado                         | cache, sem crédito                                   | igual                                                                                     |
+| Prazo no servidor                                        | sem prazo total (visão 2 × 45 s + capítulo 2 × 60 s) | 55 s no total; a redação sem tempo usa a biblioteca; a visão sem tempo falha sem consumir |
+| Aparelho desiste (70 s)                                  | "Sem conexão"                                        | mensagem própria; reenviar a mesma foto não conta                                         |
+| Análises restantes                                       | desconhecidas até acabar                             | no recibo e em toda resposta; mostradas antes do envio e após cada resultado              |
+
+### Menores
+
+- Depois da primeira foto, dá para substituí-la pela câmera ou pela
+  galeria.
+- A mensagem de espera passou a ser realista: "de 20 a 40 segundos".
+- O rodapé fixo ficou com no máximo 2 linhas de ações (148–159 px de
+  568 px no iPhone SE; antes, até 260 px). "Descartar" e "Voltar" foram
+  para dentro do conteúdo.
+
+### Impacto
+
+- **Endpoint:** respostas com o campo `remaining`. O formato do resultado,
+  os modelos, o contrato, os tetos por relatório e por processo e o limite
+  de 3 análises não mudaram.
+- **Pagamento:** a leitura das mãos ainda não tem fluxo de pagamento.
+
+### Validação
+
+- **Testes:** 1087 aprovados; lint, TypeScript e build sem erro.
+- **Inspeção no navegador** (celular emulado, simulador e imagem
+  sintética), nos 7 cenários: ambos os capítulos, um indisponível, ambos
+  indisponíveis, erro temporário, espera, limite e substituição por câmera
+  e galeria.
+- **Ferramenta da Etapa B:** continua funcional (12 testes e plano
+  gratuito igual) e agora registra as análises restantes.

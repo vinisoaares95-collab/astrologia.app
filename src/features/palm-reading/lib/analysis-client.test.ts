@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createConsent } from "../consent";
 import {
   ANALYSIS_ERROR_MESSAGES,
+  ANALYSIS_TIMEOUT_MS,
   getAnalysisAvailability,
   requestConsentReceipt,
   requestPalmAnalysis,
@@ -71,13 +72,13 @@ describe("cliente da análise", () => {
       { token: "t", expiresAt: 1 },
       respond(429, { error: "rate_limited" }),
     );
-    expect(r1).toEqual({ ok: false, error: "rate_limited" });
+    expect(r1).toEqual({ ok: false, error: "rate_limited", remaining: null });
     const r2 = await requestPalmAnalysis(
       blob,
       { token: "t", expiresAt: 1 },
       respond(500, { error: "stack trace" }),
     );
-    expect(r2).toEqual({ ok: false, error: "internal" });
+    expect(r2).toEqual({ ok: false, error: "internal", remaining: null });
     const r3 = await requestPalmAnalysis(
       blob,
       { token: "t", expiresAt: 1 },
@@ -85,7 +86,57 @@ describe("cliente da análise", () => {
         throw new Error("x");
       }),
     );
-    expect(r3).toEqual({ ok: false, error: "network" });
+    expect(r3).toEqual({ ok: false, error: "network", remaining: null });
+  });
+
+  it("análises restantes vêm do servidor em sucesso e em erro (03F.2)", async () => {
+    const blob = new Blob(["x"]);
+    const ok = await requestPalmAnalysis(
+      blob,
+      { token: "t", expiresAt: 1 },
+      respond(200, { result: { status: "complete" }, remaining: 2 }),
+    );
+    expect(ok).toMatchObject({ ok: true, remaining: 2 });
+    const err = await requestPalmAnalysis(
+      blob,
+      { token: "t", expiresAt: 1 },
+      respond(503, { error: "temporarily_unavailable", remaining: 3 }),
+    );
+    expect(err).toEqual({
+      ok: false,
+      error: "temporarily_unavailable",
+      remaining: 3,
+    });
+  });
+
+  it("o aparelho desiste depois de 70 s: erro de espera, não de conexão", async () => {
+    vi.useFakeTimers();
+    try {
+      const fetcher = vi.fn(
+        (_: unknown, init: { signal: AbortSignal }) =>
+          new Promise<Response>((_, reject) =>
+            init.signal.addEventListener("abort", () =>
+              reject(new DOMException("aborted", "AbortError")),
+            ),
+          ),
+      );
+      const pending = requestPalmAnalysis(
+        new Blob(["x"]),
+        { token: "t", expiresAt: 1 },
+        fetcher as unknown as typeof fetch,
+      );
+      await vi.advanceTimersByTimeAsync(ANALYSIS_TIMEOUT_MS);
+      expect(await pending).toEqual({
+        ok: false,
+        error: "timeout",
+        remaining: null,
+      });
+      expect(ANALYSIS_ERROR_MESSAGES.timeout.body).toMatch(
+        /mesma foto.*não conta como nova análise/u,
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("toda mensagem é amigável e sem detalhe técnico", () => {

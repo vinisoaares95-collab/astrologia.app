@@ -137,6 +137,8 @@ describe("fluxo do endpoint com simuladores", () => {
     expect(run.reportBudgetUsd).toBe(PALM_REPORT_BUDGET_USD);
     const [good, few, bad] = run.cases;
     expect(good.http).toBe(200);
+    // Cada foto tem o próprio recibo (3 análises): sobra 2 após a leitura.
+    expect(good.remaining).toBe(2);
     expect(good.chapters.map((c) => [c.status, c.source])).toEqual([
       ["content", "ai"],
       ["content", "ai"],
@@ -199,6 +201,8 @@ describe("fluxo do endpoint com simuladores", () => {
       budget: createBudget(0.5),
     });
     expect(run.cases[0].http).toBe(503);
+    // Falha técnica não consome a tentativa da pessoa.
+    expect(run.cases[0].remaining).toBe(3);
     expect(run.cases[0].error).toBe("temporarily_unavailable");
     expect(run.cases[0].calls.map((c) => c.outcome)).toEqual([
       "error:unavailable",
