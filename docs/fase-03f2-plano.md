@@ -671,3 +671,28 @@ da API comercial, sujeita a exceções. Antes de atualizar o consentimento
 público, é preciso confirmar se isso se aplica ao serviço e à conta
 usados, e quais exceções valem. Hoje o consentimento diz apenas que o
 prazo "será confirmado antes do lançamento".
+
+## Etapa B — consistência visual (19/11/2026)
+
+A foto-05 mudou em 3 de 9 características entre a rodada 2 da 03F.1
+(base da Etapa A) e a Etapa B:
+
+- palma: retangular → quadrada;
+- comprimento da linha da cabeça: média → longa;
+- arco da vida: fechado → amplo.
+
+A entrada foi a mesma (arquivo, JPEG preparado, tokens, prompt 03d.2,
+contrato, parâmetros), o que caracteriza **instabilidade do modelo** em
+traços limítrofes. A rodada 1 já tinha marcado os dois traços de linha
+como não visível e ambíguo. A foto-01 e a foto-04 ficaram iguais à
+rodada 2.
+
+**Impacto:** a mesma foto pode gerar leituras com sentidos opostos.
+**Recomendação:** não aprovar a Etapa B para uso comercial até medir a
+concordância por repetição e adotar consenso entre observações (traço
+divergente → indeterminado).
+
+Detalhes em `avaliacao-ia/03f2-etapa-b/consistencia-visual.md`.
+
+**Fotos:** apagadas em 19/11/2026, 20:26 UTC (`/tmp/sidera-fotos-03f`:
+8 fotos, manifesto e mapa).
