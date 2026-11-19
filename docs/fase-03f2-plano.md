@@ -357,3 +357,38 @@ npx vitest run src/features/palm-reading/evaluation/chapters/chapters-eval.run.t
 - fidelidade e segurança aprovadas;
 - limitações editoriais restantes documentadas: naturalidade, entradas
   idênticas, resíduo "convite à reflexão", disponibilidade.
+
+## Etapa A — Rev2 e encerramento (19/11/2026)
+
+**Rev2 direcionada:** 3 capítulos, US$ 0,0045, 4 tentativas.
+
+- **Reprovações:** 2, ambas `PRESUMED_GENDER` em foto-03 c7 ("se sentir
+  seguro", depois "se sente mais segura"). As recusas estavam corretas;
+  depois delas, o capítulo foi para a biblioteca.
+- **Textos finais:** sem gênero presumido e sem avisos negativos.
+- **Apuração:** 9 de 10 critérios aprovados:
+  - especificidade 3/3;
+  - diferenciação 2/2;
+  - qualidade editorial 4,17;
+  - reprovado só o uso da biblioteca, 1 de 3.
+
+**Ajuste final (`632d241`):** a nova tentativa depois de gênero presumido
+pede reformulação com verbo ou expressão neutra, e não troca de flexão.
+Foi validado com simulador; o efeito no Haiku real não foi medido.
+
+**Etapa A: recomendada para encerramento.**
+
+- **Aprovação técnica:** fidelidade, segurança, indisponíveis 9/9 e custo
+  por relatório ≈ US$ 0,014.
+- **Qualidade editorial:** adequada (média ≥ 4).
+- **Limitações não bloqueantes:**
+  - naturalidade ≈ 3,3;
+  - o capítulo de reserva é seco;
+  - entradas idênticas;
+  - avisos brandos;
+  - disponibilidade, que depende da captura.
+- **Gasto da Etapa A:** ≈ R$ 0,14.
+
+Critérios de entrada na Etapa B: autorização explícita; consentimento
+para o novo envio; 3 fotos definidas; plano gratuito com teto dentro do
+saldo da 03F.2; mesma configuração; execução única; fotos apagadas ao fim.
