@@ -85,7 +85,13 @@ describe("gênero presumido sobre a pessoa", () => {
     d.reflectionQuestions[0] = "Em que situações você se sente mais seguro?";
     const errors = validatePalmChapterDraft(d, chapter, report).errors;
     expect(errors.map((e) => e.code)).toEqual(["PRESUMED_GENDER"]);
-    expect(errors[0].fix).toMatch(/verbo ou construção neutra/u);
+    // Pede reformulação, não troca de flexão (03F.2, Rev2).
+    expect(errors[0].fix).toMatch(/"se sente mais seguro"/u);
+    expect(errors[0].fix).toMatch(/verbo ou expressão neutra/u);
+    expect(errors[0].fix).toMatch(/você encontra segurança/u);
+    expect(errors[0].fix).toMatch(
+      /Trocar o masculino pelo feminino, ou o contrário, continua presumindo gênero/u,
+    );
   });
 });
 
@@ -221,5 +227,58 @@ describe("orientação de nova foto pelo motivo da característica", () => {
       ["hand_cropped", "angled"],
     );
     expect(m.match(/mão inteira no quadro/gu)).toHaveLength(1);
+  });
+});
+
+describe("nova tentativa depois de gênero presumido (Rev2)", () => {
+  const report = (() => {
+    const r = validatePalmObservation(clearHand(), "right");
+    if (!r.ok) throw new Error("fixture");
+    return buildPalmInterpretation(r.observation);
+  })();
+  // Simula o padrão da Rev2: 1ª "seguro"; 2ª só troca para "segura" ou
+  // reformula, conforme a orientação recebida.
+  function provider(second: (user: string) => string) {
+    const inner = createMockPalmTextProvider();
+    const calls: string[] = [];
+    let n = 0;
+    const p: AiProvider = {
+      ...inner,
+      async generate(req) {
+        const res = await inner.generate(req);
+        if (!/"id":\s*"linhas"/u.test(req.user)) return res;
+        calls.push(req.user);
+        const d = JSON.parse(res.text) as ChapterDraft;
+        d.reflectionQuestions[0] =
+          n++ === 0
+            ? "O que ajuda você a se sentir seguro diante do novo?"
+            : second(req.user);
+        return { ...res, text: JSON.stringify(d) };
+      },
+    };
+    return { p, calls };
+  }
+
+  it("a orientação enviada pede reformulação, não troca de flexão", async () => {
+    const { p, calls } = provider(
+      () => "O que ajuda você a encontrar segurança diante do novo?",
+    );
+    const g = await generatePalmChapters(report, p);
+    expect(calls).toHaveLength(2);
+    expect(calls[1]).toMatch(/Reformule a frase de "se sentir seguro"/u);
+    expect(calls[1]).toMatch(/continua presumindo gênero/u);
+    const linhas = g.chapters.find((c) => c.id === "linhas")!;
+    expect(linhas.source).toBe("ai");
+    expect(linhas.reflectionQuestions[0]).toMatch(/encontrar segurança/u);
+  });
+
+  it("só trocar pelo feminino continua recusado e cai na biblioteca", async () => {
+    const { p } = provider(
+      () => "O que ajuda você a se sentir segura diante do novo?",
+    );
+    const g = await generatePalmChapters(report, p);
+    const linhas = g.chapters.find((c) => c.id === "linhas")!;
+    expect(linhas.source).toBe("library");
+    expect(linhas.fallbackReason).toMatch(/PRESUMED_GENDER/u);
   });
 });

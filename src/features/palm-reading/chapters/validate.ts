@@ -165,7 +165,9 @@ function checkText(
     out.push({
       code: "PRESUMED_GENDER",
       message: `"${g}" presume o gênero da pessoa.`,
-      fix: 'Reescreva com verbo ou construção neutra (ex.: "você se guia", "você se sente à vontade", "você tende a").',
+      // 03F.2 Rev2: o modelo trocava "seguro" por "segura" (continua
+      // presumindo gênero). A orientação pede reformular a frase.
+      fix: `Reformule a frase de "${g}" sem adjetivo que descreva a pessoa: use verbo ou expressão neutra (ex.: "você se sente à vontade", "você encontra segurança", "você se guia por", "você tende a"). Trocar o masculino pelo feminino, ou o contrário, continua presumindo gênero.`,
     });
   const nev = text.match(NEVER);
   if (nev)
