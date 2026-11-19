@@ -5,7 +5,6 @@ import {
   ActionDock,
   Badge,
   ButtonLink,
-  Callout,
   Container,
   FrameCorners,
   SectionHeading,
@@ -16,6 +15,7 @@ import {
 } from "@/components/visuals/palm-illustration";
 import { routes } from "@/config/routes";
 import { PhotoGuide } from "@/features/palm-reading/components/photo-guide";
+import { PhotoPrivacyNote } from "@/features/palm-reading/components/photo-privacy-note";
 
 export const metadata: Metadata = {
   title: "Leitura das mãos",
@@ -57,15 +57,7 @@ export default function PalmIntroPage() {
 
       <PhotoGuide />
 
-      <Callout
-        tone="privacy"
-        title="Nesta versão, sua foto não sai do aparelho"
-      >
-        A imagem é preparada só no seu navegador, sem dados de localização
-        (EXIF/GPS). Não é enviada, armazenada nem analisada, e é descartada ao
-        sair. Antes da foto, explicamos como ela será usada quando a análise
-        estiver disponível.
-      </Callout>
+      <PhotoPrivacyNote />
 
       <ActionDock>
         <ButtonLink href={routes.palmConsent} size="lg" fullWidth>

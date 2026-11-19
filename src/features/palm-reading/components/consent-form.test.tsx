@@ -37,14 +37,16 @@ describe("ConsentForm", () => {
     state = null;
   });
 
-  it("explica a finalidade, a versão de teste e a retenção do provedor", () => {
+  it("enquanto a disponibilidade carrega, mostra o texto de quem envia a foto (nunca promete que ela não sai)", () => {
     setup();
     expect(screen.getByText("Para que serve a foto")).toBeInTheDocument();
     expect(
-      screen.getByText(/nada é enviado nem analisado/i),
+      screen.getByText(/servidor do Sidera e a um provedor/i),
     ).toBeInTheDocument();
-    expect(screen.getByText(/O Sidera não guarda a foto/i)).toBeInTheDocument();
-    expect(screen.getByText(/apagados em até 30 dias/i)).toBeInTheDocument();
+    expect(screen.getByText(/não grava a foto em disco/i)).toBeInTheDocument();
+    expect(screen.getByText(/não é usado para treinar/i)).toBeInTheDocument();
+    expect(screen.queryByText(/nada é enviado/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/30 dias|2 anos/i)).not.toBeInTheDocument();
   });
 
   it("caixas começam desmarcadas e nada avança sem idade, autorização e mão", async () => {

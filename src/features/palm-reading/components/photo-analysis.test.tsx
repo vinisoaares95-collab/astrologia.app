@@ -23,7 +23,10 @@ const availability = vi.hoisted(() => ({
     unknown
   >,
 }));
-vi.mock("../lib/use-analysis-availability", () => ({
+vi.mock("../lib/use-analysis-availability", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("../lib/use-analysis-availability")
+  >()),
   useAnalysisAvailability: () => availability.current,
 }));
 

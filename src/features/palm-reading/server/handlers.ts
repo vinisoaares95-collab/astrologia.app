@@ -44,7 +44,7 @@ export const CONSENT_HEADER = "x-sidera-consent";
 /** Corpo máximo aceito (foto preparada); o resto é recusado sem ler. */
 export const MAX_IMAGE_BYTES = MAX_PREPARED_BYTES;
 const MAX_CONSENT_BODY_BYTES = 2048;
-const CACHE_TTL_MS = 10 * 60 * 1000;
+export const CACHE_TTL_MS = 10 * 60 * 1000;
 const CACHE_MAX = 200;
 /**
  * Prazo total de uma análise no servidor (visão + capítulos), abaixo dos
@@ -349,6 +349,7 @@ export async function handleAnalysis(
       `${receipt.nonce}:${sha256(bytes)}:${deps.config.mode}`,
     );
     const cached = deps.cache.get(cacheKey);
+    if (cached && cached.expires <= now) deps.cache.delete(cacheKey);
     if (cached && cached.expires > now) {
       bytes.fill(0);
       return json(200, { result: cached.result, remaining: remaining() });
@@ -402,6 +403,27 @@ export async function handleAnalysis(
   }
 }
 
+/**
+ * Guarda o resultado (sem a foto) por até CACHE_TTL_MS e o apaga no
+ * vencimento, mesmo sem novos pedidos: o texto de privacidade promete
+ * "até 10 minutos". As entradas vencidas também saem a cada gravação.
+ */
+export function rememberResult(
+  cache: PalmApiDeps["cache"],
+  key: string,
+  now: number,
+  result: PalmAnalysisResult,
+) {
+  for (const [k, v] of cache) if (v.expires <= now) cache.delete(k);
+  const expires = now + CACHE_TTL_MS;
+  cache.set(key, { expires, result });
+  if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value!);
+  const timer = setTimeout(() => {
+    if (cache.get(key)?.expires === expires) cache.delete(key);
+  }, CACHE_TTL_MS);
+  timer.unref?.();
+}
+
 /** A análise propriamente dita: visão → capítulos (com prazo e tetos). */
 async function runAnalysis(
   bytes: Uint8Array,
@@ -449,12 +471,7 @@ async function runAnalysis(
           options: { deadlineAt, now: deps.now },
         });
         deps.onAudit?.(audit);
-        deps.cache.set(cacheKey, {
-          expires: deps.now() + CACHE_TTL_MS,
-          result,
-        });
-        if (deps.cache.size > CACHE_MAX)
-          deps.cache.delete(deps.cache.keys().next().value!);
+        rememberResult(deps.cache, cacheKey, deps.now(), result);
         return {
           outcome: { status: 200, body: { result } },
           technicalFailure: false,

@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createBudget } from "../../interpretation/ai/budget";
+import { AiProviderError } from "../../interpretation/ai/contract";
 import { CONSENT_VERSION } from "../consent";
 import { withVisionBudget } from "../vision/budget";
 import {
@@ -813,5 +814,165 @@ describe("tentativas e confiabilidade (03F.2, Etapa B)", () => {
     );
     expect(inner.calls).toHaveLength(1);
     expect(r).toMatchObject({ status: 502, body: { remaining: 3 } });
+  });
+});
+
+describe("prazo total de 55 s com provedores que respeitam o tempo de cada chamada", () => {
+  // Como o SDK real: a chamada termina no seu tempo ou é interrompida no
+  // prazo recebido (timeoutMs), com erro de tempo.
+  function timed<T extends { timeoutMs: number }>(
+    clockRef: { now: number },
+    durationMs: (call: number) => number,
+    respond: (req: T) => Promise<unknown>,
+  ) {
+    let call = 0;
+    const timeouts: number[] = [];
+    return {
+      timeouts,
+      async run(req: T) {
+        const d = durationMs(call++);
+        timeouts.push(req.timeoutMs);
+        clockRef.now += Math.min(d, req.timeoutMs);
+        if (d > req.timeoutMs)
+          throw new AiProviderError("timeout", "Tempo de resposta esgotado.");
+        return respond(req);
+      },
+    };
+  }
+
+  it("visão lenta: 45 s + 10 s, sem passar de 55 s; tentativa devolvida", async () => {
+    const clockRef = { now: clock };
+    const inner = createMockVisionProvider(["clear"]);
+    const t = timed(
+      clockRef,
+      () => 50_000,
+      (r) => inner.analyze(r as never),
+    );
+    const { d } = deps({
+      now: () => clockRef.now,
+      provider: () => ({ ...inner, analyze: (r) => t.run(r) as never }),
+    });
+    const start = clockRef.now;
+    const r = await read(
+      await handleAnalysis(
+        analysisRequest(goodJpeg(), { [CONSENT_HEADER]: token("left", start) }),
+        d,
+      ),
+    );
+    expect(t.timeouts).toEqual([45_000, 10_000]);
+    expect(clockRef.now - start).toBe(ANALYSIS_DEADLINE_MS);
+    expect(r).toMatchObject({
+      status: 503,
+      body: { error: "temporarily_unavailable", remaining: 3 },
+    });
+  });
+
+  it("redação lenta: cada capítulo recebe só o tempo que resta; sem nova tentativa, biblioteca", async () => {
+    const clockRef = { now: clock };
+    const vision = createMockVisionProvider(["clear"]);
+    const v = timed(
+      clockRef,
+      () => 12_000,
+      (r) => vision.analyze(r as never),
+    );
+    const text = createMockPalmTextProvider(["valid"]);
+    // Os dois capítulos correm em paralelo: o relógio avança uma vez.
+    let advanced = false;
+    const textTimeouts: number[] = [];
+    const slowText = {
+      ...text,
+      async generate(req: Parameters<typeof text.generate>[0]) {
+        textTimeouts.push(req.timeoutMs);
+        // Deixa o outro capítulo começar antes de o tempo passar.
+        await Promise.resolve();
+        if (!advanced) clockRef.now += req.timeoutMs;
+        advanced = true;
+        throw new AiProviderError("timeout", "Tempo de resposta esgotado.");
+      },
+    };
+    const { d } = deps({
+      now: () => clockRef.now,
+      provider: () => ({ ...vision, analyze: (r) => v.run(r) as never }),
+      textProvider: () => slowText,
+    });
+    const start = clockRef.now;
+    const r = await read(
+      await handleAnalysis(
+        analysisRequest(goodJpeg(), { [CONSENT_HEADER]: token("left", start) }),
+        d,
+      ),
+    );
+    // 55 s − 12 s da visão = 43 s para cada capítulo; depois, sem tempo.
+    expect(textTimeouts).toEqual([43_000, 43_000]);
+    expect(clockRef.now - start).toBeLessThanOrEqual(ANALYSIS_DEADLINE_MS);
+    expect(r.status).toBe(200);
+    expect(r.body.remaining).toBe(2);
+    const chapters = (r.body.result as { chapters: { status: string }[] })
+      .chapters;
+    expect(chapters.every((c) => c.status === "content")).toBe(true);
+  });
+
+  it("respostas fora de ordem não trocam resultados entre fotos; créditos coerentes", async () => {
+    // Foto A (lenta) e foto B (rápida) no mesmo recibo, ao mesmo tempo.
+    const inner = createMockVisionProvider((_, call) =>
+      call === 0 ? "clear" : "lines-missing",
+    );
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    let calls = 0;
+    const provider = {
+      ...inner,
+      async analyze(req: Parameters<typeof inner.analyze>[0]) {
+        const mine = calls++;
+        const res = await inner.analyze(req);
+        if (mine === 0) await gate; // A termina depois de B
+        return res;
+      },
+    };
+    const { d } = deps({ provider: () => provider });
+    const t = token();
+    const send = (img: Uint8Array) =>
+      handleAnalysis(analysisRequest(img, { [CONSENT_HEADER]: t }), d).then(
+        read,
+      );
+    const a = send(syntheticJpeg(1200, 1600));
+    const b = await send(syntheticJpeg(1201, 1600));
+    release();
+    const ra = await a;
+    const statuses = (x: typeof b) =>
+      (x.body.result as { chapters: { status: string }[] }).chapters.map(
+        (c) => c.status,
+      );
+    expect(statuses(ra)).toEqual(["content", "content"]);
+    expect(statuses(b)).toEqual(["content", "unavailable"]);
+    // Depois que A termina, B continua com o próprio resultado (cache).
+    const again = await send(syntheticJpeg(1201, 1600));
+    expect(statuses(again)).toEqual(["content", "unavailable"]);
+    expect(provider.analyze).toBeDefined();
+    expect(calls).toBe(2);
+    expect(again.body.remaining).toBe(1);
+  });
+});
+
+describe("resultado guardado por até 10 minutos (texto de privacidade)", () => {
+  it("é apagado no vencimento, mesmo sem novos pedidos", async () => {
+    vi.useFakeTimers();
+    try {
+      const { CACHE_TTL_MS, rememberResult } = await import("./handlers");
+      const cache: PalmApiDeps["cache"] = new Map();
+      rememberResult(cache, "k", Date.now(), {} as never);
+      // Entradas vencidas também saem na gravação seguinte.
+      cache.set("velha", { expires: Date.now() - 1, result: {} as never });
+      rememberResult(cache, "k2", Date.now(), {} as never);
+      expect(cache.has("velha")).toBe(false);
+      expect(cache.has("k")).toBe(true);
+      vi.advanceTimersByTime(CACHE_TTL_MS - 1);
+      expect(cache.has("k")).toBe(true);
+      vi.advanceTimersByTime(1);
+      expect(cache.has("k")).toBe(false);
+      expect(CACHE_TTL_MS).toBe(10 * 60 * 1000);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -588,3 +588,53 @@ trocar de novo, ao descartar ou ao sair.
   e galeria.
 - **Ferramenta da Etapa B:** continua funcional (12 testes e plano
   gratuito igual) e agora registra as análises restantes.
+
+## Etapa B — revisão final antes do teste real (19/11/2026, sem chamadas pagas)
+
+### Privacidade da foto
+
+Os textos agora dependem do modo da análise (desligada, simulada ou real)
+e dizem só o que a implementação garante (`privacy-copy.ts`). Enquanto o
+modo carrega, vale o texto de quem envia a foto.
+
+| Onde              | Antes                                                                                                                          | Agora (modo real)                                                                                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Introdução        | "Nesta versão, sua foto não sai do aparelho… Não é enviada, armazenada nem analisada" (falso com a análise ligada)             | "Ao tocar em Analisar, essa cópia é enviada ao servidor do Sidera e à Anthropic… O Sidera não grava a foto."                                                                   |
+| Consentimento     | "nada é enviado nem analisado"; "Quando a análise estiver disponível…"; "apagados em até 30 dias… até 2 anos" (não confirmado) | o que é enviado e a quem; o que o Sidera guarda (nada da foto; resultado e hash por até 10 min); "não é usado para treinar" (termos comerciais); prazo do provedor a confirmar |
+| Foto preparada    | "…e continua só aqui."                                                                                                         | "Ela só sai daqui quando você tocar em Analisar."                                                                                                                              |
+| Durante a análise | "A foto não é guardada pelo Sidera."                                                                                           | "A cópia da foto foi enviada ao servidor do Sidera e à Anthropic para a análise; o Sidera não a grava."                                                                        |
+| Prévia            | "A foto continua só neste aparelho."                                                                                           | "Uma cópia preparada da foto foi enviada para análise (Sidera e Anthropic). O Sidera não a grava; neste aparelho, ela fica na memória desta tela."                             |
+| Texto alternativo | "Sua foto, mantida apenas neste dispositivo"                                                                                   | "Sua foto"                                                                                                                                                                     |
+
+**Verificações no código:**
+
+- **Metadados:** a foto é redesenhada em canvas no navegador, e o servidor
+  recusa JPEG com EXIF, XMP, IPTC ou imagem embutida. O original no
+  aparelho não muda.
+- **Servidor:** não grava a foto nem a registra em log. Os bytes ficam só
+  em memória durante a análise; não há apagamento seguro garantido, e
+  nenhum texto o promete.
+- **Correção no cache:** o resultado ficava na memória até o processo
+  reiniciar ou haver 200 entradas. Agora é apagado no vencimento (10 min).
+- **Versão do consentimento:** `03f2.1`.
+
+### Prazo de 55 s e pedidos duplicados
+
+- **Interrupção.** Cada chamada recebe no máximo o tempo que resta, e o
+  SDK a interrompe nesse prazo, sem novas tentativas automáticas
+  (`maxRetries: 0`). Visão lenta dá 45 s + 10 s, e então falha temporária.
+  Com redação lenta, os capítulos recebem o que resta e, sem tempo, vão
+  para a biblioteca.
+- **Duplicados.** O mesmo recibo com a mesma foto aguarda a análise em
+  andamento ou usa o cache. Respostas fora de ordem não trocam resultados
+  entre fotos. No aparelho, uma resposta atrasada é ignorada se a foto
+  mudou.
+- **Tentativas.** Falha técnica e prazo esgotado devolvem a tentativa; o
+  pedido duplicado não consome.
+- **Custos.** Chamada interrompida (tempo, rede ou desconhecida) é
+  debitada do teto pelo pior caso. A ferramenta da Etapa B registra esse
+  custo possível e o prazo dado a cada chamada.
+
+**Limite conhecido:** a interrupção é do lado do Sidera. O provedor pode
+ter processado, e cobrado, parte de uma chamada interrompida; por isso o
+teto já reserva o pior caso.

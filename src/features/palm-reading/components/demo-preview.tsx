@@ -19,6 +19,7 @@ import { ChapterArticle } from "@/features/report/chapter-article";
 
 import { HAND_LABELS } from "../consent";
 import { usePalmPhoto } from "../palm-photo-context";
+import { PHOTO_PRIVACY } from "../privacy-copy";
 import type { PalmAnalysisResult } from "../chapters/presentation";
 
 /**
@@ -51,8 +52,8 @@ export function DemoPreview() {
             Nenhuma foto por aqui
           </h2>
           <p className="text-sm text-fg-muted">
-            A foto fica apenas na memória desta tela. Se você recarregou a
-            página ou saiu do fluxo, ela foi descartada.
+            Neste aparelho, a foto fica apenas na memória desta tela. Se você
+            recarregou a página ou saiu do fluxo, ela foi descartada daqui.
           </p>
         </div>
         <ButtonLink href={routes.palmPhoto}>Adicionar foto</ButtonLink>
@@ -94,7 +95,7 @@ export function DemoPreview() {
             {/* eslint-disable-next-line @next/next/no-img-element -- URL blob local; next/image não se aplica */}
             <img
               src={photo.url}
-              alt="Sua foto, mantida apenas neste dispositivo"
+              alt="Sua foto"
               className="size-full object-cover"
             />
           </div>
@@ -218,7 +219,7 @@ function PersonalPreview({
         {/* eslint-disable-next-line @next/next/no-img-element -- URL blob local; next/image não se aplica */}
         <img
           src={photoUrl}
-          alt="Sua foto, mantida apenas neste dispositivo"
+          alt="Sua foto"
           className="size-20 shrink-0 rounded-2xl object-cover"
         />
         <div className="space-y-1.5">
@@ -235,7 +236,7 @@ function PersonalPreview({
             </Badge>
           </div>
           <p className="text-xs leading-relaxed text-fg-muted">
-            A foto continua só neste aparelho.
+            {PHOTO_PRIVACY.preview[analysis.simulated ? "simulated" : "real"]}
           </p>
         </div>
       </div>

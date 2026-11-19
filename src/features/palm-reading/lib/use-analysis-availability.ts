@@ -27,3 +27,16 @@ export function useAnalysisAvailability():
   }, []);
   return state;
 }
+
+/**
+ * Modo para os textos sobre a foto. Enquanto carrega, vale o modo que envia
+ * a foto ("real"): na dúvida, a interface não promete que nada sai do
+ * aparelho.
+ */
+export function photoModeOf(
+  a: ReturnType<typeof useAnalysisAvailability>,
+): "off" | "simulated" | "real" {
+  if (a.status !== "ready") return "real";
+  if (!a.enabled) return "off";
+  return a.simulated ? "simulated" : "real";
+}

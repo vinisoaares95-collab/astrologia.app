@@ -211,6 +211,32 @@ describe("fluxo do endpoint com simuladores", () => {
     expect(run.cases[1].http).toBe(200);
   });
 
+  it("chamada interrompida por tempo: custo possível registrado e debitado do teto pelo pior caso", async () => {
+    const run = await runE2EEvaluation({
+      photos: photos().slice(0, 1),
+      vision: vision(["error:timeout", "error:timeout"]),
+      text: text(),
+      budget: createBudget(0.5),
+    });
+    const c = run.cases[0];
+    expect(c.http).toBe(503);
+    expect(c.calls.map((x) => x.outcome)).toEqual([
+      "error:timeout",
+      "error:timeout",
+    ]);
+    for (const x of c.calls) {
+      expect(x.costUsd).toBeNull();
+      expect(x.possibleUsd).toBeGreaterThan(0);
+      expect(x.timeoutMs).toBeLessThanOrEqual(45_000);
+    }
+    expect(c.possibleExtraUsd).toBeGreaterThan(0);
+    // O teto já debitou o pior caso das chamadas que podem ter sido cobradas.
+    expect(run.spentUsd).toBeCloseTo(c.possibleExtraUsd, 6);
+    expect(renderE2ETechnical(run, 5.5)).toMatch(/possível US\$/u);
+    // Para "nenhum acima do teto", conta o custo possível.
+    expect(e2eSummary(run).maxReportUsd).toBeCloseTo(c.possibleExtraUsd, 6);
+  });
+
   it("sem saldo para o teto de um relatório: nada é chamado", async () => {
     const v = vision(["clear"]);
     const t = text();

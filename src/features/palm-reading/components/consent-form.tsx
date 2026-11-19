@@ -8,15 +8,13 @@ import { ActionDock, Button, Callout, Checkbox } from "@/components/ui";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/cn";
 
-import {
-  CONSENT_SECTIONS,
-  HAND_LABELS,
-  MIN_AGE,
-  createConsent,
-  type PalmHand,
-} from "../consent";
+import { HAND_LABELS, MIN_AGE, createConsent, type PalmHand } from "../consent";
 import { requestConsentReceipt } from "../lib/analysis-client";
-import { useAnalysisAvailability } from "../lib/use-analysis-availability";
+import {
+  photoModeOf,
+  useAnalysisAvailability,
+} from "../lib/use-analysis-availability";
+import { consentSections } from "../privacy-copy";
 import { usePalmPhoto } from "../palm-photo-context";
 
 const HANDS: PalmHand[] = ["right", "left"];
@@ -54,7 +52,7 @@ export function ConsentForm() {
     if (!next || !hand) return;
     accept(next, hand);
     // Com a análise habilitada, o servidor confere o aceite e emite um
-    // recibo assinado; sem ele, a foto continua só no aparelho.
+    // recibo assinado; sem ele, a foto não pode ser enviada para análise.
     if (availability.status === "ready" && availability.enabled) {
       setSending(true);
       const r = await requestConsentReceipt(next, hand);
@@ -75,7 +73,7 @@ export function ConsentForm() {
           Sobre a sua foto
         </h2>
         <dl className="divide-y divide-line-soft rounded-2xl bg-surface/80 edge-light">
-          {CONSENT_SECTIONS.map((s) => (
+          {consentSections(photoModeOf(availability)).map((s) => (
             <div key={s.title} className="space-y-1 px-4 py-3.5">
               <dt className="text-sm font-semibold text-fg">{s.title}</dt>
               <dd className="text-xs leading-relaxed text-fg-muted">

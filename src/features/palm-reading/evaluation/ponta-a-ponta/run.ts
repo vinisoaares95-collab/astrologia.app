@@ -17,6 +17,7 @@ import { randomBytes } from "node:crypto";
 
 import {
   withBudget,
+  worstCaseUsd,
   type BudgetController,
 } from "../../../interpretation/ai/budget";
 import {
@@ -44,7 +45,7 @@ import {
   type PalmApiDeps,
   type PalmReadingAudit,
 } from "../../server/handlers";
-import { withVisionBudget } from "../../vision/budget";
+import { visionWorstCaseUsd, withVisionBudget } from "../../vision/budget";
 import type { VisionProvider, VisionRequest } from "../../vision/contract";
 
 export type E2EPhoto = {
@@ -62,6 +63,13 @@ export type E2ECall = {
   inputTokens: number;
   outputTokens: number;
   costUsd: number | null;
+  /**
+   * Chamada interrompida (tempo, rede, erro desconhecido) que pode ter sido
+   * cobrada: o pior caso dela, o mesmo valor que o teto reserva e debita.
+   */
+  possibleUsd: number | null;
+  /** Prazo dado a esta chamada (limitado pelo prazo total da análise). */
+  timeoutMs: number;
   outcome: "ok" | `error:${string}`;
 };
 
@@ -87,6 +95,8 @@ export type E2ECase = {
   chapters: E2EChapter[];
   calls: E2ECall[];
   costUsd: number;
+  /** Custo possível de chamadas interrompidas (não confirmado). */
+  possibleExtraUsd: number;
   /** Do envio da foto à resposta (o que a pessoa espera na tela). */
   latencyMs: number;
   /** Análises restantes que o aparelho mostraria depois deste resultado. */
@@ -110,11 +120,14 @@ const HEADERS = { origin: ORIGIN, host: "sidera.avaliacao" };
 const chapterOf = (r: AiRequest) =>
   /"id":\s*"maos"/u.test(r.user) ? "maos" : "linhas";
 
+const MAY_HAVE_BEEN_BILLED = new Set(["timeout", "network", "unknown"]);
+
 function record<T>(
   calls: E2ECall[],
-  base: Pick<E2ECall, "kind" | "chapter" | "model">,
+  base: Pick<E2ECall, "kind" | "chapter" | "model" | "timeoutMs">,
   prices: Record<string, ModelPrice>,
   now: () => number,
+  worstUsd: () => number,
   run: () => Promise<AiResponse & T>,
 ) {
   const t0 = now();
@@ -127,18 +140,21 @@ function record<T>(
         inputTokens: res.usage.inputTokens,
         outputTokens: res.usage.outputTokens,
         costUsd: estimateCostUsd(res.model, res.usage, prices),
+        possibleUsd: null,
         outcome: "ok",
       });
       return res;
     },
     (error: unknown) => {
+      const kind = error instanceof AiProviderError ? error.kind : "unknown";
       calls.push({
         ...base,
         latencyMs: Math.round(now() - t0),
         inputTokens: 0,
         outputTokens: 0,
         costUsd: null,
-        outcome: `error:${error instanceof AiProviderError ? error.kind : "unknown"}`,
+        possibleUsd: MAY_HAVE_BEEN_BILLED.has(kind) ? worstUsd() : null,
+        outcome: `error:${kind}`,
       });
       throw error;
     },
@@ -158,9 +174,15 @@ function recordingVision(
     analyze: (req: VisionRequest) =>
       record(
         calls,
-        { kind: "vision", chapter: null, model: inner.model },
+        {
+          kind: "vision",
+          chapter: null,
+          model: inner.model,
+          timeoutMs: req.timeoutMs,
+        },
         prices,
         now,
+        () => visionWorstCaseUsd(req, prices[inner.model]),
         () => inner.analyze(req),
       ),
   };
@@ -178,9 +200,15 @@ function recordingText(
     generate: (req: AiRequest) =>
       record(
         calls,
-        { kind: "text", chapter: chapterOf(req), model: inner.model },
+        {
+          kind: "text",
+          chapter: chapterOf(req),
+          model: inner.model,
+          timeoutMs: req.timeoutMs,
+        },
         prices,
         now,
+        () => worstCaseUsd(req, prices[inner.model]),
         () => inner.generate(req),
       ),
   };
@@ -261,6 +289,7 @@ export async function runE2EEvaluation(input: {
       chapters: [],
       calls: [],
       costUsd: 0,
+      possibleExtraUsd: 0,
       latencyMs: 0,
       remaining: null,
     };
@@ -347,6 +376,7 @@ export async function runE2EEvaluation(input: {
       chapters,
       calls: recorded,
       costUsd: recorded.reduce((n, c) => n + (c.costUsd ?? 0), 0),
+      possibleExtraUsd: recorded.reduce((n, c) => n + (c.possibleUsd ?? 0), 0),
       latencyMs,
       remaining: body.remaining ?? null,
     });

@@ -52,7 +52,12 @@ export function e2eSummary(run: E2ERun) {
     inputTokens: calls.reduce((n, c) => n + c.inputTokens, 0),
     outputTokens: calls.reduce((n, c) => n + c.outputTokens, 0),
     costUsd: done.reduce((n, c) => n + c.costUsd, 0),
-    maxReportUsd: Math.max(0, ...done.map((c) => c.costUsd)),
+    possibleExtraUsd: done.reduce((n, c) => n + c.possibleExtraUsd, 0),
+    // Para o teto, conta também o custo possível das chamadas interrompidas.
+    maxReportUsd: Math.max(
+      0,
+      ...done.map((c) => c.costUsd + c.possibleExtraUsd),
+    ),
     meanReportUsd: done.length
       ? done.reduce((n, c) => n + c.costUsd, 0) / done.length
       : 0,
@@ -106,17 +111,18 @@ export function renderE2ETechnical(run: E2ERun, usdBrl: number): string {
     }`,
     `- Tokens: ${s.inputTokens} entrada / ${s.outputTokens} saída`,
     `- Custo por relatório: médio ${usd(s.meanReportUsd)}, máximo ${usd(s.maxReportUsd)}`,
+    `- Custo possível de chamadas interrompidas (não confirmado, já debitado do teto pelo pior caso): ${usd(s.possibleExtraUsd)}`,
     `- Espera: mediana ${sec(s.medianLatencyMs)}, máxima ${sec(s.maxLatencyMs)} (o aparelho desiste em 70 s)`,
     `- Gênero presumido no texto final: ${s.gender.length ? s.gender.map((g) => `${g.case} c${g.chapter} "${g.g}"`).join(", ") : "nenhum"}`,
     "",
     "## Chamadas",
     "",
-    "| Foto | Tipo | Capítulo | Modelo | Resultado | Tokens | Custo | Latência |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| Foto | Tipo | Capítulo | Modelo | Resultado | Tokens | Custo | Latência | Prazo dado |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...run.cases.flatMap((c) =>
       c.calls.map(
         (x) =>
-          `| ${c.id} | ${x.kind === "vision" ? "visão" : "texto"} | ${x.chapter ?? "—"} | ${x.model} | ${x.outcome} | ${x.inputTokens}/${x.outputTokens} | ${x.costUsd === null ? "—" : usd(x.costUsd)} | ${sec(x.latencyMs)} |`,
+          `| ${c.id} | ${x.kind === "vision" ? "visão" : "texto"} | ${x.chapter ?? "—"} | ${x.model} | ${x.outcome} | ${x.inputTokens}/${x.outputTokens} | ${x.costUsd === null ? (x.possibleUsd === null ? "—" : `possível ${usd(x.possibleUsd)}`) : usd(x.costUsd)} | ${sec(x.latencyMs)} | ${sec(x.timeoutMs)} |`,
       ),
     ),
     "",

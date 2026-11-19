@@ -42,7 +42,11 @@ import {
   requestPalmAnalysis,
   type AnalysisErrorCode,
 } from "../lib/analysis-client";
-import { useAnalysisAvailability } from "../lib/use-analysis-availability";
+import {
+  photoModeOf,
+  useAnalysisAvailability,
+} from "../lib/use-analysis-availability";
+import { PHOTO_PRIVACY } from "../privacy-copy";
 import type { PalmAnalysisResult } from "../chapters/presentation";
 import { ACCEPT_ATTRIBUTE } from "../lib/image-validation";
 import { loadLocalPhoto } from "../lib/load-image";
@@ -128,6 +132,9 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
     analysis ? { kind: "decision", result: analysis } : { kind: "idle" },
   );
   const decisionRef = useRef<HTMLDivElement>(null);
+  // Cada envio tem um número; trocar ou descartar a foto invalida o envio em
+  // andamento, para que uma resposta atrasada nunca valha para outra foto.
+  const attempt = useRef(0);
 
   async function analyze() {
     if (!photo) return;
@@ -135,9 +142,11 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
       setRun({ kind: "error", code: "consent_required" });
       return;
     }
+    const id = ++attempt.current;
     setRun({ kind: "running" });
     const r = await requestPalmAnalysis(photo.blob, receipt);
     if (r.remaining !== null) setRemaining(r.remaining);
+    if (id !== attempt.current) return;
     if (!r.ok) {
       setRun({ kind: "error", code: r.error });
       return;
@@ -176,6 +185,7 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
     try {
       const result = await loadLocalPhoto(file);
       if (result.ok) {
+        attempt.current++;
         setPhoto(result.photo);
         setStatus({ kind: "idle" });
         setRun({ kind: "idle" });
@@ -272,6 +282,7 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
+                  attempt.current++;
                   restorePrevious();
                   setRun({ kind: "decision", result: previous.analysis });
                 }}
@@ -285,6 +296,7 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
               size="sm"
               disabled={running}
               onClick={() => {
+                attempt.current++;
                 clearPhoto();
                 setStatus({ kind: "idle" });
                 setRun({ kind: "idle" });
@@ -307,8 +319,7 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
                 <Stat label="EXIF/GPS" value="Removidos" />
               </div>
               <p className="-mt-2 px-1 text-xs leading-relaxed text-fg-subtle">
-                A foto foi redesenhada neste aparelho, sem dados de localização
-                nem do celular, e continua só aqui.
+                {PHOTO_PRIVACY.prepared[photoModeOf(availability)]}
               </p>
 
               {photo.hints.map((hint) => (
@@ -633,7 +644,7 @@ function DecisionPanel({
           : unavailable.length
             ? "Você pode seguir com o que foi lido ou tirar outra foto para completar."
             : complete
-              ? "Se quiser tentar outra foto, esta leitura fica guardada até você decidir."
+              ? "Se quiser tentar outra foto, esta leitura continua nesta tela até você decidir."
               : "Algumas características não ficaram visíveis e não foram interpretadas. Uma nova foto pode completar a leitura."}
       </Callout>
       <ul className="space-y-2" aria-label="Capítulos desta análise">
@@ -707,7 +718,8 @@ function AnalysisFeedback({
       <div aria-live="polite">
         <Callout tone="info" title="Analisando a foto">
           A análise e a redação da leitura costumam levar de 20 a 40 segundos.
-          Mantenha esta tela aberta. A foto não é guardada pelo Sidera.
+          Mantenha esta tela aberta.{" "}
+          {PHOTO_PRIVACY.running[simulated ? "simulated" : "real"]}
         </Callout>
       </div>
     );
