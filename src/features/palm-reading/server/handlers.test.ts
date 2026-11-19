@@ -636,3 +636,28 @@ describe("teto por relatório (modo real, provedores simulados com preço)", () 
     expect(text.calls).toHaveLength(2);
   });
 });
+
+describe("trilha de auditoria só para a avaliação (03F.2, Etapa B)", () => {
+  it("onAudit recebe a origem do texto; a resposta ao cliente não muda", async () => {
+    const audits: unknown[] = [];
+    const { d } = deps({ onAudit: (a) => audits.push(a) });
+    const r = await read(await handleAnalysis(analysisRequest(goodJpeg()), d));
+    expect(r.status).toBe(200);
+    expect(audits).toHaveLength(1);
+    const a = audits[0] as { chapters: { id: string; source: string }[] };
+    expect(a.chapters.map((c) => c.id)).toEqual(["maos", "linhas"]);
+    // O cliente continua sem origem, tentativas nem motivos.
+    expect(JSON.stringify(r.body)).not.toMatch(
+      /"source"|attempts|fallbackReason/u,
+    );
+  });
+
+  it("o processo do produto não define onAudit", async () => {
+    const mod = await import("./handlers");
+    const keys = Object.keys(mod.defaultLimits());
+    expect(keys).not.toContain("onAudit");
+    // getProcessDeps lê a configuração do ambiente: sem análise ligada,
+    // a dependência criada não tem o gancho.
+    expect("onAudit" in mod.getProcessDeps()).toBe(false);
+  });
+});

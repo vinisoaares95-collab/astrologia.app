@@ -392,3 +392,119 @@ Foi validado com simulador; o efeito no Haiku real não foi medido.
 Critérios de entrada na Etapa B: autorização explícita; consentimento
 para o novo envio; 3 fotos definidas; plano gratuito com teto dentro do
 saldo da 03F.2; mesma configuração; execução única; fotos apagadas ao fim.
+
+## Etapa B — preparação (19/11/2026, sem chamadas pagas)
+
+A Etapa A foi encerrada e aprovada. O consentimento dos 4 participantes
+cobre o novo envio das fotos, só para este piloto.
+
+**Cenários:**
+
+| Caso    | Expectativa (pela rodada 2)           |
+| ------- | ------------------------------------- |
+| foto-05 | boa cobertura                         |
+| foto-01 | poucas características classificáveis |
+| foto-04 | insuficiente                          |
+
+### Experiência atual (navegador com celular emulado, simuladores e imagens sintéticas)
+
+**Funciona:**
+
+- consentimento e escolha da mão;
+- captura pela câmera ou pela galeria;
+- conferência local de resolução, formato e tamanho; uma imagem menor que
+  600 px é recusada com orientação;
+- avisos locais de pouca luz, falta de foco, reflexo e foto na horizontal;
+- estados de carregamento, de erro (recusa, falha temporária, limite) e de
+  insuficiente, este com o botão de análise bloqueado até trocar a foto;
+- capítulos 6 e 7 com observação separada da leitura, ressalva,
+  limitações e mensagem de indisponibilidade.
+
+**Correções indispensáveis, antes da execução real:**
+
+1. A prévia com análise real ainda mostra o cartão "Exemplo fixo · Não
+   personalizado" e os textos fixos das três linhas, um deles com "não à
+   duração da vida". Esse cartão contradiz a leitura personalizada logo
+   abaixo e traz a negação retirada na Etapa A. O rodapé ("Na versão
+   final, a prévia descreverá…") também.
+2. A conferência antes de analisar não pede mão de frente e celular
+   paralelo, principal causa de capítulo indisponível (5 de 8 fotos
+   inclinadas na 03F.1).
+3. Quando o resultado é parcial com 3 ou mais características observadas,
+   ou quando um capítulo fica indisponível, a tela da foto não oferece
+   nova foto antes da prévia. O painel de "parcial" é genérico: não diz
+   qual capítulo faltou nem como corrigir, embora a mensagem específica já
+   venha no resultado.
+4. O limite de 3 análises por consentimento não é mostrado antes de
+   acabar. Falhas do provedor também consomem análises.
+
+**Recomendadas, não bloqueantes:**
+
+- **Tempo-limite do aparelho.** O aparelho desiste em 70 s, mas o servidor
+  pode passar disso em falhas com novas tentativas (visão 2 × 45 s,
+  capítulo 2 × 60 s). A mensagem mostrada é "Sem conexão", e uma nova
+  tentativa da pessoa gera nova análise.
+- **Espera.** "Isso pode levar alguns segundos" subestima os ≈ 20–30 s
+  esperados.
+- **Celular.** Depois da primeira foto, só há "Tirar outra" (câmera); não
+  há como trocar pela galeria sem descartar.
+- **Prévia.** Não tem botão de nova foto.
+- **Mensagens de erro.** "Falha temporária" diz "não respondeu a tempo"
+  também quando o provedor está ocupado.
+
+### Ferramenta (`src/features/palm-reading/evaluation/ponta-a-ponta/`)
+
+- **Fluxo real do endpoint:** `handleConsent` → `handleAnalysis`, com a
+  conferência do arquivo, os limites, o cache, o teto por relatório
+  (US$ 0,15) e o teto do processo.
+- **Preparação da foto:** a mesma do aparelho, em memória.
+- **Modelos padrão do produto, sem troca:** Sonnet 5.5 (visão) e Haiku 5.5
+  (texto), com a biblioteca como reserva.
+- **Registro:** cada chamada (modelo, tokens, custo, latência, resultado),
+  a origem do texto e as tentativas de cada capítulo (por um gancho
+  `onAudit` só da avaliação, que o produto não usa), a espera total e a
+  disponibilidade dos capítulos.
+- **Proteção contra execução paga acidental:**
+  - variáveis próprias e frase de confirmação própria;
+  - credencial obrigatória e bloqueio em produção;
+  - teto da avaliação de R$ 3,00, que uma variável só pode baixar;
+  - verificação do saldo antes de cada relatório;
+  - uma única execução: não repete nem sobrescreve.
+- **Saídas:** em `avaliacao-ia/03f2-etapa-b/`:
+  - restrito: resultados e relatório técnico;
+  - revisão: o que a pessoa leria, sem a origem do texto, mais ficha e
+    guia.
+
+  Nenhuma imagem é gravada.
+
+- **Plano gratuito:** já feito, sem abrir nenhuma foto.
+  - Esperado: ≈ US$ 0,041 (R$ 0,23).
+  - Pior caso: US$ 0,45 (R$ 2,47), garantido pelo teto por relatório.
+
+```bash
+SIDERA_PALM_E2E_EVAL_MODE=run \
+SIDERA_PALM_EVAL_DIR=/tmp/sidera-fotos-03f \
+SIDERA_PALM_E2E_EVAL_PAID=1 \
+SIDERA_PALM_E2E_EVAL_CONFIRM=autorizo-ponta-a-ponta-03f2-etapa-b \
+npx vitest run src/features/palm-reading/evaluation/ponta-a-ponta/e2e.run.test.ts
+```
+
+**Critérios de aprovação da Etapa B:**
+
+- **Bloqueantes:** 0 características inventadas, 0 problemas de
+  segurança, 0 casos de gênero presumido.
+- **Respostas:** os 3 relatórios respondem à pessoa com leitura ou pedido
+  de nova foto, sem erro.
+- **Conteúdo:**
+  - fidelidade em 100% dos capítulos com texto;
+  - capítulos indisponíveis com mensagem e orientação corretas (100%);
+  - qualidade editorial média ≥ 4;
+  - experiência média ≥ 4.
+- **Custo e espera:**
+  - custo médio por relatório ≤ US$ 0,03, nenhum acima do teto;
+  - espera máxima ≤ 60 s.
+- **Biblioteca:** registrada, não bloqueante.
+
+**Exclusão das fotos:** depois da apuração da Etapa B, apagar
+`/tmp/sidera-fotos-03f` (originais, manifesto e mapa) e registrar a
+exclusão.

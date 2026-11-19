@@ -76,7 +76,17 @@ export type PalmApiDeps = {
     analysisPerReceipt: Limiter;
   };
   cache: Map<string, { expires: number; result: PalmAnalysisResult }>;
+  /**
+   * Só avaliação (03F.2, Etapa B): recebe a trilha de auditoria (origem do
+   * texto, motivo da reserva, tentativas) de cada leitura. Nunca definido
+   * pelo processo do produto; nunca vai ao cliente.
+   */
+  onAudit?: (audit: PalmReadingAudit) => void;
 };
+
+export type PalmReadingAudit = Awaited<
+  ReturnType<typeof composePalmReading>
+>["audit"];
 
 export function defaultLimits(): PalmApiDeps["limits"] {
   return {
@@ -340,11 +350,12 @@ export async function handleAnalysis(
       case "ok": {
         // A trilha de auditoria (origem, motivo da reserva, tentativas)
         // fica no servidor; o cliente recebe só os capítulos.
-        const { result } = await composePalmReading({
+        const { result, audit } = await composePalmReading({
           observation: outcome.observation,
           textProvider: text,
           simulated: deps.config.mode === "mock",
         });
+        deps.onAudit?.(audit);
         deps.cache.set(cacheKey, { expires: now + CACHE_TTL_MS, result });
         if (deps.cache.size > CACHE_MAX)
           deps.cache.delete(deps.cache.keys().next().value!);
