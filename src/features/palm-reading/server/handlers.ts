@@ -39,11 +39,24 @@ import type { VisionProvider } from "../vision/contract";
 import { createMockVisionProvider } from "../vision/mock-provider";
 import { readPalmAnalysisConfig, type PalmAnalysisConfig } from "./config";
 import { clientKeyerFromEnv, type ClientKeyer } from "./client-key";
+import {
+  createPrismaConsentLedger,
+  receiptHashOf,
+  REQUEST_KEY,
+  requestHashOf,
+  type ConsentLedger,
+} from "./consent-ledger";
+import { readConsentLedgerConfig } from "./consent-ledger-config";
+import { getDb } from "@/lib/db";
 import { issueReceipt, receiptSecret, verifyReceipt } from "./consent-receipt";
 import { createLimiter, type Limiter } from "./rate-limit";
 import { anthropicApiKey } from "../../interpretation/ai/api-key";
 
 export const CONSENT_HEADER = "x-sidera-consent";
+/** Chave de idempotência do envio, gerada no aparelho (03G.3, Bloco 2). */
+export const REQUEST_HEADER = "x-sidera-request";
+/** Análises por recibo (uma sessão de consentimento). */
+export const MAX_ANALYSES_PER_RECEIPT = 3;
 /** Corpo máximo aceito (foto preparada); o resto é recusado sem ler. */
 export const MAX_IMAGE_BYTES = MAX_PREPARED_BYTES;
 const MAX_CONSENT_BODY_BYTES = 2048;
@@ -71,6 +84,9 @@ export type PalmApiError =
   | "temporarily_unavailable"
   | "analysis_failed"
   | "unavailable"
+  | "invalid_request"
+  | "analysis_in_progress"
+  | "result_expired"
   | "internal";
 
 export type PalmApiDeps = {
@@ -90,8 +106,17 @@ export type PalmApiDeps = {
     analysisGlobal: Limiter;
     analysisPerClient: Limiter;
     analysisPerReceipt: Limiter;
+    revokePerClient: Limiter;
   };
   cache: Map<string, { expires: number; result: PalmAnalysisResult }>;
+  /**
+   * Registro de consentimento (03G.3, Bloco 2). Ausente ou "off": modo
+   * anterior, sem registro (só fora de produção). "blocked": endpoints 503.
+   */
+  consentLedger?:
+    | { status: "off" }
+    | { status: "blocked" }
+    | { status: "active"; ledger: ConsentLedger; sharedResults: boolean };
   /**
    * Só avaliação (03F.2, Etapa B): recebe a trilha de auditoria (origem do
    * texto, motivo da reserva, tentativas) de cada leitura. Nunca definido
@@ -118,7 +143,25 @@ export function defaultLimits(): PalmApiDeps["limits"] {
     analysisGlobal: createLimiter({ limit: 60, windowMs: 60 * 60 * 1000 }),
     analysisPerClient: createLimiter({ limit: 10, windowMs: 60 * 60 * 1000 }),
     // Por recibo (uma sessão de consentimento): até 3 análises.
-    analysisPerReceipt: createLimiter({ limit: 3, windowMs: 60 * 60 * 1000 }),
+    analysisPerReceipt: createLimiter({
+      limit: MAX_ANALYSES_PER_RECEIPT,
+      windowMs: 60 * 60 * 1000,
+    }),
+    revokePerClient: createLimiter({ limit: 20, windowMs: 60 * 60 * 1000 }),
+  };
+}
+
+/** Registro conforme o ambiente (produção: bloqueado nesta fase). */
+function ledgerFromEnv(): NonNullable<PalmApiDeps["consentLedger"]> {
+  const config = readConsentLedgerConfig();
+  if (config.mode === "off") return { status: "off" };
+  if (config.mode === "blocked") return { status: "blocked" };
+  return {
+    status: "active",
+    ledger: createPrismaConsentLedger(getDb(), {
+      retentionDays: config.retentionDays,
+    }),
+    sharedResults: config.sharedResults,
   };
 }
 
@@ -163,6 +206,7 @@ export function getProcessDeps(): PalmApiDeps {
     textProvider: () => realText ?? mockText,
     limits: defaultLimits(),
     cache: new Map(),
+    consentLedger: ledgerFromEnv(),
   };
   return processDeps;
 }
@@ -235,6 +279,8 @@ export async function handleConsent(
     if (!deps.config.enabled) return fail(404, "not_found");
     if (!isSameOrigin(request)) return fail(403, "forbidden");
     if (!deps.secret) return fail(503, "unavailable");
+    if (deps.consentLedger?.status === "blocked")
+      return fail(503, "unavailable");
     const client = deps.clientKey(request);
     if (!client) return fail(503, "unavailable");
     if (!deps.limits.consentPerClient.take(client, deps.now()))
@@ -263,10 +309,86 @@ export async function handleConsent(
       deps.secret,
       deps.now(),
     );
+    const ledger = activeLedger(deps);
+    if (ledger) {
+      // Sem evidência gravada, não há recibo (03G.3, Bloco 2).
+      try {
+        await ledger.record({
+          receiptHash: receiptHashOf(receipt.nonce),
+          consentVersion: receipt.v,
+          purposes: ["PALM_READING"],
+          adultDeclared: true,
+          acceptedAt: receipt.iat,
+          receiptExpiresAt: receipt.exp,
+        });
+      } catch {
+        return fail(503, "unavailable");
+      }
+      // Limpeza oportunista (lote pequeno); falha aqui não afeta o aceite.
+      await ledger.purge({ now: deps.now(), limit: 50 }).catch(() => null);
+      return json(200, {
+        token,
+        expiresAt: receipt.exp,
+        remaining: Math.min(
+          MAX_ANALYSES_PER_RECEIPT,
+          deps.limits.analysisPerClient.remaining(client, deps.now()),
+        ),
+      });
+    }
     return json(200, {
       token,
       expiresAt: receipt.exp,
       remaining: remainingFor(deps, sha256(`receipt:${receipt.nonce}`), client),
+    });
+  } catch {
+    return fail(500, "internal");
+  }
+}
+
+const activeLedger = (deps: PalmApiDeps) =>
+  deps.consentLedger?.status === "active" ? deps.consentLedger.ledger : null;
+
+// ── Revogação (03G.3, Bloco 2) ────────────────────────────────────────────
+
+/**
+ * Revoga o consentimento do recibo apresentado. Autorização: posse do
+ * recibo assinado (vale mesmo vencido, até o registro ser apagado). Responde
+ * 204 sem dizer se havia algo a revogar. Sair da página NÃO chama isto.
+ */
+export async function handleRevoke(
+  request: Request,
+  deps: PalmApiDeps,
+): Promise<Response> {
+  try {
+    if (!deps.config.enabled) return fail(404, "not_found");
+    if (!isSameOrigin(request)) return fail(403, "forbidden");
+    if (!deps.secret) return fail(503, "unavailable");
+    if (deps.consentLedger?.status === "blocked")
+      return fail(503, "unavailable");
+    const ledger = activeLedger(deps);
+    if (!ledger) return fail(404, "not_found");
+    const client = deps.clientKey(request);
+    if (!client) return fail(503, "unavailable");
+    if (!deps.limits.revokePerClient.take(client, deps.now()))
+      return fail(429, "rate_limited");
+    const check = verifyReceipt(
+      request.headers.get(CONSENT_HEADER),
+      deps.secret,
+      deps.now(),
+      { allowExpired: true },
+    );
+    if (!check.ok) return fail(401, "consent_required");
+    try {
+      await ledger.revoke({
+        receiptHash: receiptHashOf(check.receipt.nonce),
+        now: deps.now(),
+      });
+    } catch {
+      return fail(503, "unavailable");
+    }
+    return new Response(null, {
+      status: 204,
+      headers: { "cache-control": "no-store" },
     });
   } catch {
     return fail(500, "internal");
@@ -298,6 +420,8 @@ export async function handleAnalysis(
     if (!deps.config.enabled) return fail(404, "not_found");
     if (!isSameOrigin(request)) return fail(403, "forbidden");
     if (!deps.secret) return fail(503, "unavailable");
+    if (deps.consentLedger?.status === "blocked")
+      return fail(503, "unavailable");
     const client = deps.clientKey(request);
     if (!client) return fail(503, "unavailable");
 
@@ -315,12 +439,20 @@ export async function handleAnalysis(
     if (Number.isFinite(declared) && declared > MAX_IMAGE_BYTES)
       return fail(413, "too_large");
 
+    const ledger = activeLedger(deps);
+    const requestKey = request.headers.get(REQUEST_HEADER);
+    if (ledger && (!requestKey || !REQUEST_KEY.test(requestKey)))
+      return fail(400, "invalid_request");
+
     const now = deps.now();
     const receiptKey = sha256(`receipt:${receipt.nonce}`);
     const remaining = () => remainingFor(deps, receiptKey, client);
     const limited = () =>
       json(429, { error: "rate_limited", remaining: remaining() });
-    if (deps.limits.analysisPerReceipt.remaining(receiptKey, now) === 0)
+    if (
+      !ledger &&
+      deps.limits.analysisPerReceipt.remaining(receiptKey, now) === 0
+    )
       return limited();
     if (deps.limits.analysisPerClient.remaining(client, now) === 0)
       return limited();
@@ -342,6 +474,20 @@ export async function handleAnalysis(
       visualTokens(info.width, info.height) > MAX_VISUAL_TOKENS
     )
       return fail(400, "invalid_image");
+
+    if (ledger) {
+      const photo = bytes;
+      bytes = null;
+      return await analyzeWithLedger({
+        deps,
+        ledger,
+        photo,
+        hand: receipt.hand,
+        receiptHash: receiptHashOf(receipt.nonce),
+        requestHash: requestHashOf(requestKey!),
+        client,
+      });
+    }
 
     // A mesma foto, no mesmo recibo, não gera nova chamada.
     const cacheKey = sha256(
@@ -378,7 +524,7 @@ export async function handleAnalysis(
 
     const photo = bytes;
     bytes = null;
-    const job = runAnalysis(photo, receipt.hand, cacheKey, deps).then((r) => {
+    const job = runAnalysis(photo, receipt.hand, deps).then((r) => {
       // Falha técnica (provedor, formato, teto, prazo): a pessoa não
       // recebeu resultado e não perde a tentativa. O teto global continua
       // contando, porque protege o gasto.
@@ -386,6 +532,7 @@ export async function handleAnalysis(
         deps.limits.analysisPerReceipt.refund(receiptKey);
         deps.limits.analysisPerClient.refund(client);
       }
+      if (r.result) rememberResult(deps.cache, cacheKey, deps.now(), r.result);
       return r.outcome;
     });
     inflight.set(cacheKey, job);
@@ -423,13 +570,164 @@ export function rememberResult(
   timer.unref?.();
 }
 
+/**
+ * Análise com o registro de consentimento (03G.3, Bloco 2).
+ *
+ * 1. Autorização transacional (`begin`): trava o consentimento, confere
+ *    revogação, validade e tentativas, e cria a tentativa PENDING. Só depois
+ *    do COMMIT a análise chama o provedor; nenhuma transação fica aberta
+ *    durante a chamada.
+ * 2. Pedido repetido (mesma chave): em andamento → espera aqui se for nesta
+ *    instância, senão 409; concluído → cache local ou resultado
+ *    compartilhado (D8), nunca nova análise; sem resultado → 410.
+ * 3. Fim: falha técnica → devolve a tentativa (uma vez só); senão conclui.
+ *    Revogado durante o processamento → resultado descartado (401). Falha do
+ *    banco ao concluir ou devolver → o resultado ainda é entregue; a
+ *    tentativa fica PENDING e é devolvida como órfã quando o lease vence.
+ */
+async function analyzeWithLedger(input: {
+  deps: PalmApiDeps;
+  ledger: ConsentLedger;
+  photo: Uint8Array;
+  hand: "right" | "left";
+  receiptHash: string;
+  requestHash: string;
+  client: string;
+}): Promise<Response> {
+  const { deps, ledger, photo, hand, receiptHash, requestHash, client } = input;
+  const sharedResults =
+    deps.consentLedger?.status === "active" && deps.consentLedger.sharedResults;
+  const localKey = sha256(`ledger:${receiptHash}:${requestHash}`);
+  const withRemaining = (status: number, body: object, remaining: number) =>
+    json(status, {
+      ...body,
+      remaining: Math.max(
+        0,
+        Math.min(
+          remaining,
+          deps.limits.analysisPerClient.remaining(client, deps.now()),
+        ),
+      ),
+    });
+  try {
+    let begin: Awaited<ReturnType<ConsentLedger["begin"]>>;
+    try {
+      begin = await ledger.begin({
+        receiptHash,
+        requestHash,
+        now: deps.now(),
+        maxUses: MAX_ANALYSES_PER_RECEIPT,
+      });
+    } catch {
+      // Banco indisponível ANTES da autorização: nada é chamado nem contado.
+      return fail(503, "unavailable");
+    }
+    switch (begin.kind) {
+      case "consent_invalid":
+        return fail(401, "consent_required");
+      case "exhausted":
+        return withRemaining(429, { error: "rate_limited" }, 0);
+      case "in_progress": {
+        const running = deps.inflight?.get(localKey);
+        if (running) {
+          const r = await running;
+          return withRemaining(r.status, r.body, begin.remaining);
+        }
+        const response = withRemaining(
+          409,
+          { error: "analysis_in_progress" },
+          begin.remaining,
+        );
+        response.headers.set("retry-after", "5");
+        return response;
+      }
+      case "completed": {
+        const cached = deps.cache.get(localKey);
+        if (cached && cached.expires > deps.now())
+          return withRemaining(200, { result: cached.result }, begin.remaining);
+        if (sharedResults) {
+          const payload = await ledger
+            .sharedResult({ useId: begin.useId, now: deps.now() })
+            .catch(() => null);
+          if (payload)
+            return withRemaining(200, { result: payload }, begin.remaining);
+        }
+        // Nunca reanalisa automaticamente um pedido já concluído (D8).
+        return withRemaining(410, { error: "result_expired" }, begin.remaining);
+      }
+      case "authorized":
+        break;
+    }
+
+    const { useId, leaseId } = begin;
+    const now = deps.now();
+    const giveBack = () =>
+      ledger.refund({ useId, leaseId, now: deps.now() }).catch(() => false);
+    if (!deps.limits.analysisPerClient.take(client, now)) {
+      await giveBack();
+      return withRemaining(429, { error: "rate_limited" }, begin.remaining + 1);
+    }
+    if (!deps.limits.analysisGlobal.take("global", now)) {
+      deps.limits.analysisPerClient.refund(client);
+      await giveBack();
+      return withRemaining(429, { error: "rate_limited" }, begin.remaining + 1);
+    }
+
+    type LedgerOutcome = Outcome & { remainingDelta: number };
+    const inflight = (deps.inflight ??= new Map());
+    const job = (async (): Promise<LedgerOutcome> => {
+      const r = await runAnalysis(photo, hand, deps);
+      if (r.technicalFailure) {
+        deps.limits.analysisPerClient.refund(client);
+        const refunded = await giveBack();
+        return { ...r.outcome, remainingDelta: refunded ? 1 : 0 };
+      }
+      const at = deps.now();
+      const done = await ledger
+        .complete({
+          useId,
+          leaseId,
+          now: at,
+          shared: sharedResults && r.result ? r.result : undefined,
+        })
+        .catch(() => "error" as const);
+      if (done === "revoked")
+        return {
+          status: 401,
+          body: { error: "consent_required" },
+          remainingDelta: 0,
+        };
+      if (r.result && done === "completed")
+        rememberResult(deps.cache, localKey, at, r.result);
+      return { ...r.outcome, remainingDelta: 0 };
+    })();
+    inflight.set(localKey, job);
+    try {
+      const r = await job;
+      return withRemaining(
+        r.status,
+        r.body,
+        begin.remaining + r.remainingDelta,
+      );
+    } finally {
+      inflight.delete(localKey);
+    }
+  } finally {
+    photo.fill(0);
+  }
+}
+
 /** A análise propriamente dita: visão → capítulos (com prazo e tetos). */
 async function runAnalysis(
   bytes: Uint8Array,
   hand: "right" | "left",
-  cacheKey: string,
   deps: PalmApiDeps,
-): Promise<{ outcome: Outcome; technicalFailure: boolean }> {
+): Promise<{
+  outcome: Outcome;
+  technicalFailure: boolean;
+  /** Presente só quando há leitura (para o cache e o resultado compartilhado). */
+  result?: PalmAnalysisResult;
+}> {
   const failure = (status: number, error: PalmApiError) => ({
     outcome: { status, body: { error } },
     technicalFailure: true,
@@ -470,10 +768,10 @@ async function runAnalysis(
           options: { deadlineAt, now: deps.now },
         });
         deps.onAudit?.(audit);
-        rememberResult(deps.cache, cacheKey, deps.now(), result);
         return {
           outcome: { status: 200, body: { result } },
           technicalFailure: false,
+          result,
         };
       }
       case "refused":

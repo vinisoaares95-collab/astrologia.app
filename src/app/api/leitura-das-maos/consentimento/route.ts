@@ -1,6 +1,7 @@
 /**
  * Recibo assinado do consentimento para a análise (Fase 03D). Desligado
- * por padrão (404). Não grava nada.
+ * por padrão (404). Com o registro de consentimento (03G.3, Bloco 2), grava
+ * só a evidência mínima (hash do recibo, versão, finalidades, horário).
  */
 import {
   getProcessDeps,

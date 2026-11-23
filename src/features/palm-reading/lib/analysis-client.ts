@@ -33,6 +33,9 @@ export type AnalysisErrorCode =
   | "temporarily_unavailable"
   | "analysis_failed"
   | "unavailable"
+  | "invalid_request"
+  | "analysis_in_progress"
+  | "result_expired"
   | "internal"
   | "network"
   | "timeout";
@@ -59,6 +62,9 @@ const KNOWN = new Set<AnalysisErrorCode>([
   "temporarily_unavailable",
   "analysis_failed",
   "unavailable",
+  "invalid_request",
+  "analysis_in_progress",
+  "result_expired",
   "internal",
 ]);
 
@@ -120,6 +126,11 @@ export async function requestPalmAnalysis(
   fetcher: typeof fetch = fetch,
   /** Abortado quando a pessoa sai do fluxo (03G.3, D5). */
   signal?: AbortSignal,
+  /**
+   * Chave de idempotência do envio (03G.3, Bloco 2): aleatória, a mesma ao
+   * reenviar a mesma foto, outra para uma foto nova.
+   */
+  requestKey?: string,
 ): Promise<AnalysisCall> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
@@ -132,6 +143,7 @@ export async function requestPalmAnalysis(
       headers: {
         "content-type": "image/jpeg",
         "x-sidera-consent": receipt.token,
+        ...(requestKey ? { "x-sidera-request": requestKey } : {}),
       },
       body: photo,
       signal: controller.signal,
@@ -169,6 +181,36 @@ export async function requestPalmAnalysis(
   } finally {
     signal?.removeEventListener("abort", onLeave);
     clearTimeout(timer);
+  }
+}
+
+/** Chave de idempotência aleatória para um envio (sem dado da pessoa). */
+export function newRequestKey(): string {
+  const bytes = new Uint8Array(18);
+  crypto.getRandomValues(bytes);
+  return btoa(String.fromCharCode(...bytes))
+    .replaceAll("+", "-")
+    .replaceAll("/", "_");
+}
+
+/**
+ * Revoga o consentimento no servidor (03G.3, Bloco 2), quando a pessoa
+ * retira o consentimento. Melhor esforço: o descarte local acontece de
+ * qualquer forma. Sair da página não chama isto.
+ */
+export async function revokeConsentReceipt(
+  receipt: ConsentReceiptToken,
+  fetcher: typeof fetch = fetch,
+): Promise<boolean> {
+  try {
+    const r = await fetcher(`${BASE}/consentimento/revogar`, {
+      method: "POST",
+      headers: { "x-sidera-consent": receipt.token },
+      keepalive: true,
+    });
+    return r.status === 204;
+  } catch {
+    return false;
   }
 }
 
@@ -252,6 +294,24 @@ export const ANALYSIS_ERROR_MESSAGES: Record<
   forbidden: {
     title: "Análise indisponível",
     body: "Não foi possível enviar a foto a partir desta página.",
+    retake: false,
+    reconsent: false,
+  },
+  invalid_request: {
+    title: "Não conseguimos enviar a foto",
+    body: "Tente de novo. Se continuar, recarregue a página e confirme o consentimento.",
+    retake: false,
+    reconsent: false,
+  },
+  analysis_in_progress: {
+    title: "A análise ainda está em andamento",
+    body: "Aguarde alguns segundos e toque em Analisar de novo com a mesma foto: não conta como nova análise.",
+    retake: false,
+    reconsent: false,
+  },
+  result_expired: {
+    title: "O resultado não está mais disponível",
+    body: "A análise desta foto terminou, mas o resultado não ficou guardado para ser exibido de novo. Para ver uma leitura, toque em Analisar de novo: isso conta como nova análise.",
     retake: false,
     reconsent: false,
   },

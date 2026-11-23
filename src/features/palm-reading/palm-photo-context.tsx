@@ -13,7 +13,10 @@ import {
 } from "react";
 
 import type { PalmConsent, PalmHand } from "./consent";
-import type { ConsentReceiptToken } from "./lib/analysis-client";
+import {
+  revokeConsentReceipt,
+  type ConsentReceiptToken,
+} from "./lib/analysis-client";
 import type { LocalPhoto } from "./lib/load-image";
 import type { PalmAnalysisResult } from "./chapters/presentation";
 
@@ -149,6 +152,9 @@ export function PalmPhotoProvider({
   }, []);
 
   const withdraw = useCallback(() => {
+    // Retirar o consentimento revoga também no servidor (03G.3, Bloco 2),
+    // quando há recibo; sair do fluxo (leaveFlow) não revoga.
+    if (receipt) void revokeConsentReceipt(receipt);
     release();
     setPhotoState(null);
     setConsent(null);
@@ -157,7 +163,7 @@ export function PalmPhotoProvider({
     setAnalysis(null);
     setPrevious(null);
     setRemaining(null);
-  }, [release]);
+  }, [release, receipt]);
 
   const setReceiptAndRemaining = useCallback(
     (next: ConsentReceiptToken | null) => {

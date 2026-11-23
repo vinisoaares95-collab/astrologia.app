@@ -9,6 +9,7 @@ import { Activity, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { createConsent } from "./consent";
+import * as client from "./lib/analysis-client";
 import type { LocalPhoto } from "./lib/load-image";
 import {
   PalmPhotoProvider,
@@ -56,6 +57,7 @@ function Probe() {
       <button onClick={() => ctx.setPhoto(photo("blob:dois"))}>trocar</button>
       <button onClick={() => setLocal((n) => n + 1)}>local</button>
       <button onClick={() => (task = ctx.beginTask())}>tarefa</button>
+      <button onClick={() => ctx.withdraw()}>retirar</button>
     </div>
   );
 }
@@ -166,5 +168,20 @@ describe("saída do fluxo da leitura das mãos (D5)", () => {
       await user.click(screen.getByText("foto"));
     });
     expect(state()).toMatchObject({ photo: "blob:um" });
+  });
+
+  it("sair do fluxo não revoga no servidor; retirar o consentimento revoga", async () => {
+    const revoke = vi
+      .spyOn(client, "revokeConsentReceipt")
+      .mockResolvedValue(true);
+    const user = userEvent.setup();
+    const { rerender } = render(<Flow mode="visible" />);
+    rerender(<Flow mode="hidden" />);
+    expect(revoke).not.toHaveBeenCalled();
+    rerender(<Flow mode="visible" />);
+    // Após voltar não há recibo; um fluxo novo, com recibo, revoga ao retirar.
+    render(<Flow mode="visible" />);
+    await user.click(screen.getAllByText("retirar").at(-1)!);
+    expect(revoke).toHaveBeenCalledWith(receipt);
   });
 });

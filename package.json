@@ -10,6 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "node scripts/with-tzdata.mjs vitest run",
     "test:watch": "node scripts/with-tzdata.mjs vitest",
+    "test:db": "node scripts/with-tzdata.mjs vitest run src/features/palm-reading/server/consent-ledger.db.test.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run typecheck && npm run lint && npm run test",

@@ -75,6 +75,16 @@ describe("logs da aplicação: inventário estático", () => {
       expect([rel, [...text.matchAll(CONSOLE_CALL)].length]).toEqual([rel, 0]);
   });
 
+  it("o cliente do banco não registra consultas nem parâmetros (Prisma sem `log`)", () => {
+    const db = files.find((f) => f.rel === "lib/db.ts");
+    expect(db?.text).toMatch(/new PrismaClient\(/);
+    expect(db?.text).not.toMatch(/\blog\s*:/);
+    for (const { rel, text } of files.filter((f) =>
+      /consent-ledger/.test(f.rel),
+    ))
+      expect([rel, /\$on\(|\blog\s*:/.test(text)]).toEqual([rel, false]);
+  });
+
   it("nenhum console.* recebe ambiente, pedido, corpo, recibo ou entrada", () => {
     const risky =
       /\bconsole\.\w+\s*\([^;]*\b(process\.env|request|req|body|bytes|photo|image|token|receipt|secret|apiKey|raw|input|birth|place)\b/;
@@ -267,6 +277,34 @@ describe("logs da aplicação: execução", () => {
       placeId: MARK.placeId,
     });
     expect(r).toMatchObject({ status: "ok" });
+    expect(logged).toEqual([]);
+  });
+
+  it("registro de consentimento: aceite, análise, pedido repetido, revogação e falhas do banco não registram nada", async () => {
+    const { createMemoryConsentLedger } =
+      await import("../palm-reading/server/consent-ledger-memory");
+    const suite = await import("../palm-reading/server/handlers.ledger.suite");
+    const ledger = createMemoryConsentLedger({ retentionDays: 30 });
+    const clock = { t: Date.UTC(2026, 10, 23, 12) };
+    const one = suite.instance(ledger, { clock, shared: true });
+    const broken = suite.instance(
+      {
+        ...ledger,
+        begin: async () => {
+          throw new Error(`falha ${MARK.secret}`);
+        },
+      },
+      { clock },
+    );
+    const c = await suite.consent(one);
+    const token = c.body.token as string;
+    const k = suite.key();
+    await suite.analyze(one, token, k);
+    await suite.analyze(one, token, k);
+    await suite.analyze(broken, token, suite.key());
+    await suite.revoke(one, token);
+    await suite.analyze(one, token, suite.key());
+    expect(leaks([token, k, MARK.secret])).toEqual([]);
     expect(logged).toEqual([]);
   });
 });

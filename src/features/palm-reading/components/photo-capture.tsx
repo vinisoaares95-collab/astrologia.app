@@ -39,6 +39,7 @@ import { formatFileSize } from "@/lib/format";
 import { HAND_LABELS } from "../consent";
 import {
   ANALYSIS_ERROR_MESSAGES,
+  newRequestKey,
   requestPalmAnalysis,
   type AnalysisErrorCode,
 } from "../lib/analysis-client";
@@ -138,6 +139,9 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
   // Cada envio tem um número; trocar ou descartar a foto invalida o envio em
   // andamento, para que uma resposta atrasada nunca valha para outra foto.
   const attempt = useRef(0);
+  // Chave de idempotência por foto (03G.3, Bloco 2): reenviar a mesma foto
+  // reaproveita a chave (não conta duas vezes); uma foto nova gera outra.
+  const requestKeys = useRef(new Map<string, string>());
 
   async function analyze() {
     if (!photo) return;
@@ -148,14 +152,20 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
     const id = ++attempt.current;
     const task = beginTask();
     setRun({ kind: "running" });
+    let key = requestKeys.current.get(photo.url);
+    if (!key) requestKeys.current.set(photo.url, (key = newRequestKey()));
     const r = await requestPalmAnalysis(
       photo.blob,
       receipt,
       undefined,
       task.signal,
+      key,
     );
     // Saiu do fluxo durante a espera: nada é restaurado e não há navegação.
     if (!task.isCurrent()) return;
+    // Resultado não guardado: um novo toque em Analisar é um novo pedido.
+    if (!r.ok && r.error === "result_expired")
+      requestKeys.current.delete(photo.url);
     if (r.remaining !== null) setRemaining(r.remaining);
     if (id !== attempt.current) return;
     if (!r.ok) {

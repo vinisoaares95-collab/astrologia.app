@@ -136,6 +136,7 @@ describe("análise na jornada (provedor simulado)", () => {
       expect.objectContaining({ token: "recibo", expiresAt: 1 }),
       undefined,
       expect.any(AbortSignal), // abortado se a pessoa sair do fluxo (D5)
+      expect.stringMatching(/^[A-Za-z0-9_-]{22,64}$/), // idempotência (Bloco 2)
     );
     expect(push).toHaveBeenCalledWith("/leitura-das-maos/previa");
   });

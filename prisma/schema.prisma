@@ -1,9 +1,10 @@
-// Schema inicial — Fase 01.
+// Schema — Fase 01 (catálogo) e Fase 03G.3 (registro de consentimento).
 //
-// Nenhuma migração foi criada ou aplicada ainda. Este arquivo define apenas o
-// catálogo de produtos, que não contém dados pessoais. Entidades com dados
-// pessoais (pedidos, dados de nascimento, fotografias, relatórios) serão
-// modeladas nas próximas fases, junto da política de privacidade e retenção.
+// Migrações em prisma/migrations, aplicadas só localmente nesta fase (nenhum
+// banco de produção). O catálogo não contém dados pessoais. O registro de
+// consentimento é dado pessoal pseudonimizado: só hashes, versão,
+// finalidades, horários e contagens — nunca foto, IP, dados de nascimento ou
+// características das mãos (docs/privacidade/09-bloco2-especificacao.md).
 // Veja docs/ARCHITECTURE.md.
 
 generator client {
@@ -30,4 +31,73 @@ model Product {
   active     Boolean     @default(true)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
+}
+
+// ── Registro de consentimento da leitura das mãos (Fase 03G.3) ─────────────
+
+enum ConsentPurpose {
+  PALM_READING
+  INTERNATIONAL_TRANSFER
+}
+
+enum ConsentUseState {
+  PENDING
+  COMPLETED
+  REFUNDED
+}
+
+/// Evidência de consentimento. Sem foto, hash da foto, IP, user-agent, mão,
+/// resultado, dados de nascimento ou características das mãos.
+model PalmConsentRecord {
+  id               String           @id @default(cuid())
+  /// SHA-256 (com separação de domínio) do código aleatório do recibo.
+  receiptHash      String           @unique @db.Char(64)
+  consentVersion   String           @db.VarChar(16)
+  purposes         ConsentPurpose[]
+  adultDeclared    Boolean
+  /// Relógio do servidor, UTC, com segundos.
+  acceptedAt       DateTime         @db.Timestamptz(0)
+  receiptExpiresAt DateTime         @db.Timestamptz(3)
+  analysesUsed     Int              @default(0)
+  lastUsedAt       DateTime?        @db.Timestamptz(0)
+  revokedAt        DateTime?        @db.Timestamptz(0)
+  /// A partir desta data o registro é apagado (prazo: decisão jurídica D1).
+  deleteAfter      DateTime         @db.Timestamptz(0)
+  uses             PalmConsentUse[]
+
+  @@index([deleteAfter])
+}
+
+/// Controle técnico de cada tentativa (idempotência, concorrência e
+/// devolução). Vida curta: sai 24 h depois de concluída ou devolvida.
+model PalmConsentUse {
+  id          String            @id @default(cuid())
+  consentId   String
+  consent     PalmConsentRecord @relation(fields: [consentId], references: [id], onDelete: Cascade)
+  /// SHA-256 da chave de idempotência aleatória gerada no aparelho.
+  requestHash String            @db.Char(64)
+  state       ConsentUseState   @default(PENDING)
+  /// Muda a cada autorização: só quem a recebeu conclui ou devolve.
+  leaseId     String            @db.Char(32)
+  /// Depois disto, uma tentativa PENDING é tida como órfã (instância caiu).
+  leaseUntil  DateTime          @db.Timestamptz(3)
+  createdAt   DateTime          @default(now()) @db.Timestamptz(3)
+  settledAt   DateTime?         @db.Timestamptz(3)
+  result      PalmSharedResult?
+
+  @@unique([consentId, requestHash])
+  @@index([state, leaseUntil])
+  @@index([settledAt])
+}
+
+/// Resultado temporário compartilhado entre instâncias (decisão D8): o
+/// mesmo JSON entregue ao aparelho, para um pedido repetido em outra
+/// instância. Até 10 min. Desligado em produção (backups não definidos).
+model PalmSharedResult {
+  useId     String         @id
+  use       PalmConsentUse @relation(fields: [useId], references: [id], onDelete: Cascade)
+  payload   Json
+  expiresAt DateTime       @db.Timestamptz(3)
+
+  @@index([expiresAt])
 }

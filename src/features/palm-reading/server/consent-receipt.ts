@@ -9,10 +9,10 @@ import "server-only";
  * (HMAC-SHA256) com horário do servidor e validade curta. A análise só
  * aceita um recibo válido e usa a mão gravada nele, não a enviada depois.
  *
- * Limite assumido: o recibo não é registro jurídico. Não é guardado, não
- * identifica a pessoa e a maioridade continua sendo declarada. O registro
- * de consentimento exigido para a operação pública depende da revisão
- * jurídica (plano da Fase 03, decisão 6).
+ * Limite assumido: o recibo não é registro jurídico e não identifica a
+ * pessoa; a maioridade continua sendo declarada. Com o registro de
+ * consentimento ligado (03G.3, Bloco 2; consent-ledger.ts), o servidor guarda
+ * só o hash do código aleatório do recibo, nunca o token nem o código.
  */
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
@@ -82,6 +82,8 @@ export function verifyReceipt(
   token: string | null,
   secret: Buffer,
   now: number = Date.now(),
+  /** Revogação (03G.3): um recibo assinado vale mesmo depois de vencer. */
+  options: { allowExpired?: boolean } = {},
 ): ReceiptCheck {
   if (!token) return { ok: false, reason: "missing" };
   const [payload, signature, extra] = token.split(".");
@@ -106,6 +108,7 @@ export function verifyReceipt(
   )
     return { ok: false, reason: "malformed" };
   if (receipt.v !== CONSENT_VERSION) return { ok: false, reason: "version" };
-  if (now > receipt.exp) return { ok: false, reason: "expired" };
+  if (now > receipt.exp && !options.allowExpired)
+    return { ok: false, reason: "expired" };
   return { ok: true, receipt };
 }

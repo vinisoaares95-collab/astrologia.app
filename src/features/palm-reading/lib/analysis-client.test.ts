@@ -6,7 +6,9 @@ import {
   ANALYSIS_TIMEOUT_MS,
   getAnalysisAvailability,
   requestConsentReceipt,
+  newRequestKey,
   requestPalmAnalysis,
+  revokeConsentReceipt,
 } from "./analysis-client";
 
 const respond = (status: number, body: unknown) =>
@@ -63,6 +65,48 @@ describe("cliente da análise", () => {
     expect(JSON.stringify(init.headers)).not.toMatch(
       /api[-_]?key|authorization/iu,
     );
+  });
+
+  it("chave de idempotência (Bloco 2): aleatória, no cabeçalho, sem dado da pessoa", async () => {
+    const a = newRequestKey();
+    expect(a).toMatch(/^[A-Za-z0-9_-]{22,64}$/);
+    expect(newRequestKey()).not.toBe(a);
+    const f = respond(200, { result: { status: "complete" } });
+    await requestPalmAnalysis(
+      new Blob(["x"]),
+      { token: "recibo", expiresAt: 1 },
+      f,
+      undefined,
+      a,
+    );
+    const [, init] = f.mock.calls[0] as unknown as [string, RequestInit];
+    expect(init.headers).toMatchObject({ "x-sidera-request": a });
+  });
+
+  it("revogação: recibo no cabeçalho, sem corpo; 204 = revogado", async () => {
+    const f = vi.fn(async () => new Response(null, { status: 204 }));
+    expect(
+      await revokeConsentReceipt(
+        { token: "recibo", expiresAt: 1 },
+        f as unknown as typeof fetch,
+      ),
+    ).toBe(true);
+    const [url, init] = f.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe("/api/leitura-das-maos/consentimento/revogar");
+    expect(init).toMatchObject({
+      method: "POST",
+      headers: { "x-sidera-consent": "recibo" },
+    });
+    expect(init.body).toBeUndefined();
+    const down = vi.fn(async () => {
+      throw new Error("rede");
+    });
+    expect(
+      await revokeConsentReceipt(
+        { token: "recibo", expiresAt: 1 },
+        down as unknown as typeof fetch,
+      ),
+    ).toBe(false);
   });
 
   it("sair do fluxo (D5) aborta o envio em andamento", async () => {
