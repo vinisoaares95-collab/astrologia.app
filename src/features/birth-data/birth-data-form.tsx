@@ -199,8 +199,10 @@ export function BirthDataForm({
     event.preventDefault();
     if (result?.status === "ok") {
       // Os dados já foram ao servidor só para normalizar e calcular (Server
-      // Actions), sem gravação; aqui não há novo envio: seguimos para a
-      // proposta e a tela os descarta.
+      // Actions), sem gravação; aqui não há novo envio. Com cacheComponents,
+      // o Next.js esconde esta rota (<Activity>) em vez de desmontá-la: o
+      // estado do formulário fica na memória da aba até recarregar, fechar
+      // ou a rota sair do cache de navegação (03G.3, verificação do Bloco 2).
       router.push(routes.report);
       return;
     }
@@ -368,8 +370,8 @@ export function BirthDataForm({
         A busca da cidade, a data e a hora vão ao servidor do Sidera só para
         localizar o lugar e verificar os dados
         {engineEnabled ? " e calcular o mapa" : ""}. O Sidera não grava esses
-        dados nem os repassa a outros serviços; nesta tela, eles somem quando
-        você sai.{" "}
+        dados nem os repassa a outros serviços. No aparelho, eles ficam só na
+        memória desta aba e somem ao recarregar ou fechar a página.{" "}
         {engineEnabled
           ? "O mapa só é calculado neste ambiente interno."
           : "Nenhum mapa é calculado ainda."}

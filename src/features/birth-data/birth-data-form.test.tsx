@@ -231,7 +231,14 @@ describe("aviso sobre os dados de nascimento (03G.3)", () => {
     expect(notice).toHaveTextContent(/localizar o lugar e verificar os dados/i);
     expect(notice).toHaveTextContent(/não grava esses dados nem os repassa/i);
     expect(notice).not.toHaveTextContent(/calcular o mapa/i);
-    expect(notice).not.toHaveTextContent(/ficam apenas nesta tela/i);
+    expect(notice).toHaveTextContent(
+      /memória desta aba e somem ao recarregar ou fechar a página/i,
+    );
+    // O Next.js preserva a rota escondida ao navegar: "somem quando você
+    // sai" seria falso (verificado no navegador).
+    expect(notice).not.toHaveTextContent(
+      /ficam apenas nesta tela|quando você sai/i,
+    );
     unmount();
     render(<BirthDataForm engineEnabled />);
     expect(screen.getByText(/vão ao servidor do Sidera/i)).toHaveTextContent(

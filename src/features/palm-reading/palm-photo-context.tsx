@@ -48,8 +48,10 @@ const PalmPhotoContext = createContext<PalmPhotoContextValue | null>(null);
 
 /**
  * Mantém foto, consentimento e mão apenas em memória enquanto a pessoa
- * estiver nas telas de leitura das mãos. Ao substituir, remover ou sair do
- * fluxo, a URL local é revogada e tudo é descartado.
+ * estiver nas telas de leitura das mãos. Ao substituir ou remover, a URL
+ * local é revogada e tudo é descartado. Ao sair do fluxo, hoje só a URL é
+ * revogada: o estado fica na rota escondida pelo Next.js (ver o layout de
+ * /leitura-das-maos).
  */
 export function PalmPhotoProvider({
   children,
