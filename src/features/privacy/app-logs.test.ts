@@ -27,6 +27,10 @@ const REVIEWED_CONSOLE_CALLS: Record<string, { count: number; logs: string }> =
       count: 1,
       logs: "só o nome do tipo do erro inesperado do cálculo",
     },
+    "features/report/journey/sky-actions.ts": {
+      count: 1,
+      logs: "só o nome do tipo do erro inesperado dos capítulos do céu (04C)",
+    },
     "features/birth-data/server-normalize.ts": {
       count: 1,
       logs: "só as versões da base de fusos (em uso e esperada)",

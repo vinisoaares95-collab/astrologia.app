@@ -219,9 +219,11 @@ for (const [vp, options] of [
   const r = await visible(p);
   check(
     /Leitura interna em construção/.test(r) &&
-      /Em integração/i.test(r) &&
+      /não é calculado neste ambiente|Em integração/i.test(r) &&
       /Em definição/i.test(r),
-    tag("1–5 em integração, 8–9 em definição; não se apresenta como completo"),
+    tag(
+      "1–5 sem motor (04C: indisponível com o motivo), 8–9 em definição; não se apresenta como completo",
+    ),
   );
   check(
     !/blob:/.test(await html(p)) &&

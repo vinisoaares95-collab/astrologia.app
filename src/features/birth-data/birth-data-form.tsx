@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import {
   useId,
+  useRef,
   useState,
   useTransition,
   type FormEvent,
@@ -26,6 +27,9 @@ import {
   computeChartAction,
   type ComputeChartResult,
 } from "@/features/natal-chart/actions";
+
+import { useOptionalJourney } from "@/features/report/journey/journey-context";
+import { generateSkyChaptersAction } from "@/features/report/journey/sky-actions";
 
 import { normalizeBirthAction } from "./actions";
 import { NormalizationReview } from "./components/normalization-review";
@@ -113,6 +117,31 @@ const EMPTY: FormState = {
   place: null,
 };
 
+const SKY_ENGINE_OFF =
+  "O mapa natal não é calculado neste ambiente. Os capítulos do céu dependem do cálculo astronômico.";
+const SKY_NETWORK =
+  "Não foi possível falar com o servidor para calcular o mapa. A leitura das mãos não foi afetada.";
+const SKY_RECHECK =
+  "Os dados de nascimento precisam ser conferidos de novo antes de calcular o mapa.";
+
+/** Resultado da ação → estado da jornada (sem conteúdo fictício). */
+function skyResult(
+  r: Awaited<ReturnType<typeof generateSkyChaptersAction>>,
+):
+  | { state: "ready"; report: Extract<typeof r, { status: "ok" }>["report"] }
+  | { state: "unavailable"; reason: string } {
+  switch (r.status) {
+    case "ok":
+      return { state: "ready", report: r.report };
+    case "engine-disabled":
+      return { state: "unavailable", reason: SKY_ENGINE_OFF };
+    case "engine-error":
+      return { state: "unavailable", reason: r.message };
+    default:
+      return { state: "unavailable", reason: SKY_RECHECK };
+  }
+}
+
 function toInput(
   values: FormState,
   occurrence?: "earlier" | "later",
@@ -150,6 +179,10 @@ export function BirthDataForm({
   const [chart, setChart] = useState<ComputeChartResult | null>(null);
   const [pending, startTransition] = useTransition();
   const [chartPending, startChartTransition] = useTransition();
+  const journey = useOptionalJourney();
+  // Último envio confirmado: o mesmo envio não gera os capítulos de novo.
+  const confirmedKey = useRef<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -198,15 +231,45 @@ export function BirthDataForm({
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (result?.status === "ok") {
-      // Os dados já foram ao servidor só para normalizar e calcular (Server
-      // Actions), sem gravação; aqui não há novo envio. Com cacheComponents,
-      // o Next.js esconde esta rota (<Activity>) em vez de desmontá-la: o
-      // estado do formulário fica na memória da aba até recarregar, fechar
-      // ou a rota sair do cache de navegação (03G.3, verificação do Bloco 2).
-      router.push(routes.report);
+      confirm();
       return;
     }
     normalize();
+  }
+
+  /**
+   * Confirmação válida (Fase 04C): gera os capítulos 1–5 UMA vez por envio
+   * confirmado e os leva para a memória da jornada (só o texto; nunca data,
+   * hora ou local). Segue para a proposta sem esperar: a leitura mostra
+   * "carregando" até o resultado chegar. Resposta atrasada de um envio
+   * anterior, ou depois de sair da jornada, é ignorada (`SkyTask`). Com
+   * cacheComponents, esta rota é escondida (<Activity>), não desmontada: o
+   * formulário fica na memória da aba até sair da jornada, recarregar ou
+   * fechar.
+   */
+  function confirm() {
+    if (confirming) return; // envio duplicado
+    const input = toInput(values, occurrence);
+    const key = JSON.stringify(input);
+    const sameAsBefore =
+      key === confirmedKey.current &&
+      (journey?.sky?.state === "loading" || journey?.sky?.state === "ready");
+    if (journey && !sameAsBefore) {
+      confirmedKey.current = key;
+      const task = journey.beginSky();
+      if (!engineEnabled) {
+        task.settle({ state: "unavailable", reason: SKY_ENGINE_OFF });
+      } else {
+        setConfirming(true);
+        generateSkyChaptersAction(input)
+          .then((r) => task.settle(skyResult(r)))
+          .catch(() =>
+            task.settle({ state: "unavailable", reason: SKY_NETWORK }),
+          )
+          .finally(() => setConfirming(false));
+      }
+    }
+    router.push(routes.report);
   }
 
   async function loadDemo(index: number) {
@@ -369,9 +432,14 @@ export function BirthDataForm({
       <Callout tone="demo" title="Versão demonstrativa">
         A busca da cidade, a data e a hora vão ao servidor do Sidera só para
         localizar o lugar e verificar os dados
-        {engineEnabled ? " e calcular o mapa" : ""}. O Sidera não grava esses
-        dados nem os repassa a outros serviços. No aparelho, eles ficam só na
-        memória desta aba e somem ao recarregar ou fechar a página.{" "}
+        {engineEnabled ? " e, ao confirmar, calcular o mapa" : ""}. O Sidera não
+        grava esses dados nem os envia a outros serviços ou a provedores de
+        inteligência artificial. No aparelho, os dados digitados ficam só na
+        memória desta aba
+        {engineEnabled
+          ? "; ao confirmar, só os capítulos do céu (sem a data, a hora e o local) seguem para o relatório"
+          : ""}
+        , até você sair da jornada, recarregar ou fechar a página.{" "}
         {engineEnabled
           ? "O mapa só é calculado neste ambiente interno."
           : "Nenhum mapa é calculado ainda."}
@@ -400,12 +468,19 @@ export function BirthDataForm({
       {/* Com uma escolha pendente, a ação fica nas opções acima. */}
       {result?.status !== "needs-choice" && (
         <ActionDock>
-          <Button type="submit" size="lg" fullWidth disabled={pending}>
+          <Button
+            type="submit"
+            size="lg"
+            fullWidth
+            disabled={pending || confirming}
+          >
             {pending
               ? "Verificando…"
-              : result?.status === "ok"
-                ? "Confirmar e ver a proposta"
-                : "Verificar dados"}
+              : confirming
+                ? "Calculando o mapa…"
+                : result?.status === "ok"
+                  ? "Confirmar e ver a proposta"
+                  : "Verificar dados"}
           </Button>
           {result?.status === "ok" && (
             <Button variant="ghost" onClick={() => setResult(null)}>

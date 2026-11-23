@@ -2,7 +2,7 @@
  * Jornada do relatório (Fase 04B): transferência só do texto das mãos e
  * descarte nas saídas, com o mesmo <Activity> que o Next.js usa nas rotas.
  */
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Activity, useEffect, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -16,7 +16,13 @@ import {
 } from "@/features/palm-reading/palm-photo-context";
 import { DemoPreview } from "@/features/palm-reading/components/demo-preview";
 
-import { JourneyProvider, toJourneyHands, useJourney } from "./journey-context";
+import {
+  JourneyProvider,
+  toJourneyHands,
+  toJourneySky,
+  useJourney,
+  type SkyTask,
+} from "./journey-context";
 
 const push = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
@@ -274,5 +280,90 @@ describe("transferência e descarte", () => {
     expect(
       screen.queryByRole("button", { name: /descartar foto e sair/i }),
     ).toBeNull();
+  });
+});
+
+describe("capítulos do céu na jornada (04C)", () => {
+  const skyReport = {
+    disclaimer: "Aviso do céu.",
+    chapters: [
+      {
+        number: 1,
+        title: "Sua identidade astrológica",
+        introduction: "Intro.",
+        sections: [{ text: "Texto.", notes: ["Nota."] }],
+        synthesis: "Síntese.",
+        reflectionQuestions: ["P?"],
+        limitations: ["L."],
+      },
+    ],
+  };
+
+  it("toJourneySky: só os campos do capítulo, sem dados de nascimento", () => {
+    const polluted = {
+      ...skyReport,
+      birth: { date: "12/05/1990", place: "Recife" },
+      chapters: skyReport.chapters.map((c) => ({
+        ...c,
+        factIds: ["x"],
+        source: "library",
+      })),
+    } as unknown as typeof skyReport;
+    const copy = toJourneySky(polluted);
+    expect(copy).toEqual(skyReport);
+    expect(JSON.stringify(copy)).not.toMatch(/1990|Recife|factIds|library/);
+  });
+
+  let task: SkyTask | null = null;
+  function SkyHarness() {
+    const j = useJourney();
+    return (
+      <div>
+        <p data-testid="sky">{JSON.stringify(j.sky)}</p>
+        <p data-testid="hands2">{JSON.stringify(j.hands)}</p>
+        <button onClick={() => (task = j.beginSky())}>céu</button>
+        <button onClick={() => j.transferHands(result)}>mãos</button>
+      </div>
+    );
+  }
+  const SkyTree = ({ mode }: { mode: "visible" | "hidden" }) => (
+    <Activity mode={mode}>
+      <JourneyProvider>
+        <SkyHarness />
+      </JourneyProvider>
+    </Activity>
+  );
+  const read = (id: string) =>
+    JSON.parse(screen.getByTestId(id).textContent ?? "null");
+
+  it("falha no céu não apaga as mãos; sucesso também não", async () => {
+    const user = userEvent.setup();
+    render(<SkyTree mode="visible" />);
+    await user.click(screen.getByText("mãos"));
+    await user.click(screen.getByText("céu"));
+    act(() => void task!.settle({ state: "unavailable", reason: "Falhou." }));
+    expect(read("sky")).toEqual({ state: "unavailable", reason: "Falhou." });
+    expect(read("hands2")).toEqual(result);
+    await user.click(screen.getByText("céu"));
+    act(() => void task!.settle({ state: "ready", report: skyReport }));
+    expect(read("sky")).toEqual({ state: "ready", report: skyReport });
+    expect(read("hands2")).toEqual(result);
+  });
+
+  it("sair da jornada durante o cálculo: a resposta atrasada é ignorada", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<SkyTree mode="visible" />);
+    await user.click(screen.getByText("céu"));
+    const late = task!;
+    expect(read("sky")).toEqual({ state: "loading" });
+    rerender(<SkyTree mode="hidden" />);
+    rerender(<SkyTree mode="visible" />);
+    expect(read("sky")).toBeNull();
+    let accepted = true;
+    act(() => {
+      accepted = late.settle({ state: "ready", report: skyReport });
+    });
+    expect(accepted).toBe(false);
+    expect(read("sky")).toBeNull();
   });
 });

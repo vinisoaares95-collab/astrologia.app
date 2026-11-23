@@ -4,9 +4,10 @@
  * Memória temporária da jornada do relatório (Fase 04B).
  *
  * Fica no layout de `(jornada)`, que envolve leitura das mãos, nascimento,
- * oferta e leitura do relatório. Guarda SÓ o texto já entregue pelo motor das
- * mãos (capítulos 6 e 7), copiado campo a campo por `toJourneyHands`: nunca
- * foto, JPEG, URL de imagem, hash, recibo ou credenciais.
+ * oferta e leitura do relatório. Guarda SÓ texto já entregue pelos motores,
+ * copiado campo a campo: capítulos 6 e 7 (`toJourneyHands`; nunca foto, JPEG,
+ * URL de imagem, hash, recibo ou credenciais) e, desde a 04C, capítulos 1 a 5
+ * (`toJourneySky`; nunca data, hora ou local de nascimento).
  *
  * - A transferência é explícita (`transferHands`), no clique de "Continuar"
  *   da prévia — antes de o layout das mãos ser escondido e o D5 descartar a
@@ -27,10 +28,12 @@ import {
   useContext,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 
+import type { ClientReport } from "@/features/interpretation/ai/presentation";
 import type { PalmAnalysisResult } from "@/features/palm-reading/chapters/presentation";
 
 /** Exatamente o que a apresentação usa; nada além disso. */
@@ -64,12 +67,50 @@ export function toJourneyHands(r: PalmAnalysisResult): JourneyHands {
   };
 }
 
+/**
+ * Capítulos 1 a 5 na jornada (Fase 04C): só o texto entregue pelo motor
+ * (`ClientReport`), copiado campo a campo. Nunca data, hora ou local.
+ */
+export type JourneySky =
+  | { state: "loading" }
+  | { state: "ready"; report: ClientReport }
+  | { state: "unavailable"; reason: string };
+
+export function toJourneySky(r: ClientReport): ClientReport {
+  return {
+    disclaimer: r.disclaimer,
+    chapters: r.chapters.map((c) => ({
+      number: c.number,
+      title: c.title,
+      introduction: c.introduction,
+      sections: c.sections.map((s) => ({ text: s.text, notes: [...s.notes] })),
+      synthesis: c.synthesis,
+      reflectionQuestions: [...c.reflectionQuestions],
+      limitations: [...c.limitations],
+    })),
+  };
+}
+
+/** Um cálculo em andamento; só o mais recente da sessão atual vale. */
+export type SkyTask = {
+  isCurrent: () => boolean;
+  /** Grava o resultado só se ainda for o pedido atual (ignora atrasados). */
+  settle: (
+    result:
+      | { state: "ready"; report: ClientReport }
+      | { state: "unavailable"; reason: string },
+  ) => boolean;
+};
+
 type JourneyValue = {
   hands: JourneyHands | null;
   /** Leva o texto da prévia para a jornada (sem foto). */
   transferHands: (result: PalmAnalysisResult) => void;
   /** Descarta o texto (ex.: ao retirar o consentimento). */
   clearHands: () => void;
+  sky: JourneySky | null;
+  /** Começa o cálculo dos capítulos 1–5 para um envio confirmado. */
+  beginSky: () => SkyTask;
 };
 
 const JourneyContext = createContext<JourneyValue | null>(null);
@@ -77,13 +118,39 @@ const JourneyContext = createContext<JourneyValue | null>(null);
 export function JourneyProvider({
   children,
   initialHands = null,
+  initialSky = null,
 }: {
   children: ReactNode;
   /** Só para testes. */
   initialHands?: JourneyHands | null;
+  initialSky?: JourneySky | null;
 }) {
   const [hands, setHands] = useState<JourneyHands | null>(initialHands);
+  const [sky, setSky] = useState<JourneySky | null>(initialSky);
   const [flowKey, setFlowKey] = useState(0);
+  // Sessão da jornada (muda ao sair) e pedido do céu (muda a cada envio).
+  const session = useRef(0);
+  const skyRequest = useRef(0);
+
+  const beginSky = useCallback((): SkyTask => {
+    const started = session.current;
+    const id = ++skyRequest.current;
+    setSky({ state: "loading" });
+    const isCurrent = () =>
+      session.current === started && skyRequest.current === id;
+    return {
+      isCurrent,
+      settle: (result) => {
+        if (!isCurrent()) return false;
+        setSky(
+          result.state === "ready"
+            ? { state: "ready", report: toJourneySky(result.report) }
+            : { state: "unavailable", reason: result.reason },
+        );
+        return true;
+      },
+    };
+  }, []);
 
   const transferHands = useCallback((result: PalmAnalysisResult) => {
     setHands(toJourneyHands(result));
@@ -91,15 +158,17 @@ export function JourneyProvider({
   const clearHands = useCallback(() => setHands(null), []);
 
   const leaveJourney = useCallback(() => {
+    session.current++;
     setHands(null);
+    setSky(null);
     setFlowKey((k) => k + 1);
   }, []);
   // Roda quando a jornada é escondida (saída para o site) ou desmontada.
   useLayoutEffect(() => leaveJourney, [leaveJourney]);
 
   const value = useMemo(
-    () => ({ hands, transferHands, clearHands }),
-    [hands, transferHands, clearHands],
+    () => ({ hands, transferHands, clearHands, sky, beginSky }),
+    [hands, transferHands, clearHands, sky, beginSky],
   );
   return (
     <JourneyContext.Provider value={value}>
