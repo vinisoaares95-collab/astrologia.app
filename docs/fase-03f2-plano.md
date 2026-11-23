@@ -715,3 +715,24 @@ Detalhes em `avaliacao-ia/03f2-etapa-b/consistencia-visual.md`.
   qualquer uso público.
 
 Detalhes em `avaliacao-ia/03f2-etapa-b/resultado-oficial.md`.
+
+## Encerramento técnico da Fase 03F.2 (23/11/2026)
+
+Encerramento aprovado pelo responsável do projeto.
+
+| Item                                                        | Situação                                                                                              |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Fluxo ponta a ponta (foto → visão → capítulos 6 e 7 → tela) | **Validado** (Etapa B: 10 de 10 critérios)                                                            |
+| Geração dos capítulos 6 e 7                                 | **Validada para a continuidade do MVP** (Etapa A, Rev1 e Rev2; Etapa B)                               |
+| Reprodutibilidade das observações visuais                   | **Não validada.** A mesma foto, com a mesma entrada, teve 3 classificações invertidas entre execuções |
+| Lançamento comercial da leitura das mãos                    | **Condicionado** à resolução ou mitigação comprovada desse risco                                      |
+
+- A pendência de consistência visual **não impede** as fases independentes
+  (03G em diante).
+- O consenso entre análises não foi implementado. O próximo passo é o
+  experimento de repetibilidade (`docs/experimento-repetibilidade-visual.md`),
+  ainda não autorizado.
+- Gasto total da 03F.2: ≈ R$ 0,49 dos R$ 5,00.
+  - Etapa A: original, Rev1 e Rev2.
+  - Etapa B: R$ 0,35.
+- As fotos foram apagadas em 19/11/2026.
