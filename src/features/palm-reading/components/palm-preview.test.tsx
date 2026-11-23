@@ -93,7 +93,7 @@ describe("prévia", () => {
     expect(screen.getAllByText("Leitura parcial").length).toBeGreaterThan(0);
     // Seguir e tirar outra foto.
     expect(
-      screen.getByRole("link", { name: /continuar: dados de nascimento/i }),
+      screen.getByRole("button", { name: /continuar: dados de nascimento/i }),
     ).toBeInTheDocument();
     await userEvent.click(
       screen.getByRole("button", { name: /tirar outra foto/i }),
@@ -105,7 +105,7 @@ describe("prévia", () => {
     renderWith(result([chapter(6, "unavailable"), chapter(7, "unavailable")]));
     expect(await screen.findByText("Indisponível 6.")).toBeInTheDocument();
     expect(
-      screen.queryByRole("link", { name: /continuar: dados de nascimento/i }),
+      screen.queryByRole("button", { name: /continuar: dados de nascimento/i }),
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /tirar outra foto/i }),

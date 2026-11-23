@@ -16,6 +16,7 @@ import { palmLines } from "@/components/visuals/palm-illustration";
 import { routes } from "@/config/routes";
 import { reportParts } from "@/content/report-chapters";
 import { ChapterArticle } from "@/features/report/chapter-article";
+import { useOptionalJourney } from "@/features/report/journey/journey-context";
 
 import { HAND_LABELS } from "../consent";
 import { usePalmPhoto } from "../palm-photo-context";
@@ -40,6 +41,7 @@ const lockedChapters = reportParts
 export function DemoPreview() {
   const router = useRouter();
   const { photo, hand, withdraw, analysis } = usePalmPhoto();
+  const journey = useOptionalJourney();
 
   if (!photo) {
     return (
@@ -52,8 +54,11 @@ export function DemoPreview() {
             Nenhuma foto por aqui
           </h2>
           <p className="text-sm text-fg-muted">
-            Neste aparelho, a foto fica apenas na memória desta tela. Se você
-            recarregou a página ou saiu do fluxo, ela foi descartada daqui.
+            Neste aparelho, a foto fica só na leitura das mãos. Se você
+            recarregou a página ou saiu desta etapa, ela foi descartada daqui.
+            {journey?.hands
+              ? " O texto da sua leitura continua na memória desta jornada."
+              : ""}
           </p>
         </div>
         <ButtonLink href={routes.palmPhoto}>Adicionar foto</ButtonLink>
@@ -69,7 +74,13 @@ export function DemoPreview() {
         handLabel={hand ? HAND_LABELS[hand] : null}
         analysis={analysis}
         onRetake={() => router.push(routes.palmPhoto)}
-        onDiscard={() => {
+        onContinue={() => {
+          // Transferência explícita (Fase 04B): só o texto vai para a
+          // jornada, antes de esta etapa ser escondida e a foto descartada.
+          journey?.transferHands(analysis);
+          router.push(routes.birthData);
+        }}
+        onWithdraw={() => {
           withdraw();
           router.push(routes.home);
         }}
@@ -190,7 +201,7 @@ export function DemoPreview() {
             router.push(routes.home);
           }}
         >
-          Descartar foto e sair
+          Retirar consentimento e sair
         </Button>
       </ActionDock>
     </div>
@@ -203,13 +214,15 @@ function PersonalPreview({
   handLabel,
   analysis,
   onRetake,
-  onDiscard,
+  onContinue,
+  onWithdraw,
 }: {
   photoUrl: string;
   handLabel: string | null;
   analysis: PalmAnalysisResult;
   onRetake: () => void;
-  onDiscard: () => void;
+  onContinue: () => void;
+  onWithdraw: () => void;
 }) {
   const locked = lockedChapters.filter((c) => c.number > 7);
   const hasContent = analysis.chapters.some((c) => c.status === "content");
@@ -273,11 +286,37 @@ function PersonalPreview({
         </section>
       )}
 
+      <Callout tone="privacy" title="O que cada opção faz">
+        <ul className="list-disc space-y-1 pl-4">
+          {hasContent && (
+            <li>
+              <strong className="font-medium text-fg">Continuar:</strong> a foto
+              fica para trás ao sair desta etapa; só o texto da leitura segue
+              com você, na memória desta jornada, até você sair dela, recarregar
+              ou fechar a página.
+            </li>
+          )}
+          <li>
+            <strong className="font-medium text-fg">
+              Retirar consentimento e sair:
+            </strong>{" "}
+            apaga a foto e a leitura deste aparelho e cancela a autorização,
+            impedindo novas análises com ela. O que já foi enviado segue as
+            regras do provedor.
+          </li>
+          <li>
+            <strong className="font-medium text-fg">Sair pelo X:</strong> apaga
+            a foto e a leitura deste aparelho sem cancelar a autorização, que
+            vence sozinha em até 30 minutos depois do aceite.
+          </li>
+        </ul>
+      </Callout>
+
       <ActionDock>
         {hasContent ? (
-          <ButtonLink href={routes.birthData} size="lg" fullWidth>
+          <Button size="lg" fullWidth onClick={onContinue}>
             Continuar: dados de nascimento
-          </ButtonLink>
+          </Button>
         ) : (
           <Button size="lg" fullWidth onClick={onRetake}>
             Tirar outra foto
@@ -288,8 +327,8 @@ function PersonalPreview({
             Tirar outra foto
           </Button>
         )}
-        <Button variant="ghost" onClick={onDiscard}>
-          Descartar foto e sair
+        <Button variant="ghost" onClick={onWithdraw}>
+          Retirar consentimento e sair
         </Button>
       </ActionDock>
     </div>

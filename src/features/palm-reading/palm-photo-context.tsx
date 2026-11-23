@@ -13,6 +13,8 @@ import {
 } from "react";
 
 import type { PalmConsent, PalmHand } from "./consent";
+import { useOptionalJourney } from "@/features/report/journey/journey-context";
+
 import {
   revokeConsentReceipt,
   type ConsentReceiptToken,
@@ -151,10 +153,14 @@ export function PalmPhotoProvider({
     setHand(nextHand);
   }, []);
 
+  const journey = useOptionalJourney();
+  const clearJourneyHands = journey?.clearHands;
   const withdraw = useCallback(() => {
     // Retirar o consentimento revoga também no servidor (03G.3, Bloco 2),
-    // quando há recibo; sair do fluxo (leaveFlow) não revoga.
+    // quando há recibo; sair do fluxo (leaveFlow) não revoga. Também apaga o
+    // texto da leitura já levado para a jornada (Fase 04B).
     if (receipt) void revokeConsentReceipt(receipt);
+    clearJourneyHands?.();
     release();
     setPhotoState(null);
     setConsent(null);
@@ -163,7 +169,7 @@ export function PalmPhotoProvider({
     setAnalysis(null);
     setPrevious(null);
     setRemaining(null);
-  }, [release, receipt]);
+  }, [release, receipt, clearJourneyHands]);
 
   const setReceiptAndRemaining = useCallback(
     (next: ConsentReceiptToken | null) => {

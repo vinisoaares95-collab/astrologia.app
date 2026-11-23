@@ -10,7 +10,7 @@ import { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { proxy, config } from "../../../proxy";
-import { isReportDemoEnabled } from "./demo-gate";
+import { isReportDemoEnabled, isReportReadingEnabled } from "./demo-gate";
 
 const SRC = join(__dirname, "..", "..", "..");
 const files = [
@@ -62,11 +62,32 @@ describe("demonstração interna", () => {
       "http://localhost/relatorio/leitura?cenario=completo",
     );
     vi.stubEnv("SIDERA_REPORT_DEMO", "");
+    vi.stubEnv("SIDERA_REPORT_READING", "");
     const blocked = proxy(req);
     expect(blocked.status).toBe(404);
     expect(blocked.headers.get("x-robots-tag")).toBe("noindex");
     vi.stubEnv("SIDERA_REPORT_DEMO", "1");
     expect(proxy(req).headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("jornada real (04B): SIDERA_REPORT_READING=1, independente dos exemplos", () => {
+    expect(isReportReadingEnabled({})).toBe(false);
+    expect(isReportReadingEnabled({ SIDERA_REPORT_DEMO: "1" })).toBe(false);
+    expect(isReportReadingEnabled({ SIDERA_REPORT_READING: "1" })).toBe(true);
+    const req = new NextRequest("http://localhost/relatorio/leitura");
+    vi.stubEnv("SIDERA_REPORT_DEMO", "");
+    vi.stubEnv("SIDERA_REPORT_READING", "1");
+    expect(proxy(req).headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("a página separa os modos: exemplos só com ?cenario= e a trava da demonstração", () => {
+    const page = files.find((x) => x.f.endsWith("leitura/page.tsx"))!.text;
+    expect(page).toMatch(
+      /requested !== undefined[\s\S]*isReportDemoEnabled\(\)[\s\S]*sampleInputs/,
+    );
+    expect(page).toMatch(
+      /isReportReadingEnabled\(\)\) notFound\(\);\s*return <JourneyReading \/>/,
+    );
   });
 
   it("o proxy só cobre a leitura (a página comercial /relatorio fica fora)", () => {

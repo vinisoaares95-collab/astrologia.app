@@ -4,7 +4,12 @@
  *
  * - no navegador, a foto é redesenhada em canvas e recodificada em JPEG sem
  *   metadados (o servidor recusa JPEG com EXIF, XMP, IPTC ou imagem embutida); o arquivo
- *   original no aparelho não é alterado; a cópia fica só na memória da tela;
+ *   original no aparelho não é alterado; a cópia fica só na memória da
+ *   leitura das mãos e é descartada ao sair dessa etapa (D5);
+ * - ao continuar, só o TEXTO da leitura segue para a memória da jornada
+ *   (Fase 04B), até a pessoa sair da jornada, recarregar ou fechar a página;
+ * - não se promete eliminação física imediata: a liberação da memória é do
+ *   navegador; o Sidera só deixa de manter as referências;
  * - com a análise ligada, a cópia preparada vai ao servidor do Sidera quando
  *   a pessoa toca em "Analisar"; em modo real, vai também à Anthropic;
  * - o servidor não grava a foto (nem disco, nem banco, nem log); ela existe
@@ -51,8 +56,8 @@ export const PHOTO_PRIVACY = {
   /** Na prévia personalizada. */
   preview: {
     simulated:
-      "Uma cópia da foto foi ao servidor do Sidera só para conferência; nenhuma IA a analisou. Neste aparelho, a foto fica na memória desta tela.",
-    real: "Uma cópia preparada da foto foi enviada para análise (Sidera e Anthropic). O Sidera não a grava; neste aparelho, ela fica na memória desta tela.",
+      "Uma cópia da foto foi ao servidor do Sidera só para conferência; nenhuma IA a analisou. Neste aparelho, a foto fica só nesta etapa; ao continuar, segue apenas o texto da leitura.",
+    real: "Uma cópia preparada da foto foi enviada para análise (Sidera e Anthropic). O Sidera não a grava. Neste aparelho, a foto fica só nesta etapa; ao continuar, segue apenas o texto da leitura.",
   },
 } as const;
 
@@ -66,14 +71,14 @@ export function consentSections(
   };
   const prepare = {
     title: "Antes de qualquer envio",
-    body: "A foto é redesenhada no seu navegador, sem os dados de localização e do aparelho (EXIF/GPS). O arquivo original no seu aparelho não é alterado. Neste aparelho, a cópia preparada fica só na memória desta tela e sai dela quando você descarta a foto ou sai do fluxo.",
+    body: "A foto é redesenhada no seu navegador, sem os dados de localização e do aparelho (EXIF/GPS). O arquivo original no seu aparelho não é alterado. Neste aparelho, a cópia preparada fica só na memória da leitura das mãos; quando você descarta a foto ou sai dessa etapa, o Sidera deixa de mantê-la (a liberação da memória é feita pelo navegador).",
   };
   const rights = {
     title: "Seus direitos",
     body:
       mode === "off"
         ? "Você pode desistir a qualquer momento: basta descartar a foto ou sair do fluxo. A leitura é exclusiva para maiores de 18 anos."
-        : "Você pode desistir a qualquer momento: descarte a foto ou saia do fluxo. Depois do envio, o descarte vale para a cópia neste aparelho; o que já foi enviado segue as regras acima. A leitura é exclusiva para maiores de 18 anos.",
+        : "Você pode desistir a qualquer momento. Descartar a foto ou sair da leitura das mãos tira a foto deste aparelho. Sair da jornada, recarregar ou fechar a página também apaga o texto da leitura. Retirar o consentimento faz tudo isso e cancela a autorização para novas análises. O que já foi enviado segue as regras acima. A leitura é exclusiva para maiores de 18 anos.",
   };
   if (mode === "off")
     return [
@@ -85,6 +90,10 @@ export function consentSections(
       },
       rights,
     ];
+  const device = {
+    title: "O que fica neste aparelho",
+    body: "Ao continuar para as próximas etapas, o texto da leitura (sem a foto) segue com você na memória desta aba, para montar o relatório, até você sair da jornada, recarregar ou fechar a página. Nada é gravado no aparelho.",
+  };
   const keeps = {
     title: "O que o Sidera guarda",
     body: "O Sidera não grava a foto em disco, banco de dados ou registro: ela fica só na memória do servidor durante a análise. Para não repetir a mesma análise, o resultado (o texto da leitura, sem a foto) e uma impressão digital da foto, que não permite reconstruí-la, ficam na memória do servidor por até 10 minutos.",
@@ -98,6 +107,7 @@ export function consentSections(
         body: "Ao tocar em Analisar, a cópia preparada vai ao servidor do Sidera só para conferência do arquivo. Nenhuma inteligência artificial a observa e o resultado é simulado.",
       },
       keeps,
+      device,
       rights,
     ];
   return [
@@ -108,6 +118,7 @@ export function consentSections(
       body: "Ao tocar em Analisar, a cópia preparada vai ao servidor do Sidera e a um provedor de inteligência artificial (Anthropic, nos Estados Unidos), apenas para observar características visíveis da palma.",
     },
     keeps,
+    device,
     {
       title: "Uso pelo provedor",
       body: "Pelos termos comerciais da Anthropic, o conteúdo enviado pela API não é usado para treinar modelos. A política comercial dela prevê a exclusão do que é enviado e devolvido em até 30 dias, com exceções, como conteúdo sinalizado pelos sistemas de segurança, que pode ser mantido por mais tempo, ou exigência legal. A documentação técnica dela indica que, em certas chamadas, esse conteúdo não é retido por padrão. Qual dessas regras vale para a conta do Sidera ainda está sendo confirmado.",

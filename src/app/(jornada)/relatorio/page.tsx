@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { FileDown, Hand, Orbit, ScanLine } from "lucide-react";
 
 import {
@@ -11,6 +12,7 @@ import {
 import { Mandala } from "@/components/visuals/mandala";
 import { mainProduct, orderBumps } from "@/content/catalog";
 import { reportParts } from "@/content/report-chapters";
+import { InternalReadingLink } from "@/features/report/journey/internal-reading-link";
 import { OfferSummary } from "@/features/report/offer-summary";
 import { ReportExplorer } from "@/features/report/report-explorer";
 import { formatBRL } from "@/lib/format";
@@ -74,6 +76,11 @@ export default function ReportPage() {
               * Quando tecnicamente possível, conforme a qualidade da foto.
             </p>
           </section>
+
+          {/* Só com SIDERA_REPORT_READING=1 (versão interna, Fase 04B). */}
+          <Suspense fallback={null}>
+            <InternalReadingLink />
+          </Suspense>
 
           <section className="space-y-4" aria-labelledby="capitulos">
             <div className="flex items-end justify-between">

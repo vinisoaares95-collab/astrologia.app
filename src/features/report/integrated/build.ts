@@ -29,7 +29,9 @@ import type {
 export type SkyInput =
   | { state: "ready"; report: ClientReport }
   | { state: "loading" }
-  | { state: "unavailable"; reason: string };
+  | { state: "unavailable"; reason: string }
+  /** Ainda não integrado à jornada (até a 04C): só título e resumo. */
+  | { state: "pending"; reason: string };
 
 export type HandsInput =
   | { state: "ready"; result: PalmAnalysisResult }
@@ -133,6 +135,12 @@ function skyPart(input: SkyInput): ReportPartView {
         availability: "loading",
         article: null,
         unavailableReason: null,
+      });
+    if (input.state === "pending")
+      return view(part, ch, {
+        availability: "pending",
+        article: null,
+        unavailableReason: input.reason,
       });
     const c = byNumber.get(ch.number);
     if (input.state === "ready" && c)

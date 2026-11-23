@@ -16,8 +16,11 @@ import { consentSections } from "./privacy-copy";
  *   Anthropic (até 30 dias, com exceções) e a documentação técnica (certas
  *   chamadas sem retenção por padrão), sem afirmar qual vale para a conta.
  *   Recibos da versão anterior deixam de valer (vencem em 30 min).
+ * - 04b.1: explica que o texto da leitura (sem a foto) segue na memória da
+ *   jornada até sair, recarregar ou fechar, e diferencia descartar a foto,
+ *   sair da jornada e retirar o consentimento.
  */
-export const CONSENT_VERSION = "03g3.1";
+export const CONSENT_VERSION = "04b.1";
 
 /** Idade mínima do MVP. */
 export const MIN_AGE = 18;

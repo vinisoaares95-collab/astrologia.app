@@ -48,6 +48,17 @@ const CHAPTER_STATUS: Record<ChapterAvailability, string> = {
   pending: "em definição",
 };
 
+/** Céu pendente = ainda não integrado; jornada pendente = sem definição. */
+const pendingLabel = (basis: ReportChapterView["basis"]) =>
+  basis === "journey" ? "Em definição" : "Em integração";
+const partStatusLabel = (p: ReportPartView) =>
+  p.status === "pending" ? pendingLabel(p.basis) : PART_STATUS[p.status].label;
+
+const chapterStatusText = (c: ReportChapterView) =>
+  c.availability === "pending"
+    ? pendingLabel(c.basis).toLowerCase()
+    : CHAPTER_STATUS[c.availability];
+
 const anchor = (n: number) => `cap-${n}`;
 const partAnchor = (numeral: string) => `parte-${numeral.toLowerCase()}`;
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -89,7 +100,7 @@ function PendingChapter({ chapter }: { chapter: ReportChapterView }) {
           </h3>
           <p className="text-sm text-fg-muted">{chapter.summary}</p>
         </div>
-        <Badge tone="demo">Em definição</Badge>
+        <Badge tone="demo">{pendingLabel(chapter.basis)}</Badge>
       </header>
       <p className="flex gap-2 text-sm leading-relaxed text-fg-subtle">
         <CircleDashed aria-hidden className="mt-0.5 size-4 shrink-0" />
@@ -165,7 +176,10 @@ function Chapter({ chapter }: { chapter: ReportChapterView }) {
 
 function PartSection({ part }: { part: ReportPartView }) {
   const basis = PART_BASIS[part.basis];
-  const status = PART_STATUS[part.status];
+  const status = {
+    ...PART_STATUS[part.status],
+    label: partStatusLabel(part),
+  };
   const headingId = `${partAnchor(part.numeral)}-titulo`;
   return (
     <section
@@ -298,9 +312,7 @@ function DesktopNav({
                   </span>
                   <span className="flex-1 leading-snug">{c.title}</span>
                   <StatusDot availability={c.availability} />
-                  <span className="sr-only">
-                    ({CHAPTER_STATUS[c.availability]})
-                  </span>
+                  <span className="sr-only">({chapterStatusText(c)})</span>
                 </a>
               </li>
             ))}
@@ -335,7 +347,7 @@ function MobileNav({ parts }: { parts: ReportPartView[] }) {
                 {p.title}
               </span>
               <span className="text-xs text-fg-subtle">
-                {PART_STATUS[p.status].label}
+                {partStatusLabel(p)}
               </span>
             </a>
             <ol className="flex flex-wrap gap-1.5">
@@ -353,7 +365,7 @@ function MobileNav({ parts }: { parts: ReportPartView[] }) {
                     {pad(c.number)}
                     <StatusDot availability={c.availability} />
                     <span className="sr-only">
-                      {c.title} ({CHAPTER_STATUS[c.availability]})
+                      {c.title} ({chapterStatusText(c)})
                     </span>
                   </a>
                 </li>

@@ -81,7 +81,7 @@ describe("textos de privacidade da foto", () => {
 
   it("o texto completo do consentimento é o do modo real; versão nova", () => {
     expect(CONSENT_SECTIONS).toEqual(consentSections("real"));
-    expect(CONSENT_VERSION).toBe("03g3.1");
+    expect(CONSENT_VERSION).toBe("04b.1");
   });
 
   it("enquanto a disponibilidade carrega, vale o modo que envia a foto", () => {
@@ -93,5 +93,36 @@ describe("textos de privacidade da foto", () => {
     expect(
       photoModeOf({ status: "ready", enabled: true, simulated: false }),
     ).toBe("real");
+  });
+
+  it("jornada (04B): o texto segue sem a foto; nada de 'memória desta tela'; três ações diferentes", () => {
+    for (const mode of ["simulated", "real"] as const) {
+      const t = textOf(mode);
+      expect(t).not.toMatch(/memória desta tela/u);
+      expect(t).toMatch(
+        /texto da leitura \(sem a foto\) segue com você na memória desta aba/u,
+      );
+      expect(t).toMatch(
+        /até você sair da jornada, recarregar ou fechar a página/u,
+      );
+      const rights = consentSections(mode).find(
+        (s) => s.title === "Seus direitos",
+      )!.body;
+      expect(rights).toMatch(
+        /Descartar a foto ou sair da leitura das mãos tira a foto/u,
+      );
+      expect(rights).toMatch(
+        /Sair da jornada, recarregar ou fechar a página também apaga o texto/u,
+      );
+      expect(rights).toMatch(
+        /Retirar o consentimento faz tudo isso e cancela a autorização/u,
+      );
+      // Sem promessa de eliminação física imediata.
+      expect(t).not.toMatch(
+        /apagad[ao] da memória imediatamente|eliminad[ao] imediatamente/iu,
+      );
+      expect(t).toMatch(/liberação da memória é feita pelo navegador/u);
+    }
+    expect(textOf("off")).not.toMatch(/memória desta aba/u);
   });
 });

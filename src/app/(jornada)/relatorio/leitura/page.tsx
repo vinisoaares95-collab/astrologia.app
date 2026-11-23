@@ -7,25 +7,29 @@ import { Container } from "@/components/ui";
 import { routes } from "@/config/routes";
 import { buildIntegratedReport } from "@/features/report/integrated/build";
 import { DemoBanner } from "@/features/report/integrated/demo-banner";
+import {
+  isReportDemoEnabled,
+  isReportReadingEnabled,
+} from "@/features/report/integrated/demo-gate";
 import { ReportReader } from "@/features/report/integrated/report-reader";
-import { isReportDemoEnabled } from "@/features/report/integrated/demo-gate";
 import {
   isSampleScenario,
   sampleInputs,
   SAMPLE_SCENARIOS,
 } from "@/features/report/integrated/samples";
+import { JourneyReading } from "@/features/report/journey/journey-reading";
 
 /**
- * Leitura do relatório integrado (Fase 04A) — DEMONSTRAÇÃO INTERNA.
+ * Leitura do relatório integrado — SÓ INTERNA (demo-gate.ts e src/proxy.ts).
  *
- * Só com SIDERA_REPORT_DEMO=1 no servidor (sem ela: 404). Usa apenas dados
- * de exemplo (samples.ts); não recebe foto, dados de nascimento nem
- * resultados reais. Os capítulos 8 e 9 aparecem pendentes. Não é o produto
- * e não deve ser apresentada ao público como relatório completo. A página
- * comercial continua em /relatorio.
+ * - Sem `?cenario=`: a jornada real (Fase 04B), exige SIDERA_REPORT_READING=1.
+ *   Mostra só o que já está integrado (capítulos 6 e 7 da prévia).
+ * - Com `?cenario=`: exemplos (Fase 04A), exige SIDERA_REPORT_DEMO=1. Nunca
+ *   leem a jornada nem são misturados a ela.
+ * A página comercial continua em /relatorio.
  */
 export const metadata: Metadata = {
-  title: "Leitura do relatório (demonstração interna)",
+  title: "Leitura do relatório (versão interna)",
   robots: { index: false, follow: false },
 };
 
@@ -35,20 +39,23 @@ async function Reading({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   await connection();
-  if (!isReportDemoEnabled()) notFound();
   const requested = (await searchParams).cenario;
-  const scenario = isSampleScenario(requested) ? requested : "completo";
-  const report = buildIntegratedReport(await sampleInputs(scenario));
-  return (
-    <>
-      <DemoBanner
-        current={scenario}
-        scenarios={SAMPLE_SCENARIOS}
-        basePath={routes.reportReading}
-      />
-      <ReportReader report={report} />
-    </>
-  );
+  if (requested !== undefined) {
+    if (!isReportDemoEnabled() || !isSampleScenario(requested)) notFound();
+    const report = buildIntegratedReport(await sampleInputs(requested));
+    return (
+      <>
+        <DemoBanner
+          current={requested}
+          scenarios={SAMPLE_SCENARIOS}
+          basePath={routes.reportReading}
+        />
+        <ReportReader report={report} />
+      </>
+    );
+  }
+  if (!isReportReadingEnabled()) notFound();
+  return <JourneyReading />;
 }
 
 function ReadingFallback() {
