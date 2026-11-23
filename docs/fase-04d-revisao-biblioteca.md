@@ -3,6 +3,13 @@
 Estado: **proposta para revisão editorial.** Nenhum código do produto foi
 escrito ou alterado. Não houve chamada paga, mudança nos motores nem deploy.
 
+> **Atualização (ajuste final da seleção, `docs/fase-04d-ajuste-selecao.md`):**
+> a seleção do céu no capítulo 8 passou a usar só as posições do **mesmo
+> tema** do traço das mãos. Três textos da seção 2.5/2.6 foram ajustados
+> (R-escopo, U6, condição de R-hora) e R-sem-hora foi retirada. Os exemplos e
+> números das seções 4 e 5 abaixo valem para a regra **anterior**; os da regra
+> nova estão no documento do ajuste.
+
 Este documento revisa a especificação do commit `5033f86`
 (`docs/fase-04d-especificacao-capitulos-8-9.md`). O que não for alterado
 aqui continua valendo.
@@ -285,15 +292,15 @@ anexo A.
 
 ### 2.5 Ressalvas (limitações do capítulo 8, montadas pelo sistema)
 
-| Código      | Quando                                                     | Texto                                                                                                                                             |
-| ----------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| R0 (sempre) | Capítulo com conteúdo                                      | > Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras. |
-| R-conf      | Algum traço observado foi excluído por D3 ou D4            | > {Lista} não {entra/entram} nestas comparações: são traços que variaram entre análises da mesma foto ou proporções estimadas a olho.             |
-| R-parcial   | Algum traço com polo ficou parcial                         | > {Lista} {ficou/ficaram} só parcialmente {visível/visíveis} na foto e por isso não {sustenta/sustentam} nenhuma comparação.                      |
-| R-hora      | Posição elegível incerta por causa do horário (aproximado) | > {Lista} {depende/dependem} do horário de nascimento informado e não {entra/entram} nestas comparações.                                          |
-| R-sem-hora  | Horário desconhecido                                       | > Sem o horário de nascimento, o Ascendente não faz parte desta leitura nem destas comparações.                                                   |
-| R-escopo    | Capítulo com conteúdo                                      | > Os demais traços e posições não usam os eixos comparados aqui e por isso não aparecem neste capítulo.                                           |
-| R-simulada  | Leitura das mãos simulada (ambiente interno)               | > Esta comparação usa uma leitura das mãos simulada, do ambiente interno de testes.                                                               |
+| Código      | Quando                                                                  | Texto                                                                                                                                             |
+| ----------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R0 (sempre) | Capítulo com conteúdo                                                   | > Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras. |
+| R-conf      | Algum traço observado foi excluído por D3 ou D4                         | > {Lista} não {entra/entram} nestas comparações: são traços que variaram entre análises da mesma foto ou proporções estimadas a olho.             |
+| R-parcial   | Algum traço com polo ficou parcial                                      | > {Lista} {ficou/ficaram} só parcialmente {visível/visíveis} na foto e por isso não {sustenta/sustentam} nenhuma comparação.                      |
+| R-hora      | Lua, Vênus ou Marte incertos por causa do horário (ajuste 04D)          | > {Lista} {depende/dependem} do horário de nascimento informado e não {entra/entram} nestas comparações.                                          |
+| R-sem-hora  | **Retirada no ajuste 04D:** o Ascendente não entra mais nas comparações | (sem texto)                                                                                                                                       |
+| R-escopo    | Capítulo com conteúdo (texto revisto no ajuste 04D)                     | > Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.                                                |
+| R-simulada  | Leitura das mãos simulada (ambiente interno)                            | > Esta comparação usa uma leitura das mãos simulada, do ambiente interno de testes.                                                               |
 
 As listas usam os rótulos de `FEATURE_LABELS` e a função de agrupamento
 `labelList`, que já existe. Para o céu, usam o artigo e o nome de
@@ -301,14 +308,14 @@ As listas usam os rótulos de `FEATURE_LABELS` e a função de agrupamento
 
 ### 2.6 Indisponibilidade
 
-| Código | Quando                                                        | Texto                                                                                                                                                                                                         |
-| ------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| U1     | Céu disponível, mãos ausentes                                 | > As conexões dependem das duas leituras, e a leitura das mãos não está nesta jornada. Nenhuma conexão foi criada só a partir do mapa.                                                                        |
-| U2     | Mãos disponíveis, céu ausente                                 | > As conexões dependem das duas leituras, e os capítulos do mapa natal não estão nesta jornada. Nenhuma conexão foi criada só a partir das mãos.                                                              |
-| U3     | Nenhuma das duas                                              | > As conexões dependem das duas leituras, e nenhuma delas está disponível nesta jornada.                                                                                                                      |
-| U4     | Mãos sem traço elegível e sem pedido de nova foto             | > Os traços das mãos que podem ser comparados — o comprimento e o traçado da linha do coração e o início da linha da cabeça — não ficaram nítidos o suficiente na foto. Por isso, nenhuma conexão foi criada. |
-| U5     | Leitura das mãos com pedido de nova foto                      | > A leitura das mãos pediu uma nova foto. Sem uma observação nítida, nenhuma conexão foi criada.                                                                                                              |
-| U6     | Traços elegíveis dos dois lados, mas sem nenhum eixo em comum | > Os traços nítidos das mãos e as posições do mapa não usam nenhum eixo em comum. Por isso, não há o que comparar, e nenhuma conexão foi criada para preencher o capítulo.                                    |
+| Código | Quando                                                                                                        | Texto                                                                                                                                                                                                                                             |
+| ------ | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| U1     | Céu disponível, mãos ausentes                                                                                 | > As conexões dependem das duas leituras, e a leitura das mãos não está nesta jornada. Nenhuma conexão foi criada só a partir do mapa.                                                                                                            |
+| U2     | Mãos disponíveis, céu ausente                                                                                 | > As conexões dependem das duas leituras, e os capítulos do mapa natal não estão nesta jornada. Nenhuma conexão foi criada só a partir das mãos.                                                                                                  |
+| U3     | Nenhuma das duas                                                                                              | > As conexões dependem das duas leituras, e nenhuma delas está disponível nesta jornada.                                                                                                                                                          |
+| U4     | Mãos sem traço elegível e sem pedido de nova foto                                                             | > Os traços das mãos que podem ser comparados — o comprimento e o traçado da linha do coração e o início da linha da cabeça — não ficaram nítidos o suficiente na foto. Por isso, nenhuma conexão foi criada.                                     |
+| U5     | Leitura das mãos com pedido de nova foto                                                                      | > A leitura das mãos pediu uma nova foto. Sem uma observação nítida, nenhuma conexão foi criada.                                                                                                                                                  |
+| U6     | Traços elegíveis nas mãos, mas as posições do mesmo tema no mapa não têm o eixo (texto revisto no ajuste 04D) | > As posições do mapa ligadas aos mesmos temas dos traços nítidos das mãos — o afeto e o modo de agir — não apontam para nenhum dos lados desses traços. Por isso, não há o que comparar, e nenhuma conexão foi criada para preencher o capítulo. |
 
 ---
 
