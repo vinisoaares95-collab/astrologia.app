@@ -7,21 +7,14 @@ import { Badge } from "@/components/ui";
 import type { ReportPart } from "@/content/report-chapters";
 import { cn } from "@/lib/cn";
 
-const sourceBadge: Record<
-  ReportPart["source"],
-  { label: string; tone: "celestial" | "neutral" | "accent" }
-> = {
-  sky: { label: "Cálculo + símbolo", tone: "celestial" },
-  hands: { label: "Observação + símbolo", tone: "neutral" },
-  journey: { label: "Síntese simbólica", tone: "accent" },
-};
+import { PART_BASIS } from "./part-basis";
 
 /** Navegação em abas pelas partes do relatório (conteúdo editorial, sem resultados). */
 export function ReportExplorer({ parts }: { parts: readonly ReportPart[] }) {
   const [active, setActive] = useState(0);
   const id = useId();
   const part = parts[active];
-  const badge = sourceBadge[part.source];
+  const badge = PART_BASIS[part.source];
 
   const tabs = useRef<Array<HTMLButtonElement | null>>([]);
 

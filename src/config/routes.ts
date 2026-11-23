@@ -7,6 +7,8 @@ export const routes = {
   palmPreview: "/leitura-das-maos/previa",
   birthData: "/dados-de-nascimento",
   report: "/relatorio",
+  /** Leitura do relatório integrado (Fase 04A): só demonstração interna. */
+  reportReading: "/relatorio/leitura",
   designSystem: "/sistema-visual",
 } as const;
 
@@ -60,5 +62,10 @@ export const journeyScreens: Record<
     step: "report",
     title: "Relatório",
     back: routes.birthData,
+  },
+  [routes.reportReading]: {
+    step: "report",
+    title: "Sua leitura",
+    back: routes.report,
   },
 };
