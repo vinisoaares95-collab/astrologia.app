@@ -9,11 +9,15 @@
 import { consentSections } from "./privacy-copy";
 
 /**
- * Muda sempre que o texto de consentimento mudar. Versão do texto. 03f2.1: o texto passou a depender do
- * modo da análise (desligada, simulada, real) e deixou de citar prazos de
- * retenção do provedor que não foram confirmados.
+ * Muda sempre que o texto de consentimento mudar.
+ * - 03f2.1: o texto passou a depender do modo da análise (desligada,
+ *   simulada, real) e deixou de citar prazos do provedor não confirmados.
+ * - 03g3.1: "Uso pelo provedor" passa a citar a política comercial da
+ *   Anthropic (até 30 dias, com exceções) e a documentação técnica (certas
+ *   chamadas sem retenção por padrão), sem afirmar qual vale para a conta.
+ *   Recibos da versão anterior deixam de valer (vencem em 30 min).
  */
-export const CONSENT_VERSION = "03f2.1";
+export const CONSENT_VERSION = "03g3.1";
 
 /** Idade mínima do MVP. */
 export const MIN_AGE = 18;

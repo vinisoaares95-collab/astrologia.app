@@ -11,8 +11,11 @@
  *   na memória durante a análise. O resultado (sem a foto) e uma impressão
  *   digital da foto (hash) ficam na memória por até 10 minutos, para não
  *   repetir a mesma análise;
- * - a retenção pelo provedor segue as regras dele: só o que foi verificado
- *   nos termos comerciais é afirmado.
+ * - a retenção pelo provedor segue as regras dele (03G.3): a política
+ *   comercial da Anthropic prevê exclusão em até 30 dias, com exceções; a
+ *   documentação técnica indica que certas chamadas não retêm conteúdo por
+ *   padrão. Qual regra vale para a conta do Sidera não está confirmado, por
+ *   isso o texto cita as duas e não promete retenção zero nem prazo da conta.
  */
 export type PhotoMode = "off" | "simulated" | "real";
 
@@ -107,7 +110,7 @@ export function consentSections(
     keeps,
     {
       title: "Uso pelo provedor",
-      body: "Pelos termos comerciais da Anthropic, o conteúdo enviado pela API não é usado para treinar modelos. Por quanto tempo o provedor mantém esse conteúdo segue as regras dele e será confirmado antes do lançamento.",
+      body: "Pelos termos comerciais da Anthropic, o conteúdo enviado pela API não é usado para treinar modelos. A política comercial dela prevê a exclusão do que é enviado e devolvido em até 30 dias, com exceções, como conteúdo sinalizado pelos sistemas de segurança, que pode ser mantido por mais tempo, ou exigência legal. A documentação técnica dela indica que, em certas chamadas, esse conteúdo não é retido por padrão. Qual dessas regras vale para a conta do Sidera ainda está sendo confirmado.",
     },
     rights,
   ];

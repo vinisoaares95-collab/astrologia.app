@@ -55,11 +55,22 @@ describe("textos de privacidade da foto", () => {
       // O servidor não grava; o resultado e o hash ficam até 10 min (cache).
       expect(t).toMatch(/não grava a foto/u);
       expect(t).toMatch(/até 10 minutos/u);
-      // Nada de apagamento garantido nem de prazos do provedor não verificados.
+      // Nada de apagamento garantido, exclusão imediata nem retenção zero.
       expect(t).not.toMatch(
-        /30 dias|2 anos|apagad[ao] (com segurança|definitivamente)|zerad/iu,
+        /2 anos|apagad[ao] (com segurança|definitivamente)|zerad|exclu[ií]d[ao] imediatamente|exclusão imediata|retenção zero|não (é|fica) retid[ao] pela Anthropic/iu,
       );
     }
+    // Anthropic (03G.3): as duas regras, com exceções, sem afirmar a da conta.
+    const provider = consentSections("real").find(
+      (s) => s.title === "Uso pelo provedor",
+    )!.body;
+    expect(provider).toMatch(/não é usado para treinar/u);
+    expect(provider).toMatch(/até 30 dias, com exceções/u);
+    expect(provider).toMatch(
+      /em certas chamadas, esse conteúdo não é retido por padrão/u,
+    );
+    expect(provider).toMatch(/conta do Sidera ainda está sendo confirmad/u);
+    expect(textOf("simulated")).not.toMatch(/30 dias/u);
     // Metadados: removidos da cópia; o original não é alterado.
     expect(
       consentSections("real")
@@ -70,7 +81,7 @@ describe("textos de privacidade da foto", () => {
 
   it("o texto completo do consentimento é o do modo real; versão nova", () => {
     expect(CONSENT_SECTIONS).toEqual(consentSections("real"));
-    expect(CONSENT_VERSION).toBe("03f2.1");
+    expect(CONSENT_VERSION).toBe("03g3.1");
   });
 
   it("enquanto a disponibilidade carrega, vale o modo que envia a foto", () => {

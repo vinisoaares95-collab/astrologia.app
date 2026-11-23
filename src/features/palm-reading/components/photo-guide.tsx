@@ -18,16 +18,25 @@ const tips = [
   },
   {
     icon: Sun,
-    title: "Luz e foco",
-    text: "Luz natural, sem reflexos. Toque na palma para focar.",
+    title: "Luz e fundo",
+    text: "Luz natural, sem reflexos, sobre um fundo liso. Toque na palma para focar.",
   },
 ];
+
+/**
+ * Privacidade da captura (03G.3): a foto deve mostrar só o necessário para
+ * a leitura. Orientação ao usuário; não muda o que o modelo de visão avalia.
+ */
+export const PHOTO_ONLY_THE_PALM =
+  "Só a palma: deixe fora da foto o rosto, outras pessoas, documentos, cartões, telas e outros objetos pessoais.";
 
 const avoid = [
   "Mão ou celular inclinados",
   "Dedos ou pulso cortados",
   "Flash e reflexos",
   "Anéis e relógios",
+  "Rosto ou outras pessoas",
+  "Documentos e telas",
 ];
 
 export function PhotoGuide() {
@@ -49,6 +58,9 @@ export function PhotoGuide() {
           </li>
         ))}
       </ul>
+      <p className="rounded-2xl bg-surface/80 p-3.5 text-xs leading-relaxed text-fg-muted edge-light">
+        {PHOTO_ONLY_THE_PALM}
+      </p>
       <div className="space-y-2">
         <p className="font-mono text-[0.65rem] tracking-[0.16em] text-fg-subtle uppercase">
           Evite

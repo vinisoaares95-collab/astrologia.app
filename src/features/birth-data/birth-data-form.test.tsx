@@ -223,3 +223,19 @@ describe("BirthDataForm", () => {
     );
   });
 });
+
+describe("aviso sobre os dados de nascimento (03G.3)", () => {
+  it("diz que os dados vão ao servidor, sem gravação nem repasse", () => {
+    const { unmount } = render(<BirthDataForm />);
+    const notice = screen.getByText(/vão ao servidor do Sidera/i);
+    expect(notice).toHaveTextContent(/localizar o lugar e verificar os dados/i);
+    expect(notice).toHaveTextContent(/não grava esses dados nem os repassa/i);
+    expect(notice).not.toHaveTextContent(/calcular o mapa/i);
+    expect(notice).not.toHaveTextContent(/ficam apenas nesta tela/i);
+    unmount();
+    render(<BirthDataForm engineEnabled />);
+    expect(screen.getByText(/vão ao servidor do Sidera/i)).toHaveTextContent(
+      /verificar os dados e calcular o mapa/i,
+    );
+  });
+});

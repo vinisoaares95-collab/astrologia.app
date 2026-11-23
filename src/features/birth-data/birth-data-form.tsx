@@ -198,7 +198,9 @@ export function BirthDataForm({
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (result?.status === "ok") {
-      // Nada é enviado nem salvo: seguimos para a proposta e os dados são descartados.
+      // Os dados já foram ao servidor só para normalizar e calcular (Server
+      // Actions), sem gravação; aqui não há novo envio: seguimos para a
+      // proposta e a tela os descarta.
       router.push(routes.report);
       return;
     }
@@ -363,11 +365,14 @@ export function BirthDataForm({
       {chart?.status === "ok" && <NatalChartView chart={chart.chart} />}
 
       <Callout tone="demo" title="Versão demonstrativa">
-        Os dados ficam apenas nesta tela. A verificação acontece no servidor,
-        sem salvar nada,{" "}
+        A busca da cidade, a data e a hora vão ao servidor do Sidera só para
+        localizar o lugar e verificar os dados
+        {engineEnabled ? " e calcular o mapa" : ""}. O Sidera não grava esses
+        dados nem os repassa a outros serviços; nesta tela, eles somem quando
+        você sai.{" "}
         {engineEnabled
-          ? "e o mapa só é calculado neste ambiente interno."
-          : "e nenhum mapa é calculado ainda."}
+          ? "O mapa só é calculado neste ambiente interno."
+          : "Nenhum mapa é calculado ainda."}
       </Callout>
 
       <details className="group rounded-2xl bg-surface/60 px-4 py-3 edge-light">

@@ -70,7 +70,8 @@ const selfCheck = [
   "Mão inteira: do pulso às pontas dos dedos",
   "Palma de frente, dedos levemente afastados",
   "Celular paralelo à palma, sem inclinar",
-  "Foto nítida, com boa luz e sem reflexos",
+  "Foto nítida, com boa luz, fundo liso e sem reflexos",
+  "Só a palma: sem rosto, outras pessoas, documentos ou telas",
 ];
 
 /**
@@ -418,7 +419,7 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
             {!loading && (
               <p className="text-xs leading-relaxed text-fg">
                 Palma de frente · celular paralelo à mão · mão inteira, do pulso
-                às pontas dos dedos
+                às pontas dos dedos · só a palma, fundo liso
               </p>
             )}
             <p className="text-xs text-fg-muted">

@@ -132,7 +132,9 @@ describe("PhotoCapture", () => {
       /do pulso às pontas dos dedos/i,
       /palma de frente, dedos levemente afastados/i,
       /celular paralelo à palma, sem inclinar/i,
-      /boa luz e sem reflexos/i,
+      /boa luz, fundo liso e sem reflexos/i,
+      // Privacidade da captura (03G.3).
+      /só a palma: sem rosto, outras pessoas, documentos ou telas/i,
     ])
       expect(screen.getByText(item)).toBeInTheDocument();
 

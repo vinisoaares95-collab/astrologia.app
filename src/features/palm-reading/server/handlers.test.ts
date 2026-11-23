@@ -23,6 +23,7 @@ import {
 } from "../vision/analyze";
 import { visionWorstCaseUsd } from "../vision/budget";
 import { buildVisionRequest } from "../vision/prompt";
+import { createClientKeyer } from "./client-key";
 import { issueReceipt, RECEIPT_TTL_MS } from "./consent-receipt";
 import {
   CONSENT_HEADER,
@@ -42,6 +43,7 @@ import {
 
 const ORIGIN = "http://localhost:3000";
 const SECRET = Buffer.alloc(32, 7);
+const CLIENT_SECRET = Buffer.alloc(32, 9);
 let clock = 1_800_000_000_000;
 
 function deps(
@@ -55,6 +57,10 @@ function deps(
   const d: PalmApiDeps = {
     config: readPalmAnalysisConfig({ SIDERA_PALM_ANALYSIS_ENABLED: "1" }),
     secret: SECRET,
+    clientKey: createClientKeyer({
+      secret: CLIENT_SECRET,
+      source: { kind: "untrusted-dev" },
+    }),
     now: () => clock,
     provider: () => provider,
     textProvider: () => text,
@@ -974,5 +980,45 @@ describe("resultado guardado por até 10 minutos (texto de privacidade)", () => 
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe("chave do cliente (03G.3)", () => {
+  const noKey = createClientKeyer({ secret: null, source: null });
+
+  it("sem chave do cliente (produção sem segredo ou fonte de IP): 503, sem chamar o provedor", async () => {
+    const { d, provider } = deps({ clientKey: noKey });
+    expect(
+      await read(await handleConsent(consentRequest(validConsent), d)),
+    ).toEqual({ status: 503, body: { error: "unavailable" } });
+    expect(
+      await read(await handleAnalysis(analysisRequest(goodJpeg()), d)),
+    ).toEqual({ status: 503, body: { error: "unavailable" } });
+    expect(provider.calls).toHaveLength(0);
+  });
+
+  it("com cabeçalho do proxy configurado, forjar x-forwarded-for não dá cota nova", async () => {
+    const { d } = deps({
+      clientKey: createClientKeyer({
+        secret: CLIENT_SECRET,
+        source: { kind: "header", header: "x-client-ip" },
+      }),
+    });
+    const statuses: number[] = [];
+    for (let i = 0; i < 11; i++)
+      statuses.push(
+        (
+          await handleAnalysis(
+            analysisRequest(syntheticJpeg(1200 + i, 1600), {
+              [CONSENT_HEADER]: token(),
+              "x-client-ip": "203.0.113.7",
+              "x-forwarded-for": `198.51.100.${i}`,
+            }),
+            d,
+          )
+        ).status,
+      );
+    expect(statuses.slice(0, 10).every((s) => s === 200)).toBe(true);
+    expect(statuses[10]).toBe(429);
   });
 });

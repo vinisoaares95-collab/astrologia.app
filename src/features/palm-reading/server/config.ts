@@ -12,7 +12,10 @@ import "server-only";
  *    SIDERA_PALM_VISION_PROVIDER=anthropic, SIDERA_PALM_VISION_REAL=1, a
  *    chave no servidor e NODE_ENV diferente de "production" (o MVP não
  *    processa fotos reais em deploy público).
- * Em produção, o recibo de consentimento exige SIDERA_CONSENT_SECRET.
+ * Em produção, o recibo de consentimento exige SIDERA_CONSENT_SECRET, e os
+ * limites por cliente exigem SIDERA_CLIENT_KEY_SECRET mais uma fonte de IP
+ * confiável (SIDERA_CLIENT_IP_HEADER ou SIDERA_TRUSTED_PROXY_HOPS; ver
+ * client-key.ts). Sem eles, os endpoints respondem 503.
  */
 import { anthropicApiKey } from "../../interpretation/ai/api-key";
 import { readAiConfig } from "../../interpretation/ai/config";

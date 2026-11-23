@@ -46,7 +46,12 @@ describe("ConsentForm", () => {
     expect(screen.getByText(/não grava a foto em disco/i)).toBeInTheDocument();
     expect(screen.getByText(/não é usado para treinar/i)).toBeInTheDocument();
     expect(screen.queryByText(/nada é enviado/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/30 dias|2 anos/i)).not.toBeInTheDocument();
+    // Retenção do provedor (03G.3): política comercial e documentação
+    // técnica, sem prazo da conta, retenção zero ou o prazo de 2 anos.
+    expect(screen.getByText(/até 30 dias, com exceções/i)).toBeInTheDocument();
+    expect(
+      screen.queryByText(/2 anos|retenção zero|exclusão imediata/i),
+    ).not.toBeInTheDocument();
   });
 
   it("caixas começam desmarcadas e nada avança sem idade, autorização e mão", async () => {

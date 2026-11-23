@@ -46,7 +46,7 @@ const faq = [
   },
   {
     q: "O que acontece com a minha foto?",
-    a: "Neste protótipo, a foto é exibida apenas no seu navegador e descartada ao sair. Nas próximas fases, qualquer envio será explicado e dependerá do seu consentimento.",
+    a: "Ela só sai do seu aparelho depois que você autoriza e toca em Analisar, e antes disso é copiada sem os dados de localização e do aparelho. Quando a análise por inteligência artificial está ligada, essa cópia vai ao servidor do Sidera e à Anthropic, nos Estados Unidos, só para a leitura. O Sidera não grava a foto; o texto da leitura fica até 10 minutos na memória do servidor. A Anthropic não usa o conteúdo para treinar modelos; a política comercial dela prevê exclusão em até 30 dias, com exceções, e a documentação técnica indica que certas chamadas não retêm conteúdo por padrão. Qual regra vale para a conta do Sidera ainda está sendo confirmado. O consentimento explica tudo antes de qualquer envio.",
   },
   {
     q: "Preciso saber meu horário de nascimento?",

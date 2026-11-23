@@ -11,7 +11,9 @@ import "server-only";
  * códigos genéricos, sem detalhes internos; nenhum `console.*`, nenhum
  * arquivo, nenhum banco. A imagem existe só em memória durante a análise e
  * é zerada no fim. O que fica em memória (limites, deduplicação) são chaves
- * opacas (SHA-256) e o resultado já seguro para o cliente.
+ * opacas e o resultado já seguro para o cliente. A chave do cliente é um
+ * HMAC do IP com segredo do servidor (client-key.ts); de qual cabeçalho o IP
+ * é lido depende do proxy da hospedagem, ainda não definido.
  */
 import { createHash } from "node:crypto";
 
@@ -36,6 +38,7 @@ import { withVisionBudget } from "../vision/budget";
 import type { VisionProvider } from "../vision/contract";
 import { createMockVisionProvider } from "../vision/mock-provider";
 import { readPalmAnalysisConfig, type PalmAnalysisConfig } from "./config";
+import { clientKeyerFromEnv, type ClientKeyer } from "./client-key";
 import { issueReceipt, receiptSecret, verifyReceipt } from "./consent-receipt";
 import { createLimiter, type Limiter } from "./rate-limit";
 import { anthropicApiKey } from "../../interpretation/ai/api-key";
@@ -73,6 +76,11 @@ export type PalmApiError =
 export type PalmApiDeps = {
   config: PalmAnalysisConfig;
   secret: Buffer | null;
+  /**
+   * Chave opaca do cliente (HMAC do IP; 03G.3). `null` quando falta o
+   * segredo ou uma fonte de IP confiável: o endpoint fica indisponível.
+   */
+  clientKey: ClientKeyer;
   now: () => number;
   provider: () => VisionProvider;
   /** Redação dos capítulos 6 e 7 (Fase 03E). */
@@ -149,6 +157,7 @@ export function getProcessDeps(): PalmApiDeps {
   processDeps = {
     config,
     secret: receiptSecret(),
+    clientKey: clientKeyerFromEnv(),
     now: () => Date.now(),
     provider: () => real ?? mock,
     textProvider: () => realText ?? mockText,
@@ -184,15 +193,6 @@ export function isSameOrigin(request: Request): boolean {
   } catch {
     return false;
   }
-}
-
-/** Chave opaca do cliente (hash do IP informado pelo proxy). */
-function clientKey(request: Request): string {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip") ||
-    "local";
-  return sha256(`client:${ip}`);
 }
 
 /** Lê o corpo até `max` bytes; acima disso, desiste sem ler o restante. */
@@ -235,7 +235,9 @@ export async function handleConsent(
     if (!deps.config.enabled) return fail(404, "not_found");
     if (!isSameOrigin(request)) return fail(403, "forbidden");
     if (!deps.secret) return fail(503, "unavailable");
-    if (!deps.limits.consentPerClient.take(clientKey(request), deps.now()))
+    const client = deps.clientKey(request);
+    if (!client) return fail(503, "unavailable");
+    if (!deps.limits.consentPerClient.take(client, deps.now()))
       return fail(429, "rate_limited");
     const body = await readCapped(request, MAX_CONSENT_BODY_BYTES);
     if (body === "too_large") return fail(413, "too_large");
@@ -264,11 +266,7 @@ export async function handleConsent(
     return json(200, {
       token,
       expiresAt: receipt.exp,
-      remaining: remainingFor(
-        deps,
-        sha256(`receipt:${receipt.nonce}`),
-        clientKey(request),
-      ),
+      remaining: remainingFor(deps, sha256(`receipt:${receipt.nonce}`), client),
     });
   } catch {
     return fail(500, "internal");
@@ -300,6 +298,8 @@ export async function handleAnalysis(
     if (!deps.config.enabled) return fail(404, "not_found");
     if (!isSameOrigin(request)) return fail(403, "forbidden");
     if (!deps.secret) return fail(503, "unavailable");
+    const client = deps.clientKey(request);
+    if (!client) return fail(503, "unavailable");
 
     const check = verifyReceipt(
       request.headers.get(CONSENT_HEADER),
@@ -316,7 +316,6 @@ export async function handleAnalysis(
       return fail(413, "too_large");
 
     const now = deps.now();
-    const client = clientKey(request);
     const receiptKey = sha256(`receipt:${receipt.nonce}`);
     const remaining = () => remainingFor(deps, receiptKey, client);
     const limited = () =>

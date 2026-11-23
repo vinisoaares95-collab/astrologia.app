@@ -45,6 +45,7 @@ import {
   type PalmApiDeps,
   type PalmReadingAudit,
 } from "../../server/handlers";
+import { createClientKeyer } from "../../server/client-key";
 import { visionWorstCaseUsd, withVisionBudget } from "../../vision/budget";
 import type { VisionProvider, VisionRequest } from "../../vision/contract";
 
@@ -258,6 +259,10 @@ export async function runE2EEvaluation(input: {
   const deps: PalmApiDeps = {
     config,
     secret: randomBytes(32),
+    clientKey: createClientKeyer({
+      secret: randomBytes(32),
+      source: { kind: "untrusted-dev" },
+    }),
     now: () => Date.now(),
     provider: () => vision,
     textProvider: () => text,
