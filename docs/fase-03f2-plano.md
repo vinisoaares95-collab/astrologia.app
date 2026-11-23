@@ -696,3 +696,22 @@ Detalhes em `avaliacao-ia/03f2-etapa-b/consistencia-visual.md`.
 
 **Fotos:** apagadas em 19/11/2026, 20:26 UTC (`/tmp/sidera-fotos-03f`:
 8 fotos, manifesto e mapa).
+
+## Etapa B — resultado oficial (23/11/2026)
+
+- **Apuração da ficha auditada:** 10 de 10 critérios aprovados.
+  - Bloqueantes: 0 característica inventada, 0 problema de segurança, 0
+    gênero presumido.
+  - Fidelidade 3/3; indisponíveis 3/3.
+  - Editorial 4,33; experiência 4,33.
+  - Custo médio US$ 0,021; espera máxima 36 s.
+- **Não encerrada como aprovada para uso comercial**, por pendência
+  bloqueante de consistência visual:
+  - a mesma foto, com a mesma entrada, teve 3 classificações invertidas
+    entre execuções;
+  - uma delas, o formato da palma, estava declarada como clara.
+- **Próximo passo recomendado:** etapa curta de medição por repetição e
+  consenso entre observações (divergência → indeterminado), antes de
+  qualquer uso público.
+
+Detalhes em `avaliacao-ia/03f2-etapa-b/resultado-oficial.md`.
