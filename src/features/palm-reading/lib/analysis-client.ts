@@ -118,9 +118,14 @@ export async function requestPalmAnalysis(
   photo: Blob,
   receipt: ConsentReceiptToken,
   fetcher: typeof fetch = fetch,
+  /** Abortado quando a pessoa sai do fluxo (03G.3, D5). */
+  signal?: AbortSignal,
 ): Promise<AnalysisCall> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
+  const onLeave = () => controller.abort();
+  if (signal?.aborted) controller.abort();
+  signal?.addEventListener("abort", onLeave);
   try {
     const r = await fetcher(`${BASE}/analise`, {
       method: "POST",
@@ -162,6 +167,7 @@ export async function requestPalmAnalysis(
       remaining: null,
     };
   } finally {
+    signal?.removeEventListener("abort", onLeave);
     clearTimeout(timer);
   }
 }

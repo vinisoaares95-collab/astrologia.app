@@ -1,5 +1,13 @@
 # Fase 03G.3, Bloco 2 — verificações e arquitetura do registro de consentimento
 
+> **Atualização (23/11/2026).**
+>
+> - **D5:** aprovada e implementada. Ao sair de `/leitura-das-maos`, o
+>   estado é descartado. Verificação no navegador em
+>   `scripts/e2e/d5-saida-do-fluxo.mjs`.
+> - **Especificação:** a seção 3 foi substituída por
+>   `09-bloco2-especificacao.md`.
+
 **Documento de trabalho (23/11/2026).** É uma proposta para aprovação.
 
 - **Implementação:** o registro persistente **não** foi implementado.

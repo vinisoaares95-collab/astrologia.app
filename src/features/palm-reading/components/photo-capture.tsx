@@ -102,7 +102,8 @@ function ConsentRequired() {
         <h2 className="text-xl font-semibold text-fg">Antes da foto</h2>
         <p className="text-sm text-fg-muted">
           Confirme sua idade, leia como a foto será usada e escolha a mão. Se
-          você recarregou a página, essas escolhas foram descartadas.
+          você recarregou a página ou saiu da leitura das mãos, essas escolhas e
+          a foto foram descartadas deste aparelho.
         </p>
       </div>
       <ButtonLink href={routes.palmConsent}>Ir para o consentimento</ButtonLink>
@@ -123,6 +124,7 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
     restorePrevious,
     remaining,
     setRemaining,
+    beginTask,
   } = usePalmPhoto();
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const availability = useAnalysisAvailability();
@@ -144,8 +146,16 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
       return;
     }
     const id = ++attempt.current;
+    const task = beginTask();
     setRun({ kind: "running" });
-    const r = await requestPalmAnalysis(photo.blob, receipt);
+    const r = await requestPalmAnalysis(
+      photo.blob,
+      receipt,
+      undefined,
+      task.signal,
+    );
+    // Saiu do fluxo durante a espera: nada é restaurado e não há navegação.
+    if (!task.isCurrent()) return;
     if (r.remaining !== null) setRemaining(r.remaining);
     if (id !== attempt.current) return;
     if (!r.ok) {
@@ -183,8 +193,14 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
       return;
     }
     setStatus({ kind: "loading" });
+    const task = beginTask();
     try {
       const result = await loadLocalPhoto(file);
+      if (!task.isCurrent()) {
+        // Preparada depois de a pessoa sair do fluxo: descartada já.
+        if (result.ok) URL.revokeObjectURL(result.photo.url);
+        return;
+      }
       if (result.ok) {
         attempt.current++;
         setPhoto(result.photo);
@@ -194,6 +210,7 @@ function PhotoCaptureSteps({ handLabel }: { handLabel: string }) {
         setStatus({ kind: "error", message: result.message });
       }
     } catch {
+      if (!task.isCurrent()) return;
       setStatus({
         kind: "error",
         message:

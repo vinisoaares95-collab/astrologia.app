@@ -2,9 +2,10 @@
 
 import {
   createContext,
+  Fragment,
   useCallback,
   useContext,
-  useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -42,16 +43,34 @@ type PalmPhotoContextValue = {
   /** Análises ainda disponíveis com o recibo atual (informadas pelo servidor). */
   remaining: number | null;
   setRemaining: (remaining: number | null) => void;
+  /**
+   * Começa uma tarefa assíncrona do fluxo (preparar a foto, pedir o recibo,
+   * analisar). Ao sair do fluxo, `signal` é abortado e `isCurrent()` passa a
+   * ser falso: a resposta atrasada não pode restaurar nada nem navegar.
+   */
+  beginTask: () => FlowTask;
 };
+
+export type FlowTask = { signal: AbortSignal; isCurrent: () => boolean };
 
 const PalmPhotoContext = createContext<PalmPhotoContextValue | null>(null);
 
 /**
  * Mantém foto, consentimento e mão apenas em memória enquanto a pessoa
  * estiver nas telas de leitura das mãos. Ao substituir ou remover, a URL
- * local é revogada e tudo é descartado. Ao sair do fluxo, hoje só a URL é
- * revogada: o estado fica na rota escondida pelo Next.js (ver o layout de
- * /leitura-das-maos).
+ * local é revogada e a foto é descartada.
+ *
+ * Ao sair do fluxo (03G.3, D5): com cacheComponents, o Next.js esconde a
+ * rota com <Activity> em vez de desmontá-la. Esconder executa a limpeza dos
+ * efeitos de layout; é aí que o fluxo é encerrado (`leaveFlow`):
+ * - foto atual e anterior, resultado, consentimento, mão, recibo e
+ *   contagem voltam a vazio, e as URLs locais são revogadas;
+ * - tarefas em andamento são abortadas e invalidadas;
+ * - as telas internas são remontadas (chave nova), descartando o estado
+ *   local delas (caixas marcadas, resultado exibido, campos de arquivo).
+ * Navegar entre as etapas internas não esconde este layout, então o
+ * progresso continua. O consentimento NÃO é revogado no servidor: o recibo
+ * só deixa de existir neste aparelho (e vence sozinho em 30 min).
  */
 export function PalmPhotoProvider({
   children,
@@ -81,6 +100,10 @@ export function PalmPhotoProvider({
   );
   // URLs locais vivas (foto atual e, no máximo, a anterior analisada).
   const urls = useRef(new Set<string>());
+  // Sessão do fluxo: muda a cada saída. Tarefas antigas deixam de valer.
+  const session = useRef(0);
+  const tasks = useRef(new Set<AbortController>());
+  const [flowKey, setFlowKey] = useState(0);
   const revoke = useCallback((url: string | undefined) => {
     if (url && urls.current.delete(url)) URL.revokeObjectURL(url);
   }, []);
@@ -144,7 +167,37 @@ export function PalmPhotoProvider({
     [],
   );
 
-  useEffect(() => release, [release]);
+  const beginTask = useCallback((): FlowTask => {
+    const controller = new AbortController();
+    const started = session.current;
+    tasks.current.add(controller);
+    controller.signal.addEventListener("abort", () =>
+      tasks.current.delete(controller),
+    );
+    return {
+      signal: controller.signal,
+      isCurrent: () =>
+        session.current === started && !controller.signal.aborted,
+    };
+  }, []);
+
+  const leaveFlow = useCallback(() => {
+    session.current++;
+    for (const task of [...tasks.current]) task.abort();
+    tasks.current.clear();
+    release();
+    setPhotoState(null);
+    setConsent(null);
+    setHand(null);
+    setReceipt(null);
+    setAnalysis(null);
+    setPrevious(null);
+    setRemaining(null);
+    setFlowKey((k) => k + 1);
+  }, [release]);
+
+  // Roda quando a rota é escondida (saída do fluxo) ou desmontada.
+  useLayoutEffect(() => leaveFlow, [leaveFlow]);
 
   const value = useMemo(
     () => ({
@@ -163,6 +216,7 @@ export function PalmPhotoProvider({
       restorePrevious,
       remaining,
       setRemaining,
+      beginTask,
     }),
     [
       photo,
@@ -178,12 +232,13 @@ export function PalmPhotoProvider({
       previous,
       restorePrevious,
       remaining,
+      beginTask,
     ],
   );
 
   return (
     <PalmPhotoContext.Provider value={value}>
-      {children}
+      <Fragment key={flowKey}>{children}</Fragment>
     </PalmPhotoContext.Provider>
   );
 }

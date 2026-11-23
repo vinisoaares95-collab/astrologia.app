@@ -65,6 +65,28 @@ describe("cliente da análise", () => {
     );
   });
 
+  it("sair do fluxo (D5) aborta o envio em andamento", async () => {
+    const leave = new AbortController();
+    const f = vi.fn(
+      (_: string, init: RequestInit) =>
+        new Promise<Response>((_, reject) =>
+          init.signal?.addEventListener("abort", () =>
+            reject(new DOMException("abortado", "AbortError")),
+          ),
+        ),
+    );
+    const pending = requestPalmAnalysis(
+      new Blob(["x"]),
+      { token: "recibo", expiresAt: 1 },
+      f as unknown as typeof fetch,
+      leave.signal,
+    );
+    leave.abort();
+    expect((await pending).ok).toBe(false);
+    const [, init] = f.mock.calls[0] as unknown as [string, RequestInit];
+    expect(init.signal?.aborted).toBe(true);
+  });
+
   it("erros viram códigos conhecidos; desconhecidos viram 'internal'", async () => {
     const blob = new Blob(["x"]);
     const r1 = await requestPalmAnalysis(

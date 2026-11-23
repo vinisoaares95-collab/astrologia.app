@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { Activity } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createConsent } from "../consent";
@@ -133,6 +134,8 @@ describe("análise na jornada (provedor simulado)", () => {
     expect(requestPalmAnalysis).toHaveBeenCalledWith(
       photo.blob,
       expect.objectContaining({ token: "recibo", expiresAt: 1 }),
+      undefined,
+      expect.any(AbortSignal), // abortado se a pessoa sair do fluxo (D5)
     );
     expect(push).toHaveBeenCalledWith("/leitura-das-maos/previa");
   });
@@ -361,5 +364,90 @@ describe("análise na jornada (provedor simulado)", () => {
     await user.click(analyzeButton());
     expect(await screen.findByRole("alert")).toHaveTextContent(title);
     expect(push).not.toHaveBeenCalled();
+  });
+});
+
+describe("saída do fluxo com a análise em andamento (D5)", () => {
+  beforeEach(() => {
+    push.mockClear();
+    requestPalmAnalysis.mockReset();
+    availability.current = { status: "ready", enabled: true, simulated: true };
+  });
+
+  it("resposta atrasada não restaura nada nem navega", async () => {
+    loadLocalPhoto.mockResolvedValueOnce({ ok: true, photo });
+    let resolve!: (v: unknown) => void;
+    let signal: AbortSignal | undefined;
+    requestPalmAnalysis.mockImplementationOnce(
+      (_b: Blob, _r: unknown, _f: unknown, s: AbortSignal) => {
+        signal = s;
+        return new Promise((r) => (resolve = r));
+      },
+    );
+    const tree = (mode: "visible" | "hidden") => (
+      <Activity mode={mode}>
+        <PalmPhotoProvider
+          initialConsent={consent}
+          initialHand="right"
+          initialReceipt={{ token: "recibo", expiresAt: 1, remaining: 3 }}
+        >
+          <PhotoCapture />
+        </PalmPhotoProvider>
+      </Activity>
+    );
+    const { rerender, container } = render(tree("visible"));
+    const user = userEvent.setup({ applyAccept: false });
+    await user.upload(
+      screen.getByTestId("gallery-input"),
+      new File(["x"], "palma.jpg", { type: "image/jpeg" }),
+    );
+    await screen.findByAltText(/pré-visualização da foto/i);
+    await user.click(analyzeButton());
+
+    rerender(tree("hidden")); // a pessoa saiu para a página inicial
+    expect(signal?.aborted).toBe(true);
+    await act(async () => {
+      resolve({ ok: true, result: result(), remaining: 2 });
+    });
+    expect(push).not.toHaveBeenCalled();
+    expect(container.innerHTML).not.toMatch(/blob:preparada|recibo/);
+
+    rerender(tree("visible")); // voltou pelo navegador
+    expect(screen.getByText("Antes da foto")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /ir para o consentimento/i }),
+    ).toBeInTheDocument();
+    expect(screen.queryByAltText(/pré-visualização da foto/i)).toBeNull();
+  });
+
+  it("foto preparada depois da saída é descartada na hora", async () => {
+    let resolve!: (v: unknown) => void;
+    loadLocalPhoto.mockImplementationOnce(
+      () => new Promise((r) => (resolve = r)),
+    );
+    const revoke = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => {});
+    const tree = (mode: "visible" | "hidden") => (
+      <Activity mode={mode}>
+        <PalmPhotoProvider initialConsent={consent} initialHand="right">
+          <PhotoCapture />
+        </PalmPhotoProvider>
+      </Activity>
+    );
+    const { rerender } = render(tree("visible"));
+    const user = userEvent.setup({ applyAccept: false });
+    await user.upload(
+      screen.getByTestId("gallery-input"),
+      new File(["x"], "palma.jpg", { type: "image/jpeg" }),
+    );
+    rerender(tree("hidden"));
+    await act(async () => {
+      resolve({ ok: true, photo: { ...photo, url: "blob:atrasada" } });
+    });
+    expect(revoke).toHaveBeenCalledWith("blob:atrasada");
+    rerender(tree("visible"));
+    expect(screen.getByText("Antes da foto")).toBeInTheDocument();
+    revoke.mockRestore();
   });
 });

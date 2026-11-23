@@ -31,6 +31,7 @@ export function ConsentForm() {
     accept,
     withdraw,
     setReceipt,
+    beginTask,
   } = usePalmPhoto();
   const availability = useAnalysisAvailability();
   const [sending, setSending] = useState(false);
@@ -55,7 +56,10 @@ export function ConsentForm() {
     // recibo assinado; sem ele, a foto não pode ser enviada para análise.
     if (availability.status === "ready" && availability.enabled) {
       setSending(true);
+      const task = beginTask();
       const r = await requestConsentReceipt(next, hand);
+      // Saiu do fluxo durante o pedido: o recibo não volta para este aparelho.
+      if (!task.isCurrent()) return;
       setSending(false);
       setReceipt(r.ok ? r.receipt : null);
       if (!r.ok) {
