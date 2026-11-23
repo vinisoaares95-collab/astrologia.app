@@ -164,3 +164,38 @@ As referências legais estão pendentes de confirmação no texto oficial.
 **Para ler os textos oficiais neste ambiente:** liberar `www.planalto.gov.br`,
 `www.in.gov.br`, `www.gov.br` e `privacy.claude.com` na rede da sessão. A
 outra opção é a leitura ser feita pela assessoria jurídica.
+
+## 6. Correções registradas no início da 03G.1 (23/11/2026)
+
+Feitas a pedido do responsável. O texto acima foi mantido como estava e
+estas correções prevalecem sobre ele.
+
+1. **Retenção da Anthropic.**
+   - **Regra adotada:** a documentação oficial da Anthropic sobre a API
+     comercial informa exclusão padrão de entradas e saídas em até 30 dias,
+     com exceções. Fonte: `https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data`.
+   - **Covered Models:** a política específica desses modelos não substitui
+     a regra geral. A leitura da seção 2 ("não retido por padrão") **não
+     deve ser usada**.
+   - **Não presumir retenção zero.** A configuração e as condições
+     contratuais efetivas da conta do Sidera continuam pendentes de
+     confirmação.
+   - **Fonte não lida nesta sessão:** a página não abriu (domínio não
+     resolve). O texto das exceções precisa ser conferido antes de
+     qualquer publicação.
+2. **Transferência internacional.**
+   - **Norma de referência:** Resolução CD/ANPD nº 19/2024.
+   - **Duas perguntas distintas:**
+     - a **hipótese legal** do tratamento (arts. 7º e 11 da LGPD);
+     - o **mecanismo** que autoriza a transferência (art. 33 e a
+       resolução).
+   - **Cláusulas da UE:** as cláusulas contratuais padrão da UE, no
+     contrato de proteção de dados da Anthropic, **não são consideradas
+     automaticamente suficientes** para a LGPD.
+   - **Fonte não lida nesta sessão:** a página da ANPD não abriu (domínio
+     não resolve).
+3. **Fotografias das palmas.**
+   - **O que muda:** a seção 3 não deve ser lida como "toda foto de mão é
+     dado biométrico sensível".
+   - **Avaliação de risco e proteção reforçada:** ver
+     `docs/privacidade/01-inventario-e-matriz.md`, seção 3.
