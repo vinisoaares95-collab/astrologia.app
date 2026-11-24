@@ -1,9 +1,10 @@
 # Experimento de repetibilidade visual — minuta do termo de consentimento (REP-1)
 
-> ⚠️ **MINUTA. Não apresentar a participantes antes da revisão jurídica
-> profissional.** Não é parecer jurídico. Os trechos entre colchetes **[…]**
-> são dados que ainda não existem ou não foram decididos e **não devem ser
-> inventados**.
+> ⛔ **NÃO APROVADA PARA ASSINATURA.** Minuta para revisão jurídica
+> profissional. Não apresentar a participantes e não coletar assinaturas.
+> Não é parecer jurídico nem declaração de conformidade legal. Os trechos
+> entre colchetes **[…]** são dados que ainda não existem ou não foram
+> decididos e **não devem ser preenchidos com informações presumidas**.
 
 - Versão do termo: **REP-1**, a citada no manifesto do experimento
   (`manifest.ts`).
@@ -11,20 +12,145 @@
   assinaturas.
 - Revisão desta minuta: 24/11/2026.
 
-## A. Pendências jurídicas efetivas (antes de enviar a participantes)
+## A. Informações necessárias para revisão jurídica
 
-| #   | Pendência                                                                          | Por que bloqueia                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| --- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| J1  | **Controlador e contato**                                                          | A empresa ainda não foi constituída: não há CNPJ nem endereço. Falta definir quem assina como responsável pelo tratamento agora, o canal de contato e o que acontece quando a empresa existir. Sem isso, o termo não pode ser usado                                                                                                                                                                                                                                                                      |
-| J2  | **Classificação da foto da palma**                                                 | Nesta minuta, a foto é tratada **preventivamente como dado pessoal sensível biométrico** (LGPD, art. 5º, II, e art. 11), considerando a orientação da ANPD sobre biometria. A referência exata deve ser anexada pela revisão. A classificação final e a base legal (consentimento **específico e destacado**, art. 11, I) precisam de confirmação profissional. **Não usar a foto para identificar ninguém não elimina, por si só, os riscos**: linhas, marcas e cicatrizes podem permitir identificação |
-| J3  | **Transferência internacional** (LGPD, art. 33)                                    | A foto vai à Anthropic, PBC, nos EUA. Falta definir o fundamento (por exemplo, consentimento específico e destacado para a transferência, ou cláusulas contratuais) e a redação do item 5                                                                                                                                                                                                                                                                                                                |
-| J4  | **Retenção pelo provedor**                                                         | Conferir na data da coleta (seção C): a política comercial (até 30 dias por padrão, com exceções); a **configuração da conta** usada (por exemplo, se há acordo de retenção zero); o **Data Processing Addendum (DPA)**, ainda não lido                                                                                                                                                                                                                                                                  |
-| J5  | **Prazo dos registros em texto**                                                   | A minuta propõe 12 meses depois do encerramento do experimento, e depois só registros mínimos de auditoria (item 7). O prazo e o conteúdo mínimo precisam de validação                                                                                                                                                                                                                                                                                                                                   |
-| J6  | **Registros mínimos de auditoria**                                                 | Confirmar se o código da autorização, a data e a impressão digital (SHA-256) da foto apagada podem ser mantidos, e por quanto tempo. A impressão digital não permite refazer a imagem, mas identifica o arquivo                                                                                                                                                                                                                                                                                          |
-| J7  | **Retirada depois do relatório**                                                   | A minuta propõe que as análises da pessoa saiam dos registros e que os resultados sejam recalculados sem elas. Confirmar se vale também para um relatório já concluído                                                                                                                                                                                                                                                                                                                                   |
-| J8  | **Guarda de 7 dias com duas sessões**                                              | Confirmar se a guarda de até 7 dias contados do recebimento é adequada e suficiente. Se vencer, a foto é apagada e só volta com novo envio pela própria pessoa                                                                                                                                                                                                                                                                                                                                           |
-| J9  | **Forma de aceite, guarda do termo e prazo de resposta a pedidos** (LGPD, art. 18) | Coerentes com `docs/privacidade/04-procedimento-titulares.md`                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| J10 | **Idade e titularidade**                                                           | Só maiores de 18 anos, com a própria mão; nunca foto de terceiros                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+Estes campos são preenchidos **fora do código e do repositório**, pelo
+responsável e pela assessoria. Nada aqui foi presumido.
+
+| Campo                                                                            | Quem fornece                   | Situação                                    |
+| -------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------- |
+| Nome completo do responsável pelo tratamento                                     | Responsável pelo projeto       | **[pendente]**                              |
+| Documento de identificação a constar no termo, se a assessoria exigir (ex.: CPF) | Responsável + assessoria       | **[pendente]**                              |
+| Endereço para comunicações, se exigido                                           | Responsável + assessoria       | **[pendente]**                              |
+| Canal de contato para participantes (e-mail ou outro) e prazo de resposta        | Responsável                    | **[pendente]**                              |
+| Encarregado (DPO) ou canal equivalente, se aplicável                             | Assessoria                     | **[pendente]**                              |
+| Base legal do tratamento da foto                                                 | Assessoria                     | **[pendente; não preencher sem validação]** |
+| Mecanismo de transferência internacional                                         | Assessoria                     | **[pendente; não preencher sem validação]** |
+| Prazo dos registros em texto e dos registros mínimos de auditoria                | Assessoria + responsável       | **[pendente; a minuta só traz proposta]**   |
+| Configuração da conta da API (padrão ou acordo de retenção zero) e DPA aplicável | Responsável, junto à Anthropic | **[pendente]**                              |
+| Meio de aviso ao participante antes de uma nova sessão (ampliação)               | Responsável                    | **[pendente]**                              |
+| Plano de sucessão quando a Cation Digital for constituída                        | Responsável + assessoria       | **[pendente]**                              |
+
+### A.1 Hipótese operacional do responsável pelo tratamento
+
+Enquanto a Cation Digital **não estiver formalizada**, adota-se como
+**hipótese de trabalho** que o responsável pelo tratamento (controlador)
+é a **pessoa física responsável pelo projeto Sidera**.
+
+- Isso é uma **hipótese operacional para a revisão jurídica**, não uma
+  declaração de conformidade com a LGPD.
+- Nome, documentos, endereço e contato **não foram preenchidos** e só
+  entram depois da confirmação do responsável e da validação jurídica.
+
+### A.2 Checklist para avaliação jurídica
+
+**1. Decisões que o responsável pelo projeto precisa fornecer**
+
+- [ ] Confirmar a hipótese do item A.1 (pessoa física como controladora
+      durante o experimento) e fornecer os dados de identificação que a
+      assessoria pedir.
+- [ ] Definir o canal de contato e o prazo de resposta aos participantes
+      (J9).
+- [ ] Definir o meio de aviso antes de uma nova sessão (item B.6) e como o
+      participante recusa.
+- [ ] Definir quem, além do responsável, pode acessar as fotos (proposta:
+      ninguém).
+- [ ] Definir onde e como guardar os termos assinados, fora do Sidera.
+- [ ] Confirmar com a Anthropic as informações do bloco 3.
+- [ ] Decidir se a Ampliação B (fotos novas) existirá. Se sim, ela terá
+      termo próprio.
+
+**2. Questões para a assessoria jurídica**
+
+- [ ] **J1. Controlador pessoa física.**
+  - Confirmar o enquadramento, considerando a LGPD (art. 5º, VI) e as
+    orientações da ANPD sobre agentes de tratamento.
+  - Verificar se a exceção do art. 4º, I (fins exclusivamente
+    particulares e não econômicos) se aplica. Por ser a preparação de um
+    produto comercial, a hipótese de trabalho é que **não** se aplica.
+  - Verificar se algum regime simplificado da ANPD para agentes de pequeno
+    porte se aplica a uma pessoa física nesta situação, e se o tratamento
+    de dado sensível o afasta.
+  - Definir a sucessão para a futura empresa.
+- [ ] **J2. Natureza da foto e base legal.**
+  - Confirmar a classificação como dado sensível biométrico (art. 5º, II),
+    considerando as orientações da ANPD.
+  - Definir a base legal (art. 11; consentimento específico e destacado,
+    se for o caso).
+  - **Não presumir** que a ausência de finalidade de identificação
+    elimina os riscos.
+- [ ] **J3. Transferência internacional.**
+  - Definir o mecanismo para o envio à Anthropic, PBC (EUA): art. 33 da
+    LGPD e Resolução CD/ANPD nº 19/2024 (regulamento de transferência
+    internacional e cláusulas-padrão contratuais).
+  - Verificar se o DPA da Anthropic tem cláusulas compatíveis, ou se outro
+    fundamento é necessário.
+- [ ] **Documentação obrigatória.** Verificar a necessidade de registro
+      das operações (art. 37), de relatório de impacto (art. 38) para dado
+      sensível e de encarregado (art. 41) neste caso.
+- [ ] **J5–J6. Prazos.** Validar o prazo dos registros em texto
+      (proposta: 12 meses após o encerramento) e o conteúdo e o prazo dos
+      registros mínimos de auditoria. Inclui o SHA-256 do arquivo apagado,
+      que identifica o arquivo sem permitir refazer a imagem.
+- [ ] **J7. Retirada depois do relatório.** A proposta é recalcular os
+      resultados sem os dados da pessoa.
+- [ ] **J8. Guarda de 7 dias.** Confirmar se é adequada com sessões em
+      dias diferentes. Se vencer, a foto é apagada e só volta com novo
+      envio da própria pessoa.
+- [ ] **J9. Aceite.** Validar a forma do aceite (incluindo os aceites
+      destacados), a guarda do termo e o prazo de resposta aos pedidos do
+      art. 18, em coerência com `docs/privacidade/04-procedimento-titulares.md`.
+- [ ] **J10. Participantes.** Confirmar os requisitos: 18 anos ou mais,
+      própria mão, nunca foto de terceiros.
+- [ ] **Redação.** Revisar a clareza do texto inteiro (seção B) para o
+      participante.
+
+**3. Informações contratuais a confirmar com a Anthropic (J4)**
+
+- [ ] **Prazo padrão** de exclusão das entradas e saídas da API na conta
+      usada. A política comercial publicada em 01/07/2026 fala em até 30
+      dias, com exceções; reconferir na data da coleta.
+- [ ] **Acordo de retenção zero (ZDR):** existe ou não para a conta.
+- [ ] **DPA aplicável:** subprocessadores, local de tratamento, cláusulas
+      de transferência e como atende pedidos de exclusão.
+- [ ] **Conteúdo sinalizado:** retenção mais longa (a documentação técnica
+      cita até 2 anos) e condições.
+- [ ] **Imagens:** confirmar que seguem a mesma regra das demais entradas
+      (as páginas lidas não tratam disso em separado).
+- [ ] **Treino:** confirmar a vedação de treino com o conteúdo do cliente
+      nos termos aplicáveis à conta.
+
+**4. Decisões já tomadas sobre a ferramenta (não dependem da revisão)**
+
+- **Envios:** até 12 por foto no total (teto do consentimento); piloto com
+  no máximo 5 por foto numa sessão; meta de 10 no total se houver
+  ampliação.
+- **Recusa automática:** foto sem termo assinado, com envios esgotados,
+  arquivo diferente do original (SHA-256) ou campo não previsto no
+  manifesto (nenhum nome ou contato entra).
+- **Guarda e registros:**
+  - foto só fora do repositório, por até 7 dias do recebimento;
+  - registros sem imagem e com pseudônimos;
+  - exclusão registrada (tamanho, SHA-256, data), com busca de cópias.
+- **Interpretações:** usadas só internamente, para comparar o impacto
+  das observações; nada é entregue ao participante.
+- **Conexão real:** travada no código até a autorização específica da
+  execução.
+
+### A.3 Rastreabilidade das pendências J1–J10
+
+| #   | Pendência                                   | Bloco do checklist |
+| --- | ------------------------------------------- | ------------------ |
+| J1  | Controlador e contato                       | 1 e 2              |
+| J2  | Classificação da foto e base legal          | 2                  |
+| J3  | Transferência internacional                 | 2 (e 3 para o DPA) |
+| J4  | Retenção pelo provedor, conta e DPA         | 3                  |
+| J5  | Prazo dos registros em texto                | 2                  |
+| J6  | Registros mínimos de auditoria              | 2                  |
+| J7  | Retirada depois do relatório                | 2                  |
+| J8  | Guarda de 7 dias e sessões                  | 2                  |
+| J9  | Aceite, guarda do termo e prazo de resposta | 1 e 2              |
+| J10 | Idade e titularidade                        | 2                  |
 
 ## B. Texto do termo (minuta)
 
@@ -35,8 +161,11 @@ Código da autorização: `AUT-REP-__` · Versão: REP-1 · Data: `__/__/____`
 
 **1. Quem é o responsável.**
 
-- Responsável pelo tratamento: **[a definir na revisão jurídica]**.
-- Contato: **[a definir]**.
+- Responsável pelo tratamento: **[nome completo da pessoa física
+  responsável pelo projeto Sidera — a confirmar]**. Enquanto a empresa do
+  projeto não for constituída, é essa pessoa quem responde pelo
+  tratamento. [Redação e sucessão a validar na revisão jurídica.]
+- Contato: **[a confirmar]**.
 
 O Sidera é um produto ainda não lançado.
 
@@ -90,9 +219,26 @@ transferência: a definir na revisão jurídica.]
 
 **6. Quantas vezes e quando.**
 
-- A sua foto será enviada **no máximo 12 vezes** à Anthropic.
-- Os envios acontecem em **dias diferentes** (pelo menos duas sessões).
-- Cada envio é uma análise independente da mesma foto.
+- **Limite deste consentimento:** a sua foto será enviada à Anthropic **no
+  máximo 12 vezes**, somando todas as etapas. Cada envio é uma análise
+  independente da mesma foto.
+- **Piloto:** a primeira etapa usa **no máximo 5 envios** da sua foto,
+  numa **única sessão** (um dia).
+- **Ampliação (se houver):**
+  - pode haver novas análises da mesma foto **em outro dia**, até
+    completar no máximo 10, sempre dentro do limite de 12;
+  - a ampliação **só acontece se o responsável pelo projeto autorizar
+    especificamente essa etapa**, e pode não acontecer;
+  - antes dela você será avisado(a) por **[meio de aviso a definir]**.
+- **Você pode recusar a ampliação:** este consentimento **não obriga** a
+  sua participação nela. Recusar não tem custo nem prejuízo.
+- **Retirada do consentimento:** a qualquer momento ela **impede novos
+  envios** (item 9).
+- **Guarda local e novas sessões:** a foto fica conosco por **até 7 dias**
+  contados do recebimento (item 7). Se a ampliação não acontecer nesse
+  prazo, a foto já terá sido apagada e só será usada se você mesmo(a) a
+  enviar de novo. Conferimos que é o mesmo arquivo pela impressão digital
+  técnica (SHA-256).
 
 **7. Por quanto tempo guardamos os dados.**
 
@@ -146,7 +292,10 @@ forma específica e destacada:
 - [ ] com o tratamento da foto como **dado sensível** (itens 3 e 4);
 - [ ] com o envio da foto à Anthropic, nos **Estados Unidos** (itens 5 e
       8);
-- [ ] com até **12 análises** em dias diferentes (item 6).
+- [ ] com até **5 análises** da minha foto no piloto, numa única sessão,
+      e, **somente se** o responsável autorizar uma ampliação e eu não
+      recusar, com novas análises em outro dia, **sem passar de 12 envios
+      no total** (item 6).
 
 Assinatura: `________________________` · Data: `__/__/____`
 

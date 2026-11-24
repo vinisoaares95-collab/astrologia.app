@@ -156,6 +156,19 @@ na 03F.2).
 | **Ampliação A** (histórico)                                          | Todas as antigas reautorizadas: até 8, de 4 pessoas                                                                                                                                                    | 10 por foto, **cumulativas**: as 5 do piloto contam, e as 2 fotos do piloto recebem só mais 5 (seção 8.3) | até **70** | 2, em dias diferentes (5 + 5 por foto) |
 | **Ampliação B** (opcional, recomendada, **com autorização própria**) | Fotos **novas**, tiradas com o guia de captura atual: 8, de pelo menos 4 pessoas                                                                                                                       | 10 por foto                                                                                               | **80**     | 2, em dias diferentes                  |
 
+**Sessões e guarda local (coerência com o termo REP-1, item 6).**
+
+- **Piloto:** 1 sessão, no máximo 5 envios por foto.
+- **Ampliação A:** outro dia, até completar 10 por foto, sempre dentro do
+  teto de 12 envios do consentimento. Só acontece com autorização
+  específica da etapa, e o participante pode recusar.
+- **Guarda:** a foto fica no máximo 7 dias desde o recebimento.
+  - As fotos do piloto provavelmente serão apagadas antes da Ampliação A,
+    que depende do relatório do piloto e de nova autorização. Para a
+    ampliação, a própria pessoa reenvia o arquivo, conferido pelo SHA-256.
+  - As outras fotos da Ampliação A fazem as duas sessões dentro dos
+    7 dias. Se não couber, vale a mesma regra de reenvio.
+
 **Por que 10 análises por foto.** É a chance de ver pelo menos uma
 inversão numa foto, conforme a taxa real:
 
@@ -542,8 +555,12 @@ com os pontos de revisão jurídica e as fontes oficiais verificadas.
    - retirada a qualquer momento e canal de contato;
    - 18 anos ou mais; só a palma.
 2. **Revisão jurídica do termo:** a minuta da 03F.1 já a exigia.
-3. **Controlador dos dados:** a empresa ainda não foi constituída
-   (pendência 7 da 03G). Definir quem assina como responsável.
+3. **Controlador dos dados:**
+   - **Hipótese operacional (24/11/2026):** a pessoa física responsável
+     pelo projeto, enquanto a Cation Digital não for constituída.
+   - Os dados de identificação não foram preenchidos.
+   - Não é declaração de conformidade; depende de confirmação e de
+     validação jurídica (minuta, A.1 e A.2).
 4. **Retenção pelo provedor:** política comercial (até 30 dias por padrão,
    com exceções). Falta confirmar a configuração da conta e o DPA na data
    da coleta (minuta, J4).
@@ -675,17 +692,17 @@ sintéticas e funcionou. Os arquivos do ensaio foram apagados em seguida.
 
 ## 10. Checklist mínimo para iniciar o piloto
 
-| #   | Item                                                                                                                                                                                                     | Situação                                                             |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| 1   | Plano, critérios, opção 2 e esclarecimento das observações independentes                                                                                                                                 | Feito, antes da coleta                                               |
-| 2   | Ferramenta offline e ponto de entrada testados com simulador                                                                                                                                             | Feito (46 testes)                                                    |
-| 3   | Minuta REP-1 revisada                                                                                                                                                                                    | Feita; **revisão jurídica profissional pendente** (J1–J10 da minuta) |
-| 4   | Responsável pelo tratamento e canal de contato (J1)                                                                                                                                                      | **Pendente**; não inventar dados                                     |
-| 5   | Classificação como dado sensível e fundamento da transferência internacional (J2, J3)                                                                                                                    | **Pendente** (revisão profissional)                                  |
-| 6   | Configuração da conta da API e DPA conferidos; política de retenção reconferida na data (J4)                                                                                                             | **Pendente**                                                         |
-| 7   | Prazos dos registros em texto e dos registros mínimos de auditoria (J5, J6)                                                                                                                              | **Pendente**                                                         |
-| 8   | Termos REP-1 assinados pelas pessoas das 2 fotos do piloto                                                                                                                                               | **Pendente**: depende de 3 a 7                                       |
-| 9   | Reenvio dos arquivos originais pela própria pessoa, conferidos pelo SHA-256                                                                                                                              | **Pendente**: depois de 8                                            |
-| 10  | Destrave da conexão real em commit revisado                                                                                                                                                              | **Pendente**: só com a sua autorização da execução                   |
-| 11  | No dia: credencial configurada pelo responsável; preços e versões (03d.2 / 03c.2 / Sonnet 5.5 / `medium` / 4000) conferidos; pasta temporária fora do repositório; exclusão em até 7 dias do recebimento | No dia                                                               |
-| 12  | Sua autorização específica do piloto: teto US$ 0,70, 10 chamadas, 2 fotos                                                                                                                                | **Pendente**                                                         |
+| #   | Item                                                                                                                                                                                                     | Situação                                                                     |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 1   | Plano, critérios, opção 2 e esclarecimento das observações independentes                                                                                                                                 | Feito, antes da coleta                                                       |
+| 2   | Ferramenta offline e ponto de entrada testados com simulador                                                                                                                                             | Feito (46 testes)                                                            |
+| 3   | Minuta REP-1 revisada (NÃO APROVADA PARA ASSINATURA)                                                                                                                                                     | Feita; checklist jurídico na minuta (A.2); **revisão profissional pendente** |
+| 4   | Responsável pelo tratamento (hipótese: pessoa física do projeto) e canal de contato (J1)                                                                                                                 | **Pendente**: dados não preenchidos                                          |
+| 5   | Classificação como dado sensível e fundamento da transferência internacional (J2, J3)                                                                                                                    | **Pendente** (revisão profissional)                                          |
+| 6   | Configuração da conta da API e DPA conferidos; política de retenção reconferida na data (J4)                                                                                                             | **Pendente**                                                                 |
+| 7   | Prazos dos registros em texto e dos registros mínimos de auditoria (J5, J6)                                                                                                                              | **Pendente**                                                                 |
+| 8   | Termos REP-1 assinados pelas pessoas das 2 fotos do piloto                                                                                                                                               | **Pendente**: depende de 3 a 7                                               |
+| 9   | Reenvio dos arquivos originais pela própria pessoa, conferidos pelo SHA-256                                                                                                                              | **Pendente**: depois de 8                                                    |
+| 10  | Destrave da conexão real em commit revisado                                                                                                                                                              | **Pendente**: só com a sua autorização da execução                           |
+| 11  | No dia: credencial configurada pelo responsável; preços e versões (03d.2 / 03c.2 / Sonnet 5.5 / `medium` / 4000) conferidos; pasta temporária fora do repositório; exclusão em até 7 dias do recebimento | No dia                                                                       |
+| 12  | Sua autorização específica do piloto: teto US$ 0,70, 10 chamadas, 2 fotos                                                                                                                                | **Pendente**                                                                 |
