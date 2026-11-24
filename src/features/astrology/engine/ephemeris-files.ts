@@ -1,7 +1,8 @@
 /**
  * Arquivos de efemérides do Swiss Ephemeris usados pelo motor.
  *
- * Origem: https://github.com/aloistr/swisseph/tree/master/ephe
+ * Origem: https://github.com/aloistr/swisseph/tree/cae9ecd4b201544d85e411aced17660932514d43/ephe
+ * (commit fixado: o `master` trocou o sepl_18.se1 em 21/11/2026).
  * Licença: a mesma do Swiss Ephemeris (AGPL-3.0 ou Professional).
  * Os arquivos NÃO são versionados no repositório; `npm run ephe:fetch`
  * baixa e confere o SHA-256 abaixo.
@@ -22,7 +23,7 @@ export const EPHEMERIS_FILES = [
 ] as const;
 
 export const EPHEMERIS_SOURCE =
-  "https://raw.githubusercontent.com/aloistr/swisseph/master/ephe/";
+  "https://raw.githubusercontent.com/aloistr/swisseph/cae9ecd4b201544d85e411aced17660932514d43/ephe/";
 
 /** Faixa coberta pelos arquivos `_18` (anos inclusivos). */
 export const EPHEMERIS_YEARS = { from: 1800, to: 2399 } as const;

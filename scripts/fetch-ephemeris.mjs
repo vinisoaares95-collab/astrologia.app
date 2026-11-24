@@ -4,8 +4,11 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
+// Fixado num commit: em 21/11/2026 o `master` trocou o sepl_18.se1
+// ("compressed ephemeris update") e o SHA-256 conferido deixou de bater.
+// Este commit contém exatamente os arquivos validados no motor.
 const SOURCE =
-  "https://raw.githubusercontent.com/aloistr/swisseph/master/ephe/";
+  "https://raw.githubusercontent.com/aloistr/swisseph/cae9ecd4b201544d85e411aced17660932514d43/ephe/";
 // Mantido em sincronia com src/features/astrology/engine/ephemeris-files.ts
 const FILES = [
   [
