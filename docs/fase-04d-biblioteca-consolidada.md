@@ -1,6 +1,7 @@
 # Fase 04D — Biblioteca consolidada dos capítulos 8 e 9
 
-Estado: **para revisão editorial final.** Não houve código do produto,
+Estado: **biblioteca aprovada com correções finais pontuais**, aplicadas
+neste documento (revisão final: seção 5 e seção 7). Não houve código do produto,
 chamada paga, mudança nos motores nem deploy.
 
 Este é o **documento de referência único** para a revisão dos textos
@@ -21,26 +22,26 @@ lê aqui é exatamente o que a verificação testou.
 
 ## 0. Decisões
 
-| #   | Decisão                                                                     | Estado                                 |
-| --- | --------------------------------------------------------------------------- | -------------------------------------- |
-| D1  | Os quatro eixos existentes (`ToneTag`)                                      | Aprovada                               |
-| D3  | Comprimento dos dedos fora das conexões                                     | Aprovada                               |
-| D4  | Traços instáveis na 03F.2 fora até revalidação                              | Aprovada                               |
-| D5  | Elementos e tipos de mão nunca relacionados pelo nome                       | Aprovada                               |
-| D6  | Até 3 temas no capítulo 8, com aproximações e diferenças                    | Aprovada                               |
-| D9  | Montagem no navegador, sem novos envios                                     | Aprovada                               |
-| D10 | Sem IA                                                                      | Aprovada                               |
-| E1  | Linha da cabeça separada sem polo                                           | Aprovada                               |
-| E2  | Capítulo 9 só com as mãos indisponível sem conteúdo suficiente (provisório) | Aprovada                               |
-| E4  | Perguntas inéditas do capítulo 9                                            | Aprovada                               |
-| F1  | Tabela de assuntos                                                          | Aprovada                               |
-| F2  | Contraponto só dentro do mesmo assunto                                      | Aprovada                               |
-| F3  | Critério de destaque isolado rejeitado                                      | Aprovada                               |
-| F4  | Alterações conceituais dos três textos                                      | Aprovada; **textos exatos na seção 5** |
-| F5  | Redução da cobertura                                                        | Aprovada                               |
-| F6  | Testes para os casos ausentes                                               | Aprovada; **executados (seção 7)**     |
-| E6  | Capítulo 9: "dois lados" só com tensão fundamentada no mesmo assunto        | **Ajustada nesta entrega (seção 1.3)** |
-| E5  | Aprovação final da biblioteca                                               | **Pendente desta revisão**             |
+| #   | Decisão                                                                     | Estado                                                 |
+| --- | --------------------------------------------------------------------------- | ------------------------------------------------------ |
+| D1  | Os quatro eixos existentes (`ToneTag`)                                      | Aprovada                                               |
+| D3  | Comprimento dos dedos fora das conexões                                     | Aprovada                                               |
+| D4  | Traços instáveis na 03F.2 fora até revalidação                              | Aprovada                                               |
+| D5  | Elementos e tipos de mão nunca relacionados pelo nome                       | Aprovada                                               |
+| D6  | Até 3 temas no capítulo 8, com aproximações e diferenças                    | Aprovada                                               |
+| D9  | Montagem no navegador, sem novos envios                                     | Aprovada                                               |
+| D10 | Sem IA                                                                      | Aprovada                                               |
+| E1  | Linha da cabeça separada sem polo                                           | Aprovada                                               |
+| E2  | Capítulo 9 só com as mãos indisponível sem conteúdo suficiente (provisório) | Aprovada                                               |
+| E4  | Perguntas inéditas do capítulo 9                                            | Aprovada                                               |
+| F1  | Tabela de assuntos                                                          | Aprovada                                               |
+| F2  | Contraponto só dentro do mesmo assunto                                      | Aprovada                                               |
+| F3  | Critério de destaque isolado rejeitado                                      | Aprovada                                               |
+| F4  | Alterações conceituais dos três textos                                      | Aprovada; **textos exatos na seção 5**                 |
+| F5  | Redução da cobertura                                                        | Aprovada                                               |
+| F6  | Testes para os casos ausentes                                               | Aprovada; **executados (seção 7)**                     |
+| E6  | Capítulo 9: "dois lados" só com tensão fundamentada no mesmo assunto        | Aprovada; **um polo corrigido na revisão final (1.3)** |
+| E5  | Biblioteca editorial                                                        | Aprovada com as correções finais (seção 5)             |
 
 ---
 
@@ -100,13 +101,17 @@ lê aqui é exatamente o que a verificação testou.
    **nunca** formam "dois lados".
 
 3. **Um polo** (variante de um único tema), em eixo ainda não usado e sem
-   tensão fundamentada. Exige pelo menos **2 referências** elegíveis no
-   mesmo polo.
-   - Se os dois polos tiverem 2 ou mais referências, vindas de assuntos
-     diferentes, decide o polo que tiver referência do **assunto que o eixo
-     trata** (tabela 2.5).
-   - Se nenhum ou os dois tiverem, o eixo é **pulado**. Não há escolha
-     arbitrária nem contagem de força.
+   tensão fundamentada.
+   - **Toda referência precisa ser de um assunto que o eixo trata** (tabela
+     2.5). O mesmo princípio vale para as tensões: a presença de um polo
+     `ToneTag` não basta.
+   - Exige pelo menos **2 referências compatíveis**, todas no mesmo polo.
+   - Referências de outros assuntos são ignoradas. Se as compatíveis não
+     chegarem a 2, o tema é **descartado**, sem procurar substituto.
+
+   Exemplo: uma pergunta sobre vínculo nunca é sustentada por Sol, Mercúrio
+   ou Júpiter, mesmo que os três tenham polo de vínculo pelo signo.
+
 4. Empate entre candidatos: tensão antes de um polo; depois o eixo apoiado
    por mais capítulos; depois a ordem fixa.
 
@@ -117,9 +122,10 @@ lê aqui é exatamente o que a verificação testou.
 - de 4 a 5 itens de reflexão: 2 ou 3 perguntas, 1 prática opcional e a
   pergunta final.
 
-Abaixo do mínimo, vale V1 (nenhum tema) ou V2 (só um). **Uma variante de
-contraponto que não se sustenta não derruba o capítulo:** o eixo passa para
-"um polo" ou outro eixo ocupa o lugar. Isso é conferido na seção 7.
+Abaixo do mínimo, vale V1 (nenhum tema) ou V2 (só um). Uma variante de
+contraponto que não se sustenta não derruba o capítulo sozinha: o eixo passa
+para "um polo" se houver referências compatíveis. **Os mínimos não foram
+alterados.** O impacto real na cobertura está na seção 7.
 
 **Rastreabilidade:** cada tema guarda os `ref` das referências que o
 sustentam (seção 6), de que lado vieram, o assunto e a chave do texto da
@@ -263,10 +269,9 @@ Assuntos dos traços das mãos, pelo texto aprovado:
   "lidar com os afetos", "expressão afetiva";
 - **início da linha da cabeça → agir:** "avaliar bem antes de se lançar".
 
-### 2.5 Eixos que cada assunto trata (novo nesta entrega, para a E6) [PARA REVISÃO]
+### 2.5 Eixos que cada assunto trata
 
-Usada **só no capítulo 9**, para decidir se uma tensão é fundamentada e,
-num eixo ambíguo, qual polo prevalece.
+Usada **só no capítulo 9**, para as tensões e para os temas de um polo.
 
 | Assunto | Eixos              | Fundamento (texto aprovado)                                                                                                       |
 | ------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -274,8 +279,9 @@ num eixo ambíguo, qual polo prevalece.
 | agir    | ritmo              | Início da linha da cabeça → ritmo (tabela 2.2); Marte: "a iniciativa, o desejo e **a maneira de agir**"                           |
 | demais  | —                  | As funções de Sol, Mercúrio, Júpiter, Saturno e Ascendente não tratam de nenhum eixo de forma direta                              |
 
-O eixo **foco** não é tratado por nenhum assunto. Por isso, nunca tem
-tensão fundamentada e só aparece como "um polo".
+O eixo **foco** não é tratado por nenhum assunto. Por isso, **nunca vira
+tema** no capítulo 9. No ritmo, o céu só tem Marte: um tema de ritmo
+precisa das mãos e, na prática, vem do capítulo 8.
 
 ---
 
@@ -311,12 +317,12 @@ As duas fontes são sempre citadas no bloco do tema.
 | Chave | Fontes exigidas | Texto |
 | ----- | --------------- | ----- |
 
-| `ritmo:cautela:A` | mãos `ritmo:cautela` (cabeça unida); Marte com `cautela` | Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir. É uma semelhança entre a linguagem da quiromancia e a da astrologia, não uma medida de como você age. |
+| `ritmo:cautela:A` | mãos `ritmo:cautela` (cabeça unida); Marte com `cautela` | Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir. |
 | `ritmo:cautela:D` | mãos `ritmo:cautela`; Marte com `impulso` | Aqui as leituras apontam para lados diferentes: a quiromancia associa este traço à cautela, e as posições citadas do mapa são associadas a uma ação mais imediata. As duas descrições ficam registradas como estão, sem uma conciliação forçada. |
-| `expressao:expansiva:A` | mãos `expansiva`; Lua e/ou Vênus com `expansiva` e nenhuma das duas com `reservada` | As duas leituras usam a imagem de uma expressão afetiva mais aberta. A semelhança está na linguagem das duas tradições; o que ela descreve na sua vida, só você pode avaliar. |
+| `expressao:expansiva:A` | mãos `expansiva`; Lua e/ou Vênus com `expansiva` e nenhuma das duas com `reservada` | As duas leituras usam a imagem de uma expressão afetiva mais aberta. |
 | `expressao:expansiva:AC` | mãos `expansiva`; uma de Lua/Vênus com `expansiva` **e** a outra com `reservada` | Nas duas tradições aparece a imagem de uma expressão afetiva mais aberta. No mapa, ela divide espaço com imagens de reserva: são facetas descritas lado a lado, não uma conta que precise fechar. |
 | `expressao:expansiva:D` | mãos `expansiva`; Lua/Vênus só com `reservada` | Aqui as leituras seguem caminhos diferentes: a quiromancia associa estes traços a uma expressão mais aberta, e as posições citadas do mapa, a uma expressão mais reservada. A diferença fica à vista, sem conciliação. |
-| `expressao:reservada:A` | mãos `reservada`; Lua e/ou Vênus com `reservada` e nenhuma com `expansiva` | As duas leituras usam a imagem de uma expressão afetiva mais reservada, que se revela aos poucos. É uma semelhança de linguagem entre duas tradições, não uma constatação sobre você. |
+| `expressao:reservada:A` | mãos `reservada`; Lua e/ou Vênus com `reservada` e nenhuma com `expansiva` | As duas leituras usam a imagem de uma expressão afetiva mais reservada, que se revela aos poucos. |
 | `expressao:reservada:AC` | mãos `reservada`; uma de Lua/Vênus com `reservada` **e** a outra com `expansiva` | Nas duas tradições aparece a imagem de uma expressão afetiva mais reservada. O mapa também traz imagens de abertura: as duas convivem na leitura, sem que uma corrija a outra. |
 | `expressao:reservada:D` | mãos `reservada`; Lua/Vênus só com `expansiva` | Aqui as leituras apontam para lados diferentes: a quiromancia associa estes traços a uma expressão mais reservada, e as posições citadas do mapa, a uma expressão mais aberta. As duas descrições ficam como estão. |
 | `expressao:F` | mãos com `expansiva` **e** `reservada` (dois traços do coração); Lua ou Vênus com algum polo de expressão | Nas mãos, a própria linha do coração traz duas imagens: uma de abertura e outra de reserva. Por isso, aqui não se aponta aproximação nem diferença; as imagens do mapa aparecem ao lado, só para comparação. |
@@ -339,12 +345,16 @@ As duas fontes são sempre citadas no bloco do tema.
 | R0 | Sempre que há conteúdo | Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras. |
 | R-parcial (um traço) | Traço com polo ficou parcial | {Lista} ficou só parcialmente visível na foto e por isso não sustenta nenhuma comparação. |
 | R-parcial (vários) | idem | {Lista} ficaram só parcialmente visíveis na foto e por isso não sustentam nenhuma comparação. |
-| R-conf (um traço) | Traço observado excluído por D3/D4 | {Lista} não entra nestas comparações: é um traço que variou entre análises da mesma foto ou uma proporção estimada a olho. |
-| R-conf (vários) | idem | {Lista} não entram nestas comparações: são traços que variaram entre análises da mesma foto ou proporções estimadas a olho. |
+| R-conf (um traço) | Traço observado excluído por D3/D4 | {Lista} não entra nestas comparações: é uma característica que ainda não pode ser classificada com segurança a partir de uma foto. |
+| R-conf (vários) | idem | {Lista} não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto. |
 | R-hora (uma posição) | Lua, Vênus ou Marte incertos pelo horário | {Lista} depende do horário de nascimento informado e não entra nestas comparações. |
 | R-hora (várias) | idem | {Lista} dependem do horário de nascimento informado e não entram nestas comparações. |
 | R-escopo | Sempre que há conteúdo | Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo. |
 | R-simulada | Leitura das mãos simulada (ambiente interno) | Esta comparação usa uma leitura das mãos simulada, do ambiente interno de testes. |
+
+Não existe U4 só com "observado sem correspondência". O traçado da linha
+do coração sempre tem polo quando é classificado com nitidez, então pelo
+menos um traço comparável fica não classificado sempre que não há tema.
 
 `{Lista}` é preenchida pelo sistema:
 
@@ -361,9 +371,11 @@ As duas fontes são sempre citadas no bloco do tema.
 | U1 | Céu disponível, mãos ausentes | As conexões dependem das duas leituras, e a leitura das mãos não está nesta jornada. Nenhuma conexão foi criada só a partir do mapa. |
 | U2 | Mãos disponíveis, céu ausente | As conexões dependem das duas leituras, e os capítulos do mapa natal não estão nesta jornada. Nenhuma conexão foi criada só a partir das mãos. |
 | U3 | Nenhuma das duas | As conexões dependem das duas leituras, e nenhuma delas está disponível nesta jornada. |
-| U4 | Mãos sem traço elegível e sem pedido de nova foto | Os traços das mãos que podem ser comparados — o comprimento e o traçado da linha do coração e o início da linha da cabeça — não ficaram nítidos o suficiente na foto. Por isso, nenhuma conexão foi criada. |
+| U4 | Nenhum dos três traços comparáveis pôde ser classificado (parcial, não visível, indeterminado ou não identificado), sem pedido de nova foto | Os traços das mãos que podem ser comparados — o comprimento e o traçado da linha do coração e o início da linha da cabeça — não puderam ser classificados com segurança nesta leitura. Por isso, nenhuma conexão foi criada. |
 | U5 | Leitura das mãos com pedido de nova foto | A leitura das mãos pediu uma nova foto. Sem uma observação nítida, nenhuma conexão foi criada. |
 | U6 | Traços elegíveis, mas nenhuma posição do mesmo assunto com polo no eixo | As posições do mapa ligadas aos mesmos temas dos traços nítidos das mãos — o afeto e o modo de agir — não apontam para nenhum dos lados desses traços. Por isso, não há o que comparar, e nenhuma conexão foi criada para preencher o capítulo. |
+| U4-misto (um observado sem correspondência; vários não classificados) | Algum traço comparável foi observado com nitidez, mas numa categoria sem polo (ex.: coração médio, cabeça separada), e os demais não foram classificados | {Lista1} foi observado, mas sem uma categoria que corresponda aos temas comparados, e {lista2} não puderam ser classificados com segurança nesta leitura. Por isso, nenhuma conexão foi criada. |
+| U4-misto (vários observados sem correspondência; um não classificado) | Algum traço comparável foi observado com nitidez, mas numa categoria sem polo (ex.: coração médio, cabeça separada), e os demais não foram classificados | {Lista1} foram observados, mas sem uma categoria que corresponda aos temas comparados, e {lista2} não pôde ser classificado com segurança nesta leitura. Por isso, nenhuma conexão foi criada. |
 
 ---
 
@@ -404,7 +416,6 @@ As duas fontes são sempre citadas no bloco do tema.
 | Expressão | Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta. |
 | Vínculo | Se quiser, observe numa semana comum os momentos em que buscou companhia e os momentos em que preferiu ficar só, e como foi cada um. |
 | Foco | Se quiser, faça uma lista curta do que você gostaria de manter e do que gostaria de experimentar. A lista pode mudar quando você quiser. |
-| Genérica (reserva) | Se quiser, volte a um dos capítulos daqui a algumas semanas e veja se a leitura parece diferente. Mudar de opinião sobre ela também faz parte. |
 
 ### 4.4 Fechamento
 
@@ -425,36 +436,83 @@ As duas fontes são sempre citadas no bloco do tema.
 
 ## 5. Alterações em relação aos textos registrados
 
-### 5.1 Os três textos da F4 (versão exata, para revisão)
+### 5.1 Correções desta revisão final
 
-| Código   | Antes (`96353c1`)                                                                                                                                                        | Depois (proposto)                                                                                                                                                                                                                               |
+| Texto                                        | Antes (`1b4c7ea`)                                                                                                                                                                                           | Agora                                                                                                                                                                                                                                                                                                                                                                                            |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| R-conf (vários)                              | {Lista} não entram nestas comparações: são traços que variaram entre análises da mesma foto ou proporções estimadas a olho.                                                                                 | {Lista} não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto.                                                                                                                                                                                                                                                             |
+| R-conf (um)                                  | {Lista} não entra nestas comparações: é um traço que variou entre análises da mesma foto ou uma proporção estimada a olho.                                                                                  | {Lista} não entra nestas comparações: é uma característica que ainda não pode ser classificada com segurança a partir de uma foto.                                                                                                                                                                                                                                                               |
+| U4                                           | Os traços das mãos que podem ser comparados — o comprimento e o traçado da linha do coração e o início da linha da cabeça — não ficaram nítidos o suficiente na foto. Por isso, nenhuma conexão foi criada. | Os traços das mãos que podem ser comparados — o comprimento e o traçado da linha do coração e o início da linha da cabeça — não puderam ser classificados com segurança nesta leitura. Por isso, nenhuma conexão foi criada.                                                                                                                                                                     |
+| U4-misto (novo)                              | —                                                                                                                                                                                                           | {Lista1} foi observado, mas sem uma categoria que corresponda aos temas comparados, e {lista2} não puderam ser classificados com segurança nesta leitura. Por isso, nenhuma conexão foi criada. / {Lista1} foram observados, mas sem uma categoria que corresponda aos temas comparados, e {lista2} não pôde ser classificado com segurança nesta leitura. Por isso, nenhuma conexão foi criada. |
+| Frase-ponte ritmo, aproximação               | Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir. É uma semelhança entre a linguagem da quiromancia e a da astrologia, não uma medida de como você age.       | Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir.                                                                                                                                                                                                                                                                                                  |
+| Frase-ponte expressão aberta, aproximação    | As duas leituras usam a imagem de uma expressão afetiva mais aberta. A semelhança está na linguagem das duas tradições; o que ela descreve na sua vida, só você pode avaliar.                               | As duas leituras usam a imagem de uma expressão afetiva mais aberta.                                                                                                                                                                                                                                                                                                                             |
+| Frase-ponte expressão reservada, aproximação | As duas leituras usam a imagem de uma expressão afetiva mais reservada, que se revela aos poucos. É uma semelhança de linguagem entre duas tradições, não uma constatação sobre você.                       | As duas leituras usam a imagem de uma expressão afetiva mais reservada, que se revela aos poucos.                                                                                                                                                                                                                                                                                                |
+
+Por que cada mudança:
+
+- **R-conf.** A causa é uma limitação conhecida da classificação visual
+  dessas características, não algo observado na foto da pessoa.
+- **U4.** Separa duas causas:
+  - nenhum traço comparável pôde ser classificado (U4);
+  - algum traço foi observado com nitidez, mas numa categoria sem
+    correspondência (U4-misto).
+
+  "Não puderam ser classificados com segurança" cobre os traços parciais,
+  não visíveis, indeterminados ou não identificados, sem atribuir a causa à
+  captura quando ela não foi a causa.
+
+- **Frases-ponte de aproximação.** A frase final de cada uma repetia a
+  ressalva da introdução, a da síntese e R0. Num capítulo com dois temas,
+  a mesma ideia chegava a aparecer cinco vezes. O caráter não científico
+  continua explícito em **três** pontos de cada capítulo: a introdução, a
+  síntese e R0.
+
+**Mantidos sem mudança:**
+
+- todas as perguntas e as práticas restantes;
+- as correspondências do capítulo 8;
+- o rótulo "Prática opcional.";
+- R0, R-parcial, R-hora, R-escopo, U1–U3, U5, U6 e V1–V2.
+
+R-parcial fala de visibilidade parcial **na foto**, que é a causa real desse
+caso.
+
+### 5.2 Alterações da F4 (aprovadas)
+
+| Código   | Antes (`96353c1`)                                                                                                                                                        | Agora                                                                                                                                                                                                                                           |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | R-escopo | Os demais traços e posições não usam os eixos comparados aqui e por isso não aparecem neste capítulo.                                                                    | Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.                                                                                                                                                |
 | U6       | Os traços nítidos das mãos e as posições do mapa não usam nenhum eixo em comum. Por isso, não há o que comparar, e nenhuma conexão foi criada para preencher o capítulo. | As posições do mapa ligadas aos mesmos temas dos traços nítidos das mãos — o afeto e o modo de agir — não apontam para nenhum dos lados desses traços. Por isso, não há o que comparar, e nenhuma conexão foi criada para preencher o capítulo. |
-| R-hora   | Texto igual; condição: "posição elegível incerta por causa do horário (aproximado)"                                                                                      | Texto igual; condição: "Lua, Vênus ou Marte incertos por causa do horário". Agora com forma singular e plural (3.5)                                                                                                                             |
+| R-hora   | Condição: "posição elegível incerta por causa do horário (aproximado)"                                                                                                   | Condição: "Lua, Vênus ou Marte incertos por causa do horário"; texto igual, com forma singular e plural                                                                                                                                         |
 
-### 5.2 Retirados
+### 5.3 Retirados
 
-| Texto                                                                                                                                                                                                                                     | Motivo                                                                |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Frase-ponte ritmo com contraponto: "As duas leituras usam a imagem de um ritmo cuidadoso, de avaliar antes de seguir. O mapa, porém, também traz uma imagem de ação mais imediata. As duas ficam lado a lado, sem que uma anule a outra." | Inalcançável: Marte é a única posição do assunto "agir" (1.2, item 5) |
-| R-sem-hora: "Sem o horário de nascimento, o Ascendente não faz parte desta leitura nem destas comparações."                                                                                                                               | O Ascendente não entra mais nas comparações                           |
-| Anexo A (três variantes de vínculo)                                                                                                                                                                                                       | E1 recusada                                                           |
+| Texto                                                                                                                                                                                                                                     | Motivo                                                   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Prática genérica: "Se quiser, volte a um dos capítulos daqui a algumas semanas e veja se a leitura parece diferente. Mudar de opinião sobre ela também faz parte."                                                                        | Inalcançável: sempre há um primeiro tema (revisão final) |
+| Frase-ponte ritmo com contraponto: "As duas leituras usam a imagem de um ritmo cuidadoso, de avaliar antes de seguir. O mapa, porém, também traz uma imagem de ação mais imediata. As duas ficam lado a lado, sem que uma anule a outra." | Inalcançável: Marte é a única posição do assunto "agir"  |
+| R-sem-hora                                                                                                                                                                                                                                | O Ascendente não entra nas comparações                   |
+| Anexo A (vínculo)                                                                                                                                                                                                                         | E1 recusada                                              |
 
-### 5.3 Formas novas, só de concordância [PARA REVISÃO]
+### 5.4 Textos preservados, mas inalcançáveis com as regras atuais
 
-Não há conteúdo novo, só a forma gramatical para uma ou várias referências:
+Pela instrução de preservar perguntas e práticas, os textos abaixo ficam na
+biblioteca **inativos**. A verificação confere que nenhum deles é usado.
 
-- R-parcial, R-conf e R-hora no **singular** (3.5);
-- a introdução do capítulo 9 com **um capítulo** (4.1);
-- o rótulo "Prática opcional." no lugar de "Se quiser:", que repetia a
-  abertura das práticas.
+- **as três perguntas de foco e a prática de foco:** nenhum assunto trata o
+  foco (2.5);
+- **a pergunta de ritmo com o polo impulso:** o único caminho seria Marte
+  mais um traço das mãos com impulso, e nenhum traço tem esse polo.
 
-Todos os outros textos são **idênticos** aos registrados em `96353c1` com as
-mudanças de `e6c291d`. A verificação confere isso automaticamente: 0 textos
-divergentes.
+Ver a decisão 2 da seção 8.
 
----
+### 5.5 Formas de concordância (sem conteúdo novo)
+
+- R-parcial, R-conf e R-hora em singular e plural;
+- U4-misto nas duas combinações possíveis;
+- introdução do capítulo 9 com um capítulo.
+
+A verificação confere que **só** os textos de 5.1 diferem do registro.
 
 ## 6. Exemplos completos
 
@@ -480,39 +538,23 @@ Céu: `C-val2`. Mãos: `M-clara`.
 > **Expressão: abertura e reserva** · Aproximação
 > Nas mãos: linha do coração longa; linha do coração curvada para cima (cap. 7).
 > No céu: Lua em Leão (cap. 2); Vênus em Gêmeos (cap. 4).
-> As duas leituras usam a imagem de uma expressão afetiva mais aberta. A semelhança está na linguagem das duas tradições; o que ela descreve na sua vida, só você pode avaliar.
+> As duas leituras usam a imagem de uma expressão afetiva mais aberta.
 >
 > _Síntese._ As aproximações acima mostram onde as duas tradições usam palavras parecidas. Elas servem como ponto de partida para observar a sua experiência, não como conclusão.
 >
 > _Limites._
 >
 > - Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras.
-> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são traços que variaram entre análises da mesma foto ou proporções estimadas a olho.
+> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto.
 > - Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2, 3, 4, 5 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
->
-> 1. **Expressão: abertura e reserva** — a partir dos capítulos 2, 4 e 7.
->    De que formas você costuma demonstrar afeto, e quais delas parecem mais naturais para você?
-> 2. **Vínculo: autonomia e proximidade** — a partir dos capítulos 1, 3 e 5.
->    Com quem você gosta de dividir o dia a dia, e o que torna essa convivência boa?
-> 3. **Foco: mudança e estabilidade** — a partir dos capítulos 4 e 5.
->    Que novidade recente despertou o seu interesse, e o que ela trouxe de bom ou de difícil?
->
-> _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
->
-> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
->
-> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
+> [indisponível — V2] Os capítulos disponíveis sustentam só um tema com segurança, e o guia precisa de pelo menos dois. Para não preencher o espaço com temas inventados, ele não foi montado nesta jornada.
 
 <details><summary>Rastreabilidade</summary>
 
 - Cap. 8 · Expressão · chave `expressao:expansiva:A`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
-- Cap. 9 · Expressão · base `c8` · pergunta `expressao:expansiva`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
-- Cap. 9 · Vínculo · base `um-polo` · pergunta `vinculo:proximidade`: `identidade:body-sign:sun`, `mente:body-sign:mercury`, `talentos:body-sign:jupiter`
-- Cap. 9 · Foco · base `um-polo` · pergunta `foco:mudanca`: `relacionamentos:body-sign:mars`, `relacionamentos:body-sign:venus`, `talentos:body-sign:saturn`
 
 </details>
 
@@ -527,7 +569,7 @@ Céu: `K-contraponto` **[construída]** (Lua em Leão, Vênus em Capricórnio, M
 > **Ritmo: impulso e cautela** · Aproximação
 > Nas mãos: linha da cabeça começando unida à da vida (cap. 7).
 > No céu: Marte em Touro (cap. 4).
-> Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir. É uma semelhança entre a linguagem da quiromancia e a da astrologia, não uma medida de como você age.
+> Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir.
 >
 > **Expressão: abertura e reserva** · Aproximação com contraponto
 > Nas mãos: linha do coração longa; linha do coração curvada para cima (cap. 7).
@@ -540,7 +582,7 @@ Céu: `K-contraponto` **[construída]** (Lua em Leão, Vênus em Capricórnio, M
 > _Limites._
 >
 > - Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras.
-> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são traços que variaram entre análises da mesma foto ou proporções estimadas a olho.
+> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto.
 > - Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
@@ -585,18 +627,16 @@ Céu: `C-demo2`. Mãos: `M-clara`.
 > _Limites._
 >
 > - Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras.
-> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são traços que variaram entre análises da mesma foto ou proporções estimadas a olho.
+> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto.
 > - Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2, 4, 5 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
 >
 > 1. **Expressão: abertura e reserva** — a partir dos capítulos 4 e 7.
 >    Com quem você mostra com facilidade o que sente, e com quem prefere guardar mais para si?
-> 2. **Ritmo: impulso e cautela** — a partir dos capítulos 1, 5 e 7.
->    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
-> 3. **Vínculo: autonomia e proximidade** — a partir dos capítulos 1, 2 e 4.
+> 2. **Vínculo: autonomia e proximidade** — a partir dos capítulos 2 e 4.
 >    Com quem você gosta de dividir o dia a dia, e o que torna essa convivência boa?
 >
 > _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
@@ -609,8 +649,7 @@ Céu: `C-demo2`. Mãos: `M-clara`.
 
 - Cap. 8 · Expressão · chave `expressao:expansiva:D`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `relacionamentos:body-sign:venus`
 - Cap. 9 · Expressão · base `c8` · pergunta `expressao:two`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `relacionamentos:body-sign:venus`
-- Cap. 9 · Ritmo · base `um-polo` · pergunta `ritmo:cautela`: `identidade:angle-sign:asc`, `talentos:body-sign:jupiter`, `talentos:body-sign:saturn`, `linhas:head.start:joined_life`
-- Cap. 9 · Vínculo · base `um-polo` · pergunta `vinculo:proximidade`: `identidade:body-sign:sun`, `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Vínculo · base `um-polo` · pergunta `vinculo:proximidade`: `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
 
 </details>
 
@@ -637,19 +676,17 @@ Céu: `K-ritmo-diferença` **[construída]** (Lua em Câncer, Vênus em Touro, M
 > _Limites._
 >
 > - Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras.
-> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são traços que variaram entre análises da mesma foto ou proporções estimadas a olho.
+> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto.
 > - Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 2, 3, 4, 5 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
 >
 > 1. **Ritmo: impulso e cautela** — a partir dos capítulos 4 e 7.
 >    Quando foi a última vez que esperar antes de decidir ajudou você — e quando agir logo teria sido melhor?
 > 2. **Expressão: abertura e reserva** — a partir dos capítulos 2 e 7.
 >    Com quem você mostra com facilidade o que sente, e com quem prefere guardar mais para si?
-> 3. **Vínculo: autonomia e proximidade** — a partir dos capítulos 3, 4 e 5.
->    Que espaços de independência são importantes para você hoje, e como você cuida deles?
 >
 > _Prática opcional._ Se quiser, observe durante alguns dias as pequenas decisões do cotidiano: quais você toma de imediato e quais deixa para depois. Não é preciso mudar nada, só notar.
 >
@@ -663,7 +700,6 @@ Céu: `K-ritmo-diferença` **[construída]** (Lua em Câncer, Vênus em Touro, M
 - Cap. 8 · Expressão · chave `expressao:expansiva:D`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
 - Cap. 9 · Ritmo · base `c8` · pergunta `ritmo:two`: `linhas:head.start:joined_life`, `relacionamentos:body-sign:mars`
 - Cap. 9 · Expressão · base `c8` · pergunta `expressao:two`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
-- Cap. 9 · Vínculo · base `um-polo` · pergunta `vinculo:autonomia`: `mente:body-sign:mercury`, `relacionamentos:body-sign:mars`, `talentos:body-sign:saturn`
 
 </details>
 
@@ -685,18 +721,16 @@ Céu: `C-ref exato`. Mãos: `M-duas-imagens` **[construída]** (coração curto 
 > _Limites._
 >
 > - Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras.
-> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são traços que variaram entre análises da mesma foto ou proporções estimadas a olho.
+> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto.
 > - Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2, 3, 4, 5 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
 >
 > 1. **Expressão: abertura e reserva** — a partir dos capítulos 2 e 7.
 >    Com quem você mostra com facilidade o que sente, e com quem prefere guardar mais para si?
-> 2. **Ritmo: impulso e cautela** — a partir dos capítulos 1, 3, 5 e 7.
->    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
-> 3. **Vínculo: autonomia e proximidade** — a partir dos capítulos 2 e 4.
+> 2. **Vínculo: autonomia e proximidade** — a partir dos capítulos 2 e 4.
 >    Que espaços de independência são importantes para você hoje, e como você cuida deles?
 >
 > _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
@@ -709,7 +743,6 @@ Céu: `C-ref exato`. Mãos: `M-duas-imagens` **[construída]** (coração curto 
 
 - Cap. 8 · Expressão · chave `expressao:F`: `linhas:heart.length:short`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
 - Cap. 9 · Expressão · base `c8` · pergunta `expressao:two`: `linhas:heart.length:short`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
-- Cap. 9 · Ritmo · base `um-polo` · pergunta `ritmo:cautela`: `identidade:angle-sign:asc`, `identidade:body-sign:sun`, `mente:body-sign:mercury`, `talentos:body-sign:saturn`, `linhas:head.start:joined_life`
 - Cap. 9 · Vínculo · base `um-polo` · pergunta `vinculo:autonomia`: `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
 
 </details>
@@ -725,7 +758,7 @@ Céu: `K-lua-incerta` **[construída]** (horário desconhecido: Lua incerta, Vê
 > **Ritmo: impulso e cautela** · Aproximação
 > Nas mãos: linha da cabeça começando unida à da vida (cap. 7).
 > No céu: Marte em Touro (cap. 4).
-> Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir. É uma semelhança entre a linguagem da quiromancia e a da astrologia, não uma medida de como você age.
+> Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir.
 >
 > **Expressão: abertura e reserva** · Diferença
 > Nas mãos: linha do coração longa (cap. 7).
@@ -738,7 +771,7 @@ Céu: `K-lua-incerta` **[construída]** (horário desconhecido: Lua incerta, Vê
 >
 > - Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras.
 > - O traçado da linha do coração ficou só parcialmente visível na foto e por isso não sustenta nenhuma comparação.
-> - O formato da palma, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são traços que variaram entre análises da mesma foto ou proporções estimadas a olho.
+> - O formato da palma, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto.
 > - A posição da Lua depende do horário de nascimento informado e não entra nestas comparações.
 > - Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.
 
@@ -777,19 +810,19 @@ Céu: `C-val1`. Mãos: `M-clara`.
 > **Ritmo: impulso e cautela** · Aproximação
 > Nas mãos: linha da cabeça começando unida à da vida (cap. 7).
 > No céu: Marte em Capricórnio (cap. 4).
-> Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir. É uma semelhança entre a linguagem da quiromancia e a da astrologia, não uma medida de como você age.
+> Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir.
 >
 > **Expressão: abertura e reserva** · Aproximação
 > Nas mãos: linha do coração longa; linha do coração curvada para cima (cap. 7).
 > No céu: Vênus em Sagitário (cap. 4).
-> As duas leituras usam a imagem de uma expressão afetiva mais aberta. A semelhança está na linguagem das duas tradições; o que ela descreve na sua vida, só você pode avaliar.
+> As duas leituras usam a imagem de uma expressão afetiva mais aberta.
 >
 > _Síntese._ As aproximações acima mostram onde as duas tradições usam palavras parecidas. Elas servem como ponto de partida para observar a sua experiência, não como conclusão.
 >
 > _Limites._
 >
 > - Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras.
-> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são traços que variaram entre análises da mesma foto ou proporções estimadas a olho.
+> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto.
 > - Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
@@ -819,7 +852,51 @@ Céu: `C-val1`. Mãos: `M-clara`.
 
 </details>
 
-### 6.8 Só astrologia
+### 6.8 Capítulo 9 com tema de um polo compatível (Lua e Vênus no vínculo)
+
+Céu: `C-ref exato`. Mãos: `M-clara`.
+
+**Capítulo 8 — Conexões simbólicas entre céu e mãos**
+
+> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.
+>
+> **Expressão: abertura e reserva** · Aproximação
+> Nas mãos: linha do coração longa; linha do coração curvada para cima (cap. 7).
+> No céu: Lua em Sagitário (cap. 2).
+> As duas leituras usam a imagem de uma expressão afetiva mais aberta.
+>
+> _Síntese._ As aproximações acima mostram onde as duas tradições usam palavras parecidas. Elas servem como ponto de partida para observar a sua experiência, não como conclusão.
+>
+> _Limites._
+>
+> - Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras.
+> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto.
+> - Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.
+
+**Capítulo 9 — Seu guia pessoal de reflexão**
+
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+>
+> 1. **Expressão: abertura e reserva** — a partir dos capítulos 2 e 7.
+>    De que formas você costuma demonstrar afeto, e quais delas parecem mais naturais para você?
+> 2. **Vínculo: autonomia e proximidade** — a partir dos capítulos 2 e 4.
+>    Que espaços de independência são importantes para você hoje, e como você cuida deles?
+>
+> _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
+>
+> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
+>
+> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
+
+<details><summary>Rastreabilidade</summary>
+
+- Cap. 8 · Expressão · chave `expressao:expansiva:A`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
+- Cap. 9 · Expressão · base `c8` · pergunta `expressao:expansiva`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
+- Cap. 9 · Vínculo · base `um-polo` · pergunta `vinculo:autonomia`: `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
+
+</details>
+
+### 6.9 Só astrologia: capítulo 9 com um tema só (V2)
 
 Céu: `C-val1`. Mãos: sem mãos.
 
@@ -829,63 +906,45 @@ Céu: `C-val1`. Mãos: sem mãos.
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2, 4 e 5; as respostas, e a decisão sobre o que faz sentido para você, são suas.
->
-> 1. **Vínculo: autonomia e proximidade** — a partir dos capítulos 2 e 4.
->    Em quais momentos da sua semana você procura companhia, e em quais prefere ficar por conta própria?
-> 2. **Ritmo: impulso e cautela** — a partir dos capítulos 4 e 5.
->    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
-> 3. **Expressão: abertura e reserva** — a partir dos capítulos 1 e 4.
->    De que formas você costuma demonstrar afeto, e quais delas parecem mais naturais para você?
->
-> _Prática opcional._ Se quiser, observe numa semana comum os momentos em que buscou companhia e os momentos em que preferiu ficar só, e como foi cada um.
->
-> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
->
-> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
+> [indisponível — V2] Os capítulos disponíveis sustentam só um tema com segurança, e o guia precisa de pelo menos dois. Para não preencher o espaço com temas inventados, ele não foi montado nesta jornada.
 
 <details><summary>Rastreabilidade</summary>
 
-- Cap. 9 · Vínculo · base `tensao` · pergunta `vinculo:two`: `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
-- Cap. 9 · Ritmo · base `um-polo` · pergunta `ritmo:cautela`: `relacionamentos:body-sign:mars`, `talentos:body-sign:jupiter`
-- Cap. 9 · Expressão · base `um-polo` · pergunta `expressao:expansiva`: `identidade:angle-sign:asc`, `relacionamentos:body-sign:venus`
+</details>
+
+### 6.10 Nenhum traço comparável classificado (U4)
+
+Céu: `C-ref exato`. Mãos: `M-sem-classificação` **[construída]** (coração e início da cabeça não classificados; demais traços observados).
+
+**Capítulo 8 — Conexões simbólicas entre céu e mãos**
+
+> [indisponível — U4] Os traços das mãos que podem ser comparados — o comprimento e o traçado da linha do coração e o início da linha da cabeça — não puderam ser classificados com segurança nesta leitura. Por isso, nenhuma conexão foi criada.
+
+**Capítulo 9 — Seu guia pessoal de reflexão**
+
+> [indisponível — V2] Os capítulos disponíveis sustentam só um tema com segurança, e o guia precisa de pelo menos dois. Para não preencher o espaço com temas inventados, ele não foi montado nesta jornada.
+
+<details><summary>Rastreabilidade</summary>
 
 </details>
 
-### 6.9 Mãos sem traço comparável e sem pedido de nova foto (U4)
+### 6.11 Traços observados sem correspondência e um não classificado (U4-misto)
 
 Céu: `C-ref exato`. Mãos: `M-sem-elegível` **[construída]** (coração médio, traçado indeterminado, cabeça separada).
 
 **Capítulo 8 — Conexões simbólicas entre céu e mãos**
 
-> [indisponível — U4] Os traços das mãos que podem ser comparados — o comprimento e o traçado da linha do coração e o início da linha da cabeça — não ficaram nítidos o suficiente na foto. Por isso, nenhuma conexão foi criada.
+> [indisponível — U4misto] O comprimento da linha do coração e o início da linha da cabeça foram observados, mas sem uma categoria que corresponda aos temas comparados, e o traçado da linha do coração não pôde ser classificado com segurança nesta leitura. Por isso, nenhuma conexão foi criada.
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2, 3, 4 e 5; as respostas, e a decisão sobre o que faz sentido para você, são suas.
->
-> 1. **Ritmo: impulso e cautela** — a partir dos capítulos 1, 3 e 5.
->    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
-> 2. **Vínculo: autonomia e proximidade** — a partir dos capítulos 2 e 4.
->    Que espaços de independência são importantes para você hoje, e como você cuida deles?
-> 3. **Foco: mudança e estabilidade** — a partir dos capítulos 1 e 3.
->    Que hábitos ou lugares trazem a você uma sensação de continuidade?
->
-> _Prática opcional._ Se quiser, observe durante alguns dias as pequenas decisões do cotidiano: quais você toma de imediato e quais deixa para depois. Não é preciso mudar nada, só notar.
->
-> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
->
-> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
+> [indisponível — V2] Os capítulos disponíveis sustentam só um tema com segurança, e o guia precisa de pelo menos dois. Para não preencher o espaço com temas inventados, ele não foi montado nesta jornada.
 
 <details><summary>Rastreabilidade</summary>
 
-- Cap. 9 · Ritmo · base `um-polo` · pergunta `ritmo:cautela`: `identidade:angle-sign:asc`, `identidade:body-sign:sun`, `mente:body-sign:mercury`, `talentos:body-sign:saturn`
-- Cap. 9 · Vínculo · base `um-polo` · pergunta `vinculo:autonomia`: `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
-- Cap. 9 · Foco · base `um-polo` · pergunta `foco:estabilidade`: `identidade:body-sign:sun`, `mente:body-sign:mercury`
-
 </details>
 
-### 6.10 Só mãos: capítulo 9 com um tema só (V2)
+### 6.12 Só mãos: capítulo 9 com um tema só (V2)
 
 Céu: sem céu. Mãos: `M-clara`.
 
@@ -901,7 +960,7 @@ Céu: sem céu. Mãos: `M-clara`.
 
 </details>
 
-### 6.11 Sem conteúdo suficiente (V1)
+### 6.13 Sem conteúdo suficiente (V1)
 
 Céu: sem céu. Mãos: `M-parcial`.
 
@@ -931,11 +990,13 @@ com os motores reais. Os arquivos estão em
 - `rules04d.ts`: as regras e a montagem;
 - `verify.test.ts`: as verificações.
 
-Foram rodadas **150 combinações**, com 15 situações do céu e 10 das mãos:
+Foram rodadas **{len(rows)} combinações**, com {len(V['skies'])} situações do céu e {len(V['palms'])} das mãos:
 
 - as **84 do conjunto anterior**: 12 céus × 7 mãos, incluindo "sem céu" e
   "sem mãos";
-- **66 com fixtures construídas para esta etapa.**
+- **{len(cons)} com fixtures construídas para esta verificação**;
+- e **6 casos adversariais** (7.3), montados direto na ponte de dados, que
+  tentam usar referências de assuntos incompatíveis.
 
 Fixtures construídas:
 
@@ -947,7 +1008,8 @@ Fixtures construídas:
 | `K-lua-incerta` | A mesma data de K-contraponto com horário desconhecido: Lua incerta, Vênus em Capricórnio | R-hora; posição incerta fora da comparação |
 | `M-duas-imagens` | `clearHand` com a linha do coração curta (o traçado continua curvado) | duas imagens nas mãos; tensão nas mãos |
 | `M-reservada` | `clearHand` com a linha do coração curta e reta | variantes com o polo de reserva nas mãos |
-| `M-sem-elegível` | `clearHand` com o coração médio, o traçado indeterminado e a cabeça separada | U4 (sem traço comparável e sem pedido de nova foto) |
+| `M-sem-elegível` | `clearHand` com o coração médio, o traçado indeterminado e a cabeça separada | U4-misto: traços observados sem correspondência e um não classificado |
+| `M-sem-classificação` | `clearHand` com o comprimento do coração pouco visível, o traçado indeterminado e o início da cabeça não identificado; os demais traços observados | U4: nenhum traço comparável classificado, sem pedido de nova foto |
 
 As datas fictícias foram encontradas por varredura de datas no próprio
 motor, buscando a configuração necessária. **Nenhum fato astrológico nem
@@ -956,94 +1018,110 @@ validador da 03C como qualquer observação.
 
 ### 7.2 Verificações e resultado
 
-**Resultado: 0 falhas em 150 combinações.**
+**Resultado: 0 falhas em 165 combinações e nos 6 casos adversariais.**
 
-| Verificação                     | O que é conferido em cada combinação                                                                                                                                                             |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Capítulo 8: variantes           | Toda variante usada tem texto na biblioteca; aproximação, contraponto, diferença e duas imagens ocorrem (7.3)                                                                                    |
-| Capítulo 9: tema único e tensão | Toda pergunta existe; "dois lados" só com os dois polos entre as fontes; tensão só dentro do mesmo assunto **e** em eixo que o assunto trata; um polo com pelo menos 2 referências               |
-| Sem contraponto artificial      | No capítulo 8, toda referência do céu (inclusive o outro lado) é do mesmo assunto do traço e tem o polo esperado                                                                                 |
-| Uma fonte só                    | O capítulo 8 fica sempre indisponível (U1, U2 ou U3); o capítulo 9 não usa vocabulário de conexão                                                                                                |
-| Indisponibilidade               | Capítulo 9 com 2 ou 3 temas, sem eixo repetido; abaixo disso, V1 ou V2                                                                                                                           |
-| Rastreabilidade                 | Toda referência citada existe na ponte entregue, com o `ref` do item original                                                                                                                    |
-| Segurança editorial             | Todo texto renderizado passa nos padrões do projeto (02F e 03C), sem gênero presumido; no capítulo 8, sem "confirma", "reforça", elementos e similares; no capítulo 9, sem "conexão" e similares |
-| Privacidade                     | Nenhum texto renderizado contém data, hora, local, identificador de lugar ou graus                                                                                                               |
-| Repetição                       | Nenhuma frase repetida dentro do mesmo capítulo; perguntas sem semelhança com as 12 perguntas dos capítulos 1–7                                                                                  |
-| Determinismo                    | A mesma entrada gera a mesma saída                                                                                                                                                               |
-| Fidelidade da biblioteca        | Todo texto literal é idêntico ao registrado em `96353c1` com as mudanças de `e6c291d` (as formas de concordância estão em 5.3)                                                                   |
+| Verificação                         | O que é conferido em cada combinação                                                                                                                                                             |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Capítulo 8: variantes               | Toda variante usada tem texto na biblioteca; aproximação, contraponto, diferença e duas imagens ocorrem (7.5)                                                                                    |
+| Capítulo 9: tema único e tensão     | Toda pergunta existe; "dois lados" só com os dois polos entre as fontes; tensão só dentro do mesmo assunto; um polo com pelo menos 2 referências                                                 |
+| Elegibilidade temática (capítulo 9) | **Toda** referência de **todo** tema do capítulo 9 (do capítulo 8, de tensão ou de um polo) é de um assunto que o eixo trata (tabela 2.5)                                                        |
+| Causa real da indisponibilidade     | U4 só quando nenhum traço comparável foi classificado; U4-misto só quando algum foi observado sem correspondência; nenhum texto afirma variação entre análises da foto da pessoa                 |
+| Sem contraponto artificial          | No capítulo 8, toda referência do céu (inclusive o outro lado) é do mesmo assunto do traço e tem o polo esperado                                                                                 |
+| Uma fonte só                        | O capítulo 8 fica sempre indisponível (U1, U2 ou U3); o capítulo 9 não usa vocabulário de conexão                                                                                                |
+| Indisponibilidade                   | Capítulo 9 com 2 ou 3 temas, sem eixo repetido; abaixo disso, V1 ou V2                                                                                                                           |
+| Rastreabilidade                     | Toda referência citada existe na ponte entregue, com o `ref` do item original                                                                                                                    |
+| Segurança editorial                 | Todo texto renderizado passa nos padrões do projeto (02F e 03C), sem gênero presumido; no capítulo 8, sem "confirma", "reforça", elementos e similares; no capítulo 9, sem "conexão" e similares |
+| Privacidade                         | Nenhum texto renderizado contém data, hora, local, identificador de lugar ou graus                                                                                                               |
+| Repetição                           | Nenhuma frase repetida dentro do mesmo capítulo; perguntas sem semelhança com as 12 perguntas dos capítulos 1–7                                                                                  |
+| Determinismo                        | A mesma entrada gera a mesma saída                                                                                                                                                               |
+| Fidelidade da biblioteca            | Todo texto literal é **exatamente igual** a um texto citado no registro (`96353c1` com `e6c291d`), salvo os 4 alterados de propósito em 5.1; qualquer outra diferença falha a verificação        |
 
-Textos da biblioteca: 52, sendo 44 literais e 8 modelos com lista. Literais divergentes do registro: **0**.
+Textos da biblioteca: 53, sendo 43 literais e 10 modelos com lista. Literais divergentes do registro: **4**.
 
-### 7.3 Conjunto anterior (84 combinações de fixtures do projeto)
+### 7.3 Casos adversariais (referências de assuntos incompatíveis)
+
+| Caso | Tentativa                                                                                      | Resultado                                     | Esperado |
+| ---- | ---------------------------------------------------------------------------------------------- | --------------------------------------------- | -------- |
+| X1   | Vínculo só com Sol, Mercúrio e Júpiter (exemplo da revisão), sem mãos                          | cap. 8: U1 · cap. 9: V1                       | ✔        |
+| X2   | Expressão das mãos contra Marte em Leão (assunto agir), sem Lua nem Vênus                      | cap. 8: U6 · cap. 9: V2                       | ✔        |
+| X3   | Ritmo das mãos contra Vênus em Áries (assunto afeto) e Ascendente/Saturno com cautela          | cap. 8: U6 · cap. 9: V1                       | ✔        |
+| X4   | Reserva só em Sol, Mercúrio, Júpiter e Saturno; expressão sem Lua/Vênus                        | cap. 8: U1 · cap. 9: V1                       | ✔        |
+| X5   | Controle: Lua em Leão × Vênus em Capricórnio, sem mãos (tensão no mesmo assunto)               | cap. 8: U1 · cap. 9: V2                       | ✔        |
+| X6   | Controle: coração aberto × Lua em Leão, com Marte em Leão presente (Marte não pode ser citado) | cap. 8: expressao/A[Lua em Leão] · cap. 9: V2 | ✔        |
+
+### 7.4 Conjunto anterior (84 combinações de fixtures do projeto)
 
 - **Capítulo 8:** 29 disponíveis; entre os 66 casos com as duas fontes, **29**.
   - Temas: Expressão · aproximação: 18; Expressão · diferença: 9; Ritmo · aproximação: 4.
   - Indisponíveis: U1: 11; U2: 6; U3: 1; U5: 33; U6: 4.
-- **Capítulo 9:** 77 disponíveis.
-  - Temas: dois lados / do cap. 8: 9; dois lados / tensão fundamentada: 14; um polo / do cap. 8: 22; um polo / um polo: 174.
-  - Indisponíveis: V1: 5; V2: 2.
-  - Eixos pulados por ambiguidade (1.3, item 3): 25.
+- **Capítulo 9:** 22 disponíveis.
+  - Temas: dois lados / do cap. 8: 6; dois lados / tensão fundamentada: 6; um polo / do cap. 8: 18; um polo / um polo: 16.
+  - Indisponíveis: V1: 18; V2: 44.
+  - Eixos descartados por falta de referências compatíveis (1.3, item 3): 213.
 
-### 7.4 Fixtures construídas (66 combinações)
+### 7.5 Fixtures construídas (81 combinações)
 
 **Esta cobertura é das fixtures construídas para exercitar as variantes. Ela não estima com que frequência cada variante ocorre em pessoas reais.**
 
-- **Capítulo 8:** 35 disponíveis; entre os 60 casos com as duas fontes, **35**.
+- **Capítulo 8:** 35 disponíveis; entre os 74 casos com as duas fontes, **35**.
   - Temas: Expressão · aproximação: 5; Expressão · aproximação com contraponto: 4; Expressão · diferença: 12; Expressão · duas imagens nas mãos: 12; Ritmo · aproximação: 12; Ritmo · diferença: 4.
-  - Indisponíveis: U1: 3; U2: 3; U4: 14; U5: 9; U6: 2.
-- **Capítulo 9:** 63 disponíveis.
-  - Temas: dois lados / do cap. 8: 32; dois lados / tensão fundamentada: 13; um polo / do cap. 8: 17; um polo / um polo: 103.
-  - Indisponíveis: V1: 1; V2: 2.
-  - Eixos pulados por ambiguidade (1.3, item 3): 10.
+  - Indisponíveis: U1: 3; U2: 4; U4: 14; U4misto: 14; U5: 9; U6: 2.
+- **Capítulo 9:** 28 disponíveis.
+  - Temas: dois lados / do cap. 8: 26; dois lados / tensão fundamentada: 5; um polo / do cap. 8: 16; um polo / um polo: 11.
+  - Indisponíveis: V1: 20; V2: 33.
+  - Eixos descartados por falta de referências compatíveis (1.3, item 3): 217.
 
-### 7.5 Leitura dos resultados
+### 7.6 Leitura dos resultados
 
-- **Capítulo 8 no conjunto anterior: igual ao ajuste aprovado.** São 29
-  disponíveis entre os 66 casos com as duas fontes, e nenhum contraponto.
-- **As variantes ausentes nas 84 foram exercitadas com as fixtures
-  construídas:**
-  - contraponto, só com Lua × Vênus;
-  - duas imagens nas mãos;
-  - diferença no ritmo;
-  - as variantes de reserva;
-  - U4;
-  - R-hora.
-- **Capítulo 9 no conjunto anterior: a disponibilidade se mantém em 77 de 84.** Os 7 indisponíveis são todos sem céu, coerente com a E2. A variante
-  "dois lados" cai para os casos fundamentados: veja os totais em 7.3,
-  contra 172 de 231 temas antes da E6. A regra também não derrubou nenhum
-  capítulo com céu disponível por falta de contraponto.
-- **Todas as 9 frases-ponte foram usadas** em pelo menos uma combinação
-  (somando os dois conjuntos):
-  - expansiva: aproximação 18, diferença 15 e contraponto 3;
-  - reserva: diferença 6, aproximação 5 e contraponto 1;
-  - ritmo: aproximação 16 e diferença 4;
-  - duas imagens nas mãos: 12.
-- **Práticas.** A prática de **foco** não apareceu nas fixtures, porque o foco
-  nunca foi o primeiro tema. A prática **genérica** é **inalcançável** pela
-  regra atual, já que sempre existe um primeiro tema. Ver o item 7 da seção 8.
-- **Eixos pulados.** Quando os dois polos vêm de assuntos diferentes e
-  nenhum assunto do eixo decide, o eixo é pulado e outro ocupa o lugar. Isso
-  não deixou nenhum capítulo com céu abaixo do mínimo.
+- **Capítulo 8: sem mudança.** São 29 disponíveis entre os 66 casos com as
+  duas fontes do conjunto anterior, e nenhum contraponto. As correspondências
+  e as regras do capítulo 8 não mudaram, só três frases ficaram mais curtas.
+- **Capítulo 9: queda real, de 77 para 22 dos 84.** Com a compatibilidade
+  temática aplicada também aos temas de um polo, sobram como referências
+  possíveis:
+  - para expressão e vínculo: Lua, Vênus e a linha do coração;
+  - para ritmo: Marte e o início da linha da cabeça;
+  - para foco: nenhuma.
+
+  O tema de um polo exige 2 referências compatíveis, então:
+  - **só céu: 0 de 11 disponíveis.** Em 8 deles há exatamente um tema
+    sustentado, quase sempre de vínculo com Lua e Vênus, e em 3, nenhum;
+  - **duas fontes:** 22 de 66 disponíveis, todos casos em que o capítulo 8
+    também está disponível;
+  - **só mãos:** 0, como antes (E2).
+
+  **Os mínimos não foram alterados** para compensar. Ver a decisão 1 da
+  seção 8.
+
+- **Variantes exercitadas:** todas as 9 frases-ponte, U4 e U4-misto (com
+  causas distintas), R-hora, duas imagens nas mãos, contraponto Lua × Vênus,
+  e as perguntas de expressão, vínculo e ritmo que continuam alcançáveis.
+- **Prática de vínculo.** É alcançável, quando só há céu, com tensão de
+  vínculo e um segundo tema, mas não ocorreu nas fixtures.
+- **Casos adversariais:** nenhuma referência de assunto incompatível foi
+  usada, nem no capítulo 8 nem no capítulo 9.
 - **Não se extrapola para usuários reais.** As fixtures são poucas e não
-  aleatórias: 4 dos 11 mapas do conjunto anterior são o mesmo nascimento, e
-  as mãos são variações de uma mesma fixture. As frequências servem para
-  conferir as regras, não para prever a experiência real.
+  aleatórias: 4 dos 11 mapas são o mesmo nascimento, e as mãos são variações
+  de uma mesma fixture.
 
 ---
 
-## 8. Para a revisão final
+## 8. Decisões realmente necessárias
 
-1. **Textos literais:** seções 3 e 4, mais as versões exatas da F4 (5.1).
-2. **Formas de concordância e rótulo** novos (5.3).
-3. **Tabela 2.5** (eixos que cada assunto trata), nova e usada só no
-   capítulo 9.
-4. **Regra E6 ajustada** (1.3), incluindo a decisão de **pular** um eixo
-   ambíguo em vez de escolher um polo.
-5. **Retiradas** (5.2).
-6. **Exemplos** (seção 6).
-7. **Prática genérica** (4.3): retirar, por ser inalcançável, ou mantê-la
-   como reserva para uma regra futura. Recomendo **retirar**.
+1. **Cobertura do capítulo 9.** Com a correção, o capítulo 9 só aparece,
+   na prática, junto do capítulo 8: 22 de 84 casos, e nunca só com o céu.
+   Para referência, **sem adotar**: com o mínimo de 1 tema, seriam 66 de 84. **Recomendação: manter o mínimo de 2 temas**, conforme sua
+   instrução, e aceitar a cobertura menor como consequência da fidelidade
+   temática. Qualquer ampliação exigiria aprovar novos assuntos por eixo
+   (tabela 2.5) com base editorial própria. Nenhum foi proposto aqui, para
+   não inventar correspondências.
+2. **Textos inativos** (5.4): as 3 perguntas e a prática de foco, e a
+   pergunta de ritmo com impulso.
+   - **Recomendação: mantê-los na biblioteca como inativos**, já que a
+     instrução foi preservar perguntas e práticas, com um teste que garante
+     que não são usados.
+   - A alternativa é retirá-los, como foi feito com a prática genérica.
 
-Depois da aprovação, a implementação (quando autorizada) parte desta
-biblioteca como fonte única, e os testes da seção 7 viram testes do
-produto.
+Com essas duas respostas, a biblioteca está pronta para a implementação dos
+capítulos 8 e 9, com os testes da seção 7 incorporados ao repositório como
+testes de regressão.
