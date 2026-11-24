@@ -148,7 +148,7 @@ export const SIGN_MEANINGS: Record<
     name: "Sagitário",
     element: "fire",
     modality: "mutable",
-    qualities: "busca de sentido, entusiasmo e amplitude de horizontes",
+    qualities: "entusiasmo, amplitude de horizontes e desejo de compreender",
     tags: ["foco:mudanca", "expressao:expansiva", "vinculo:autonomia"],
   },
   capricorn: {
@@ -199,7 +199,7 @@ export const HOUSE_MEANINGS: Record<number, { name: string; area: string }> = {
     name: "Casa 8",
     area: "a intimidade, os recursos compartilhados e as transformações",
   },
-  9: { name: "Casa 9", area: "as viagens, os estudos e a busca de sentido" },
+  9: { name: "Casa 9", area: "as viagens, os estudos e a visão de mundo" },
   10: { name: "Casa 10", area: "a vocação, a carreira e a imagem pública" },
   11: {
     name: "Casa 11",

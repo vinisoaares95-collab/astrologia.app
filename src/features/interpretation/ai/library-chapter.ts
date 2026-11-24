@@ -40,7 +40,7 @@ const SYNTHESES: Record<ChapterId, string> = {
 
 const QUESTIONS: Record<ChapterId, string[]> = {
   identidade: [
-    "Em que situações você se sente mais você?",
+    "Quando alguém acaba de conhecer você, o que costuma perceber primeiro — e o que só aparece com o tempo?",
     "Qual dessas descrições combina menos com a sua experiência, e por quê?",
   ],
   emocional: [

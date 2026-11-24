@@ -313,7 +313,7 @@ export const AUTHORED: Record<string, AuthoredEntry> = {
     tags: ["ritmo:impulso", "expressao:expansiva"],
   },
   "element-dominant:earth": {
-    text: "Muitos corpos em signos de Terra são associados a senso prático e constância: construir com as próprias mãos pode trazer satisfação.",
+    text: "Muitos corpos em signos de Terra são associados a senso prático e constância: construir algo concreto, passo a passo, pode trazer satisfação.",
     tags: ["ritmo:cautela", "foco:estabilidade"],
   },
   "element-dominant:air": {

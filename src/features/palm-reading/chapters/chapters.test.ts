@@ -480,7 +480,7 @@ describe("segurança do texto final", () => {
     });
     expect(result.simulated).toBe(true);
     expect(result.chapters).toHaveLength(2);
-    expect(audit.version).toMatch(/\+03e\.2$/u);
+    expect(audit.version).toMatch(/\+03e\.3$/u);
   });
 });
 
@@ -573,7 +573,11 @@ describe("estrutura e reserva da biblioteca (03F.2)", () => {
     const d = palmLibraryDraft(linhas);
     expect(d.synthesis).toMatch(/linha do coração/u);
     expect(d.synthesis).toMatch(/linha da vida/u);
-    expect(d.reflectionQuestions[0]).toMatch(/linha do coração/u);
+    // A primeira pergunta remete à síntese, que já nomeia as características
+    // (04E.2B): a lista não se repete, e nada específico se perde.
+    expect(d.reflectionQuestions[0]).toBe(
+      "Qual dessas leituras conversa mais com o que você vive hoje?",
+    );
     // Sem destino observado na fixture? Então não pode ser citado.
     const hasFate = linhas.items.some((i) => i.id.includes("fate"));
     if (!hasFate) expect(d.synthesis).not.toMatch(/destino/u);

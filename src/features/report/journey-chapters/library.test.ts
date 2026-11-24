@@ -28,7 +28,13 @@ import {
 } from "../../palm-reading/analysis/__fixtures__/observations";
 import { palmLibraryDraft } from "../../palm-reading/chapters/library-draft";
 import { presumedGender } from "../../palm-reading/chapters/editorial";
-import { C8, C9, PALM_POLES, SUBJECT } from "./library";
+import {
+  C8,
+  C9,
+  JOURNEY_LIBRARY_VERSION,
+  PALM_POLES,
+  SUBJECT,
+} from "./library";
 
 const DOC = readFileSync(
   join(__dirname, "../../../../docs/fase-04d-biblioteca-consolidada.md"),
@@ -141,5 +147,43 @@ describe("biblioteca 04D", () => {
     // Lentos, Júpiter e Saturno sem assunto: não sustentam temas.
     for (const b of ["jupiter", "saturn", "uranus", "neptune", "pluto"])
       expect(SUBJECT[b]).toBeUndefined();
+  });
+});
+
+describe("capítulo 8: redundância (04E.2B)", () => {
+  const w = (t: string) => t.toLowerCase().match(/[\p{L}]+/gu) ?? [];
+  const grams = (t: string, k: number) => {
+    const x = w(t);
+    return new Set(
+      x.slice(0, x.length - k + 1).map((_, i) => x.slice(i, i + k).join(" ")),
+    );
+  };
+
+  it("versão 04d.3 com a introdução e a síntese de diferença revisadas", () => {
+    expect(JOURNEY_LIBRARY_VERSION).toBe("04d.3");
+    expect(C8.intro).toBe(
+      "Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você.",
+    );
+    expect(C8.synthesis.D).toBe(
+      "Nos temas comparados, as duas tradições apontam para lados diferentes: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.",
+    );
+  });
+
+  it("a introdução não repete trechos das frases-ponte nem das sínteses", () => {
+    const intro = grams(C8.intro, 4);
+    for (const t of [
+      ...Object.values(C8.bridge),
+      ...Object.values(C8.synthesis),
+    ])
+      expect(
+        [...grams(t, 4)].filter((g) => intro.has(g)),
+        t,
+      ).toEqual([]);
+  });
+
+  it("a ideia de 'não é erro' fica só no aviso essencial", () => {
+    expect(C8.R0).toMatch(/não indicam erro/u);
+    for (const t of [C8.intro, ...Object.values(C8.synthesis)])
+      expect(t).not.toMatch(/\berro\b/u);
   });
 });

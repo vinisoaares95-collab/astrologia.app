@@ -33,7 +33,12 @@ import {
   type ToneTag,
 } from "./library/base";
 
-export const INTERPRETATION_VERSION = "02e.1";
+/**
+ * 02e.2 (04E.2B): qualidades de Sagitário e área da casa 9 sem repetir
+ * "busca de sentido" com a função de Júpiter; elemento Terra sem a alusão a
+ * "próprias mãos". Só texto: fatos, cálculos e associações iguais.
+ */
+export const INTERPRETATION_VERSION = "02e.2";
 
 export const DISCLAIMER =
   "As posições astronômicas deste relatório são calculadas. Os significados atribuídos a elas são interpretações simbólicas da tradição da astrologia ocidental tropical — não são fatos científicos, diagnósticos nem previsões.";

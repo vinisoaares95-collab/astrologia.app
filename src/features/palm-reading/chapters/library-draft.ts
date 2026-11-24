@@ -52,7 +52,8 @@ function closing(chapter: PalmChapter): {
   return {
     synthesis: `Juntas, as leituras sobre ${list(topics)} formam um retrato simbólico para comparar com o que você reconhece em si.`,
     reflectionQuestions: [
-      `Entre ${list(topics)}, qual leitura conversa mais com o que você vive hoje?`,
+      // A síntese logo acima já nomeia as características (04E.2B).
+      "Qual dessas leituras conversa mais com o que você vive hoje?",
       "Em que situações você se reconhece nessas leituras, e em quais não?",
     ],
   };

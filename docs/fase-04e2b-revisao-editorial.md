@@ -1,7 +1,8 @@
-# Fase 04E.2B — Revisão editorial final (avaliação e propostas)
+# Fase 04E.2B — Revisão editorial final
 
-Estado: **avaliação concluída. Nenhum texto foi alterado.** As propostas da
-seção 3 aguardam aprovação.
+Estado: **correções T1–T6 aplicadas** (seção 8), com ajustes em T5 e T6
+pedidos na aprovação. As seções 0 a 7 registram a avaliação que levou às
+propostas (commit `34cb9d2`). Aceite editorial final pendente (seção 8.7).
 
 Não houve:
 
@@ -341,3 +342,728 @@ A revisão editorial pode ser encerrada quando:
 
 O teste com leitores reais **não** faz parte destes critérios. Ele continua
 recomendado como etapa própria, porque esta avaliação não o substitui.
+
+## 8. Aplicação das correções (T1–T6)
+
+Decisões da aprovação:
+
+- T1, T2, T3 e T4 aprovadas como propostas.
+- T5 e T6 ajustadas antes de aplicar (8.2).
+
+Ficaram iguais:
+
+- cálculos, associações e critérios visuais;
+- regras de seleção dos capítulos 8 e 9;
+- privacidade, consentimento, estrutura e fluxo.
+
+### 8.1 Textos anteriores e finais
+
+| #   | Onde                                                                                                   | Anterior                                                                                                                                                                                                                                                                                                                         | Final                                                                                                                                                                                                                                             |
+| --- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T1  | Introdução do capítulo 8 (`journey-chapters/library.ts`)                                               | Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista. | Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você. |
+| T2  | Síntese "Só diferenças" do capítulo 8                                                                  | Nos temas comparados, as duas tradições apontam para lados diferentes. Isso não é um erro de nenhuma delas: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.                                                                                                                               | Nos temas comparados, as duas tradições apontam para lados diferentes: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.                                                                                     |
+| T3  | Qualidades de Sagitário (`interpretation/library/base.ts`)                                             | busca de sentido, entusiasmo e amplitude de horizontes                                                                                                                                                                                                                                                                           | entusiasmo, amplitude de horizontes e desejo de compreender                                                                                                                                                                                       |
+| T3  | Área da casa 9 (`interpretation/library/base.ts`)                                                      | as viagens, os estudos e a busca de sentido                                                                                                                                                                                                                                                                                      | as viagens, os estudos e a visão de mundo                                                                                                                                                                                                         |
+| T4  | Elemento Terra (`interpretation/library/authored.ts`)                                                  | …construir com as próprias mãos pode trazer satisfação.                                                                                                                                                                                                                                                                          | …construir algo concreto, passo a passo, pode trazer satisfação.                                                                                                                                                                                  |
+| T5  | 1ª pergunta dos capítulos 6–7 com 2 ou mais características (`palm-reading/chapters/library-draft.ts`) | Entre {lista das características}, qual leitura conversa mais com o que você vive hoje?                                                                                                                                                                                                                                          | Qual dessas leituras conversa mais com o que você vive hoje?                                                                                                                                                                                      |
+| T6  | 1ª pergunta do capítulo 1 (`interpretation/ai/library-chapter.ts`)                                     | Em que situações você se sente mais você?                                                                                                                                                                                                                                                                                        | Quando alguém acaba de conhecer você, o que costuma perceber primeiro — e o que só aparece com o tempo?                                                                                                                                           |
+
+Versões atualizadas:
+
+| Versão                    | Antes | Depois    | Cobre                                                |
+| ------------------------- | ----- | --------- | ---------------------------------------------------- |
+| `INTERPRETATION_VERSION`  | 02e.1 | **02e.2** | T3, T4                                               |
+| `PROMPT_VERSION`          | 02f.2 | **02f.3** | T6; só a versão de reserva mudou, o prompt é o mesmo |
+| `PALM_PROMPT_VERSION`     | 03e.2 | **03e.3** | T5; só a versão de reserva mudou, o prompt é o mesmo |
+| `JOURNEY_LIBRARY_VERSION` | 04d.2 | **04d.3** | T1, T2                                               |
+
+Efeito das versões: a versão registrada dos relatórios passou de
+`02e.1+02f.2` para `02e.2+02f.3` (e `…+03e.3` nas mãos).
+
+Documentos atualizados:
+
+- `fase-04d-biblioteca-consolidada.md`: textos literais, exemplos e nota de
+  versão;
+- as fixtures de referência do motor de interpretação (4 arquivos),
+  regeneradas.
+
+### 8.2 Ajustes de T5 e T6
+
+**T5 — a síntese continua personalizada.** A proposta original tirava a
+lista da síntese. A versão aplicada faz o contrário:
+
+- a **síntese mantém a lista** das características observadas ("Juntas, as
+  leituras sobre o formato da palma, o comprimento dos dedos e a combinação
+  de palma e dedos formam…");
+- a **primeira pergunta**, logo abaixo, passa a remeter a ela ("Qual dessas
+  leituras…").
+
+Assim nenhuma informação específica se perde: a lista continua no mesmo
+capítulo, a uma linha de distância. Só a repetição sai.
+
+O caso de uma única característica não mudou: a síntese e a pergunta já não
+repetiam lista.
+
+**T6 — o capítulo 1 continua com duas perguntas.** A pergunta nova trata de
+outro aspecto da identidade: a diferença entre a primeira impressão e o que
+se revela com o tempo. Ela corresponde à "forma de se colocar no mundo", da
+introdução, e ao Ascendente.
+
+Ela foi conferida contra o conteúdo real do capítulo:
+
+- **Na varredura de 2.760 mapas:**
+  - o Ascendente aparece em 80% dos capítulos 1, com textos como
+    "aproximação ao mundo", "transmitir presença" e "observar o clima antes
+    de se expor";
+  - nos 20% sem Ascendente (horário desconhecido ou aproximado), a pergunta
+    se apoia na introdução, que é igual para todos.
+- **Na leitura dos casos B e C** (sem Ascendente), a pergunta continua
+  pertinente. Ela não menciona astrologia nem afirma nada, e conversa com os
+  textos do Sol (por exemplo, Escorpião: "a intensidade verdadeira às
+  superfícies").
+- **Em relação às outras perguntas,** ela não repete:
+  - a de identidade do capítulo 9 ("Que atividade ou escolha do seu dia a
+    dia…"): atividade × percepção alheia;
+  - a segunda do próprio capítulo 1 nem o "Para fechar" do capítulo 9
+    (concordar e discordar);
+  - o início de nenhuma pergunta do capítulo 9: a primeira redação ("Como
+    você costuma se apresentar…") começava igual à de pensamento ("Como você
+    costuma chegar…"). O teste de ineditismo apontou isso, e ela foi
+    reescrita.
+- **Linguagem:** neutra quanto a gênero ("alguém acaba de conhecer você"),
+  dentro do limite de 200 caracteres e terminando em "?".
+
+### 8.3 Propostas preservadas sem alteração
+
+Nenhuma proposta foi descartada. Mantidos de propósito:
+
+- **Aviso essencial (R0) e frases-ponte do capítulo 8.** A repetição literal
+  saiu pela introdução (T1), sem mexer nelas. "A diferença fica à vista, sem
+  conciliação" continua só na frase-ponte.
+- **Função de Júpiter** ("a expansão, a confiança e a busca de sentido") e o
+  texto autoral de "Sol em Sagitário".
+  - A repetição ficava nos textos que recebem essa função (qualidades de
+    Sagitário e área da casa 9), e foi ali que mudou.
+  - Mudar a função alteraria todas as frases de Júpiter.
+- **Segunda pergunta dos capítulos 6–7** ("Em que situações você se
+  reconhece nessas leituras, e em quais não?"). Agora ela fica ao lado de
+  "Qual dessas leituras…": o eco "dessas/nessas" é estilo de baixa
+  gravidade, aceito.
+
+**Problemas de baixa gravidade aceitos nesta fase,** sem mudança no motor:
+
+| #   | Problema                                                                                                             | Decisão                                                        |
+| --- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| E5  | Função de Júpiter ou Saturno repetida em duas frases do capítulo 5; qualidades do mesmo signo repetidas num capítulo | Aceito. Corrigir exigiria mudar a montagem das frases no motor |
+| E7  | A ideia de "combina e não combina" em 4 perguntas (caps. 1, 6, 7 e "Para fechar")                                    | Aceito                                                         |
+| E8  | Vínculo do capítulo 9 × segunda pergunta do capítulo 4 (6,6%)                                                        | Aceito                                                         |
+| E9  | Fórmula "Com X em Y, a tradição associa…"                                                                            | Aceito: é o enquadramento simbólico deliberado                 |
+| E10 | Pergunta de pensamento genérica                                                                                      | Aceito                                                         |
+| —   | Eco "dessas/nessas" nas perguntas dos capítulos 6–7                                                                  | Aceito                                                         |
+
+### 8.4 Validação
+
+**Varredura repetida** com o mesmo método da seção 0 (2.760 mapas × 6
+situações das mãos):
+
+| Verificação                                                              | Resultado                                                                                                                        |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| "busca de sentido" duas vezes na mesma frase                             | **0** (antes: 15,3% dos relatórios)                                                                                              |
+| Qualquer repetição literal de 3 palavras de conteúdo na mesma frase      | **0** em 74.736 frases                                                                                                           |
+| "próprias mãos"                                                          | **0** (antes: 16,7%)                                                                                                             |
+| Padrões de erro gramatical                                               | **0**                                                                                                                            |
+| Frases alteradas                                                         | 3.119 de 74.736. **Todas** diferem do texto anterior só pelas substituições aprovadas (Sagitário 1.478, casa 9 1.180, Terra 461) |
+| Seleção dos capítulos 8 e 9 (temas, bases, capítulos citados, exclusões) | **Idêntica** nas 16.560 combinações                                                                                              |
+| Número de seções por capítulo                                            | Idêntico: nenhuma interpretação perdida                                                                                          |
+| Determinismo                                                             | Duas execuções com saída byte a byte idêntica (mesmo hash)                                                                       |
+
+**Testes novos de fidelidade:**
+
+- `src/features/interpretation/editorial-04e2b.test.ts`:
+  - nenhuma função de corpo partilha trecho de 3 palavras com as qualidades
+    dos 12 signos ou com as áreas das 12 casas (a regra geral que impede o
+    E1 de voltar);
+  - textos aprovados de T3 e T4; versão `02e.2`;
+  - 2 perguntas por capítulo astrológico, todas distintas;
+  - T6 literal e sem trechos em comum com a pergunta de identidade nem com o
+    "Para fechar" do capítulo 9.
+- `src/features/report/journey-chapters/library.test.ts`:
+  - versão `04d.3` e os textos literais de T1 e T2;
+  - a introdução sem trechos de 4 palavras em comum com as frases-ponte e
+    as sínteses;
+  - "erro" só no aviso essencial.
+- O teste de ineditismo existente (perguntas do capítulo 9 × capítulos 1–7)
+  continua passando com a pergunta nova.
+- `src/features/palm-reading/chapters/chapters.test.ts`:
+  - a síntese continua nomeando as características observadas;
+  - a primeira pergunta é a remissiva;
+  - a versão é `03e.3`.
+
+**Rastreabilidade:** os testes de rastreabilidade existentes (ids de itens
+e fatos, notas de precisão, validadores de rascunho) passam sem mudança.
+
+A checagem automática de semelhança **não substitui a revisão humana**: os
+exemplos completos do apêndice A estão aí para essa leitura.
+
+### 8.5 Testes e build
+
+| Verificação                     | Resultado                                               |
+| ------------------------------- | ------------------------------------------------------- |
+| `npm run check`                 | **1284 aprovados**, 42 ignorados (pagos e de avaliação) |
+| `npm run build`                 | Aprovado                                                |
+| 04A (`next start`)              | 45/45                                                   |
+| 04B                             | 28/28                                                   |
+| 04C com motor / sem motor       | 34/34 e 18/18                                           |
+| 04D, 4 cenários                 | 36, 12, 12 e 16, todos aprovados                        |
+| D5                              | 17/17                                                   |
+| 04E.1                           | 36/36                                                   |
+| 04E.2A, mão clara e mão parcial | 48/48 e 45/45                                           |
+
+**Navegador: 12 execuções, 347 verificações, 0 falhas.**
+
+### 8.6 Relatórios revisados
+
+Os seis relatórios da seção 0 foram gerados de novo e conferidos no
+contexto completo. Trechos que mudaram:
+
+| Caso | Mudanças | Conferido                                                                                                                     |
+| ---- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| A    | 9        | Capítulo 1 (casa 9, Terra, T6), capítulo 5 (Saturno em Sagitário, Júpiter na casa 9), capítulos 6–7 (T5), capítulo 8 (T1, T2) |
+| B    | 4        | Capítulo 1 sem Ascendente (Terra, T6), capítulos 6–7, capítulo 8 com aproximação (T1)                                         |
+| C    | 3        | Capítulo 1 com horário desconhecido (T6), capítulos 6–7                                                                       |
+| D    | 3        | Sem mãos: capítulo 1 (T6) e cúspides em Sagitário; capítulo 8 indisponível sem mudança                                        |
+| E    | 2        | Sem céu: só capítulos 6–7 (T5)                                                                                                |
+| F    | 5        | Capítulo 1 (T6), Sagitário e casa 9, capítulos 6–7 e 8                                                                        |
+
+Os dois exemplos completos representativos estão no apêndice A (casos
+fictícios de verificação; mão simulada; sem dados pessoais). Cada trecho
+alterado vem marcado com ✎ e seguido do texto anterior.
+
+### 8.7 Pendências objetivas para o aceite final da Fase 04
+
+1. **Aceite editorial humano** dos dois exemplos do apêndice A, em especial
+   da pergunta nova do capítulo 1 (T6) e da remissão dos capítulos 6–7
+   (T5). É o critério 6 da seção 7.
+2. **Privacidade fora do ambiente interno** (pré-requisito de lançamento,
+   registrado na 04E.1):
+   - mencionar as pontes dos capítulos 8 e 9 na política;
+   - registro de consentimento em produção;
+   - licença AGPL do motor astrológico.
+3. **Aparelhos e navegadores reais:** Safari, Firefox, iPhone e Android
+   físicos e leitores de tela (VoiceOver, TalkBack).
+4. **Caminho com IA (pago, só com autorização):** as correções valem para
+   os textos da biblioteca e das versões de reserva.
+   - Os capítulos redigidos por IA criam as próprias sínteses e perguntas.
+   - Uma validação paga confirmaria que eles não trazem de volta as
+     repetições.
+   - Os prompts não mudaram.
+5. **Revalidação visual das mãos e experimento de repetibilidade** (pagos):
+   continuam pendentes. Deles depende reavaliar o capítulo 6 e a
+   participação dele no capítulo 9.
+6. **Teste com leitores reais:** recomendado. Não faz parte dos critérios e
+   não foi feito.
+
+## Apêndice A — Exemplos completos para a revisão editorial
+
+Relatórios montados pelos motores do produto com casos **fictícios** de
+verificação e leitura das mãos **simulada**. Nenhuma IA foi usada e não há
+dados pessoais. Datas, horas e locais não aparecem no relatório, por
+projeto.
+
+As marcações entre parênteses (estado da parte, notas de precisão, seção
+recolhida) mostram a estrutura que o leitor vê na tela.
+
+### Exemplo 1 — céu com horário exato (caso fictício "Recife 1986") × mão clara simulada
+
+#### Parte I — Seu Céu (ready)
+
+_As posições astronômicas deste relatório são calculadas. Os significados atribuídos a elas são interpretações simbólicas da tradição da astrologia ocidental tropical — não são fatos científicos, diagnósticos nem previsões._
+
+##### 1. Sua identidade astrológica
+
+Este capítulo reúne os elementos do mapa que a tradição astrológica associa ao núcleo da identidade e à forma de se colocar no mundo.
+
+Com o Sol em Capricórnio, a identidade é ligada à responsabilidade e à construção a longo prazo: você pode se realizar ao transformar metas em estruturas sólidas.
+
+Com o Ascendente em Touro, a aproximação ao mundo é tradicionalmente calma e constante: você pode transmitir presença e confiabilidade.
+
+✎ **[alterado na 04E.2B]** Com o Sol na casa 9, a tradição associa o núcleo de identidade e a vontade de se expressar às viagens, aos estudos e à visão de mundo.
+
+> Antes: Com o Sol na casa 9, a tradição associa o núcleo de identidade e a vontade de se expressar às viagens, aos estudos e à busca de sentido.
+
+Com o Ascendente em Touro, o regente tradicional do mapa é Vênus. A tradição sugere que o afeto, o prazer e a forma de se vincular — aqui em Capricórnio, na casa 8 — ganham peso especial na condução da sua trajetória.
+
+Na tradição, o trígono entre o Sol e o Ascendente sugere que a identidade e a forma de se apresentar fluem com naturalidade, como um talento que se exerce com facilidade.
+
+✎ **[alterado na 04E.2B]** Muitos corpos em signos de Terra são associados a senso prático e constância: construir algo concreto, passo a passo, pode trazer satisfação.
+
+> Antes: Muitos corpos em signos de Terra são associados a senso prático e constância: construir com as próprias mãos pode trazer satisfação.
+
+**Síntese.** Em conjunto, esses elementos descrevem facetas simbólicas da identidade; vale observar quais delas fazem sentido na sua experiência.
+
+✎ **[alterado na 04E.2B]** **Para refletir.** Quando alguém acaba de conhecer você, o que costuma perceber primeiro — e o que só aparece com o tempo? / Qual dessas descrições combina menos com a sua experiência, e por quê?
+
+> Antes: **Para refletir.** Em que situações você se sente mais você? / Qual dessas descrições combina menos com a sua experiência, e por quê?
+
+##### 2. Seu mundo emocional
+
+Aqui estão os elementos que a tradição liga às necessidades emocionais, ao acolhimento e ao modo de reagir ao que se sente.
+
+A Lua em Áries é tradicionalmente associada a emoções rápidas e diretas: você pode precisar de espaço para reagir e de liberdade para seguir em frente.
+
+Com a Lua na casa 11, a tradição associa as necessidades emocionais e a forma de buscar acolhimento às amizades, aos grupos e aos projetos de futuro.
+
+Na tradição, o sextil entre a Lua e o Ascendente sugere que as emoções e a forma de se apresentar se apoiam e abrem oportunidades quando há iniciativa.
+
+Lua em aspecto tenso com Netuno é tradicionalmente ligada à tensão entre sensibilidade e imaginação: distinguir o que você sente do que idealiza pode ajudar a integrar essas duas forças.
+
+Com a cúspide da casa 4 (Fundo do Céu) em Leão, a tradição associa as raízes, o lar e a vida íntima a temas como criatividade, generosidade e desejo de reconhecimento.
+
+**Síntese.** Juntos, esses temas oferecem uma leitura simbólica da vida emocional, para ser confrontada com o que você reconhece em si.
+
+**Para refletir.** O que costuma trazer segurança emocional no seu dia a dia? / Como você percebe quando precisa de acolhimento?
+
+##### 3. Sua mente e comunicação
+
+Este capítulo trata do que a tradição associa ao jeito de pensar, aprender e se comunicar.
+
+Mercúrio em Capricórnio é associado a um raciocínio estratégico e objetivo: você pode valorizar ideias que levem a resultados concretos.
+
+Mercúrio na casa 8 é tradicionalmente ligado a uma mente que investiga: temas profundos, psicologia e o que está por trás das aparências podem atrair a sua atenção.
+
+Na tradição, o sextil entre Mercúrio e Marte sugere que a mente e a ação se apoiam e abrem oportunidades quando há iniciativa.
+
+Com a cúspide da casa 3 em Câncer, a tradição associa a comunicação, o aprendizado e o entorno próximo a temas como cuidado, memória afetiva e proteção.
+
+**Síntese.** Em conjunto, esses elementos sugerem um estilo de pensar e se comunicar que você pode reconhecer, ajustar ou questionar.
+
+**Para refletir.** Em que contextos você aprende com mais prazer? / Como você prefere organizar uma ideia antes de compartilhá-la?
+
+##### 4. Seus relacionamentos e vínculos
+
+Aqui aparecem os elementos que a tradição relaciona aos afetos, ao desejo e à forma de construir vínculos.
+
+Vênus em Capricórnio é tradicionalmente ligada ao afeto que se prova com o tempo: compromisso e confiabilidade podem pesar nas suas escolhas.
+
+Com Marte em Escorpião, a tradição associa a iniciativa, o desejo e a maneira de agir a temas como intensidade, profundidade e entrega.
+
+Com a cúspide da casa 7 (Descendente) em Escorpião, a tradição associa as parcerias e os encontros com o outro a temas como intensidade, profundidade e entrega.
+
+Com Vênus na casa 8, a tradição associa o afeto, o prazer e a forma de se vincular à intimidade, aos recursos compartilhados e às transformações.
+
+Na tradição, a conjunção entre o Sol e Vênus sugere que a identidade e os afetos se fundem e atuam em conjunto, para o bem e para o desafio.
+
+Na tradição, a quadratura entre Marte e Júpiter sugere que a ação e a expansão geram atrito, um desafio que costuma impulsionar crescimento.
+
+**Síntese.** Juntos, esses temas compõem uma leitura simbólica dos vínculos, como ponto de partida para reflexão e não como regra.
+
+**Para refletir.** O que faz você se sentir à vontade em um vínculo? / Que equilíbrio entre proximidade e espaço próprio parece bom para você hoje?
+
+##### 5. Seus talentos e desafios
+
+Este capítulo reúne o que a tradição associa a recursos que podem ser cultivados e a desafios que pedem amadurecimento.
+
+✎ **[alterado na 04E.2B]** Com Saturno em Sagitário, a tradição associa a estrutura, os limites e o amadurecimento a temas como entusiasmo, amplitude de horizontes e desejo de compreender.
+
+> Antes: Com Saturno em Sagitário, a tradição associa a estrutura, os limites e o amadurecimento a temas como busca de sentido, entusiasmo e amplitude de horizontes.
+
+Com Júpiter em Aquário, a tradição associa a expansão, a confiança e a busca de sentido a temas como originalidade, senso coletivo e independência.
+
+✎ **[alterado na 04E.2B]** Com Júpiter na casa 9, a tradição associa a expansão, a confiança e a busca de sentido às viagens, aos estudos e à visão de mundo.
+
+> Antes: Com Júpiter na casa 9, a tradição associa a expansão, a confiança e a busca de sentido às viagens, aos estudos e à busca de sentido.
+
+Com Saturno na casa 7, a tradição associa a estrutura, os limites e o amadurecimento às parcerias e aos encontros com o outro.
+
+Com o Meio do Céu em Aquário, a tradição associa a vocação e a imagem pública a temas como originalidade, senso coletivo e independência.
+
+Na tradição, o sextil entre Júpiter e Urano sugere que a expansão e a liberdade se apoiam e abrem oportunidades quando há iniciativa.
+
+**Síntese.** Em conjunto, talentos e desafios aparecem aqui como possibilidades simbólicas, que ganham forma com escolhas e experiência.
+
+**Para refletir.** Que habilidade você exerce com naturalidade e poderia valorizar mais? / Qual desafio recente trouxe aprendizado inesperado?
+
+#### Parte II — Suas Mãos (ready)
+
+_As características descritas foram observadas numa fotografia e podem não corresponder exatamente à sua mão. Os significados vêm da tradição simbólica da quiromancia — não são fatos científicos, diagnósticos nem previsões. A linha da vida, em particular, é lida como um retrato do modo de viver._
+
+> Leitura simulada: nenhuma inteligência artificial observou uma foto real.
+
+##### 6. As características das suas mãos
+
+Este capítulo parte do formato da sua mão, como ele apareceu na foto, e do que a tradição da quiromancia associa a ele.
+
+- Observado: Palma de formato mais quadrado: a largura é parecida com o comprimento.
+
+Na quiromancia, a palma de formato mais quadrado costuma ser associada a um jeito prático de estar no mundo: gosto por estrutura, constância e soluções concretas.
+
+- Observado: Dedos curtos em relação ao comprimento da palma.
+
+Na quiromancia, dedos mais curtos em relação à palma são ligados a um modo de agir rápido e direto, mais atento ao conjunto do que aos detalhes.
+
+- Observado: Combinação de palma e dedos que a quiromancia moderna chama de mão de Terra.
+
+Palma mais quadrada com dedos curtos compõe o que a quiromancia moderna chama de mão de Terra, associada à praticidade, à estabilidade e ao contato com o concreto.
+
+**Síntese.** Juntas, as leituras sobre o formato da palma, o comprimento dos dedos e a combinação de palma e dedos formam um retrato simbólico para comparar com o que você reconhece em si.
+
+✎ **[alterado na 04E.2B]** **Para refletir.** Qual dessas leituras conversa mais com o que você vive hoje? / Em que situações você se reconhece nessas leituras, e em quais não?
+
+> Antes: **Para refletir.** Entre o formato da palma, o comprimento dos dedos e a combinação de palma e dedos, qual leitura conversa mais com o que você vive hoje? / Em que situações você se reconhece nessas leituras, e em quais não?
+
+**Limites.**
+
+- O formato da palma e o comprimento dos dedos são proporções estimadas a olho na foto; ângulo, perspectiva e enquadramento podem alterá-las.
+
+##### 7. As linhas da sua palma
+
+Aqui estão as linhas da palma que puderam ser observadas na foto e as leituras simbólicas que a tradição da quiromancia faz delas.
+
+- Observado: Linha do coração longa, chegando à área sob o dedo indicador.
+
+Uma linha do coração longa costuma ser associada, na quiromancia, a um afeto expansivo e generoso, que se envolve com intensidade.
+
+- Observado: Linha do coração curvando-se para cima, em direção aos dedos.
+
+Quando a linha do coração se curva em direção aos dedos, a tradição a associa a uma expressão afetiva calorosa e aberta.
+
+- Observado: Linha da cabeça de comprimento médio, chegando à área sob o dedo anelar.
+
+Uma linha da cabeça de comprimento médio é associada pela tradição a um pensamento que equilibra praticidade e reflexão.
+
+- Observado: Linha da cabeça descendo em direção ao pulso.
+
+Quando a linha da cabeça desce em direção ao pulso, a tradição a liga à imaginação e a um pensamento mais criativo.
+
+- Observado: Linha da cabeça começando unida à linha da vida.
+
+Quando a linha da cabeça começa unida à da vida, a quiromancia costuma associar isso à cautela: você pode preferir avaliar bem antes de se lançar.
+
+- Observado: Linha da vida em arco amplo, avançando para o centro da palma.
+
+Na quiromancia, um arco amplo da linha da vida é associado ao entusiasmo e à abertura para novas experiências.
+
+- Observado: Linha do destino nítida, subindo em direção ao dedo médio.
+
+Uma linha do destino bem marcada é associada, na tradição, à sensação de propósito e a uma direção que você constrói ao longo do caminho — não a um destino fixo.
+
+**Síntese.** Juntas, as leituras sobre a linha do coração, a linha da cabeça, a linha da vida e a linha do destino formam um retrato simbólico para comparar com o que você reconhece em si.
+
+✎ **[alterado na 04E.2B]** **Para refletir.** Qual dessas leituras conversa mais com o que você vive hoje? / Em que situações você se reconhece nessas leituras, e em quais não?
+
+> Antes: **Para refletir.** Entre a linha do coração, a linha da cabeça, a linha da vida e a linha do destino, qual leitura conversa mais com o que você vive hoje? / Em que situações você se reconhece nessas leituras, e em quais não?
+
+#### Parte III — Sua Jornada (ready)
+
+##### 8. Conexões simbólicas entre céu e mãos
+
+✎ **[alterado na 04E.2B]** Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você.
+
+> Antes: Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.
+
+###### Expressão: abertura e reserva · Diferença
+
+- Nas mãos: linha do coração longa; linha do coração curvada para cima (cap. 7)
+- No céu: Vênus em Capricórnio (cap. 4)
+
+Aqui as leituras seguem caminhos diferentes: a quiromancia associa estes traços a uma expressão mais aberta, e a posição citada do mapa, a uma expressão mais reservada. A diferença fica à vista, sem conciliação.
+
+✎ **[alterado na 04E.2B]** **Síntese.** Nos temas comparados, as duas tradições apontam para lados diferentes: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.
+
+> Antes: **Síntese.** Nos temas comparados, as duas tradições apontam para lados diferentes. Isso não é um erro de nenhuma delas: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.
+
+**Limites.**
+
+- Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras.
+
+**Limitações desta análise (recolhida).**
+
+- O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto.
+- Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.
+- Esta comparação usa uma leitura das mãos simulada, do ambiente interno de testes.
+
+##### 9. Seu guia pessoal de reflexão
+
+Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+
+###### Expressão: abertura e reserva
+
+- A partir de: Vênus em Capricórnio (cap. 4); linha do coração longa; linha do coração curvada para cima (cap. 7)
+
+Com quem você mostra com facilidade o que sente, e com quem prefere guardar mais para si?
+
+###### Ritmo: impulso e cautela
+
+- A partir de: linha da cabeça começando unida à da vida (cap. 7)
+
+Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
+
+###### Identidade
+
+- A partir de: Sol em Capricórnio; Ascendente em Touro (cap. 1)
+
+Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
+
+###### Prática opcional
+
+Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
+
+###### Para fechar
+
+Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
+
+**Limites.**
+
+- Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
+
+### Exemplo 2 — céu com horário aproximado (caso fictício "Bom Jesus") × mão parcial simulada
+
+#### Parte I — Seu Céu (ready)
+
+_As posições astronômicas deste relatório são calculadas. Os significados atribuídos a elas são interpretações simbólicas da tradição da astrologia ocidental tropical — não são fatos científicos, diagnósticos nem previsões._
+
+##### 1. Sua identidade astrológica
+
+Este capítulo reúne os elementos do mapa que a tradição astrológica associa ao núcleo da identidade e à forma de se colocar no mundo.
+
+Com o Sol em Touro, a identidade é tradicionalmente ligada à construção paciente: você pode se sentir mais em casa quando cultiva o que é concreto, belo e duradouro.
+(nota: Com o horário de nascimento aproximado, a posição do Sol pode estar entre 21°42′ de Touro e 21°44′ de Touro; a leitura usa a posição calculada para o horário informado (21°43′ de Touro).)
+
+O Sol na casa 8 é tradicionalmente associado a buscar identidade nas experiências de profundidade: crises, intimidade e transformações podem ser momentos de autodescoberta.
+
+✎ **[alterado na 04E.2B]** Muitos corpos em signos de Terra são associados a senso prático e constância: construir algo concreto, passo a passo, pode trazer satisfação.
+
+> Antes: Muitos corpos em signos de Terra são associados a senso prático e constância: construir com as próprias mãos pode trazer satisfação.
+
+Sol em aspecto harmonioso com Saturno é associado à capacidade de dar forma às metas: disciplina e paciência podem trabalhar a favor da sua expressão.
+
+Sol em aspecto harmonioso com Marte é associado a vontade e ação bem articuladas: você pode transformar intenção em iniciativa com relativa facilidade.
+
+**Síntese.** Em conjunto, esses elementos descrevem facetas simbólicas da identidade; vale observar quais delas fazem sentido na sua experiência.
+
+✎ **[alterado na 04E.2B]** **Para refletir.** Quando alguém acaba de conhecer você, o que costuma perceber primeiro — e o que só aparece com o tempo? / Qual dessas descrições combina menos com a sua experiência, e por quê?
+
+> Antes: **Para refletir.** Em que situações você se sente mais você? / Qual dessas descrições combina menos com a sua experiência, e por quê?
+
+**Limites.**
+
+- Regente do mapa não considerado: o signo do Ascendente varia dentro da janela de horário.
+- Casas e cúspides não consideradas: com horário aproximado, só entram posições em casas que não mudam dentro da janela.
+- Não interpretado por incerteza do horário: Ascendente em Virgem no centro da janela (28°05′), variando 17,6° na janela.
+
+##### 2. Seu mundo emocional
+
+Aqui estão os elementos que a tradição liga às necessidades emocionais, ao acolhimento e ao modo de reagir ao que se sente.
+
+A Lua em Sagitário, na tradição, busca sentido e movimento: otimismo, aventura e espaço para explorar podem renovar o seu ânimo.
+(nota: Com o horário de nascimento aproximado, a posição da Lua pode estar entre 23°20′ de Sagitário e 23°50′ de Sagitário; a leitura usa a posição calculada para o horário informado (23°35′ de Sagitário).)
+
+Lua em aspecto tenso com Marte é associada a reações emocionais intensas: reconhecer a irritação cedo pode ajudar você a transformá-la em ação construtiva.
+
+**Síntese.** Juntos, esses temas oferecem uma leitura simbólica da vida emocional, para ser confrontada com o que você reconhece em si.
+
+**Para refletir.** O que costuma trazer segurança emocional no seu dia a dia? / Como você percebe quando precisa de acolhimento?
+
+**Limites.**
+
+- Casas e cúspides não consideradas: com horário aproximado, só entram posições em casas que não mudam dentro da janela.
+- Casas que mudam dentro da janela de horário (não interpretadas): a Lua (casas 3, 4).
+
+##### 3. Sua mente e comunicação
+
+Este capítulo trata do que a tradição associa ao jeito de pensar, aprender e se comunicar.
+
+Mercúrio em Touro é tradicionalmente ligado a um raciocínio prático e constante: você pode preferir ideias testadas e aprender no seu próprio ritmo.
+(nota: Com o horário de nascimento aproximado, a posição de Mercúrio pode estar entre 8°37′ de Touro e 8°38′ de Touro; a leitura usa a posição calculada para o horário informado (8°37′ de Touro).)
+
+Mercúrio retrógrado no nascimento é associado, na tradição, a um pensamento que revisa e reelabora: você pode preferir refletir antes de falar e voltar às ideias para aprofundá-las.
+
+Mercúrio em aspecto harmonioso com Júpiter é associado a uma mente que gosta de ampliar horizontes: aprender e ensinar podem ser atividades naturais para você.
+
+Na tradição, o trígono entre Mercúrio e Urano sugere que a mente e a liberdade fluem com naturalidade, como um talento que se exerce com facilidade.
+
+**Síntese.** Em conjunto, esses elementos sugerem um estilo de pensar e se comunicar que você pode reconhecer, ajustar ou questionar.
+
+**Para refletir.** Em que contextos você aprende com mais prazer? / Como você prefere organizar uma ideia antes de compartilhá-la?
+
+**Limites.**
+
+- Casas e cúspides não consideradas: com horário aproximado, só entram posições em casas que não mudam dentro da janela.
+- Casas que mudam dentro da janela de horário (não interpretadas): Mercúrio (casas 7, 8).
+
+##### 4. Seus relacionamentos e vínculos
+
+Aqui aparecem os elementos que a tradição relaciona aos afetos, ao desejo e à forma de construir vínculos.
+
+Vênus em Áries é associada a um afeto espontâneo e entusiasmado: você pode se encantar com a conquista e com relações que tenham vitalidade.
+(nota: Com o horário de nascimento aproximado, a posição de Vênus pode estar entre 9°38′ de Áries e 9°41′ de Áries; a leitura usa a posição calculada para o horário informado (9°39′ de Áries).)
+
+Com Marte em Peixes, a tradição associa a iniciativa, o desejo e a maneira de agir a temas como sensibilidade, imaginação e empatia.
+(nota: Com o horário de nascimento aproximado, a posição de Marte pode estar entre 16°15′ de Peixes e 16°17′ de Peixes; a leitura usa a posição calculada para o horário informado (16°16′ de Peixes).)
+
+Vênus na casa 7 é associada à importância das parcerias: o encontro com o outro pode ser um campo central de aprendizado e prazer.
+
+Na tradição, o trígono entre Marte e Plutão sugere que a ação e a intensidade fluem com naturalidade, como um talento que se exerce com facilidade.
+
+Vênus em aspecto tenso com Urano é tradicionalmente ligada à tensão entre proximidade e liberdade: relações que acolham a sua independência podem ser mais sustentáveis.
+
+Vênus em aspecto tenso com Júpiter é associada a grandes expectativas afetivas: o desafio pode ser equilibrar generosidade e medida nos vínculos.
+
+**Síntese.** Juntos, esses temas compõem uma leitura simbólica dos vínculos, como ponto de partida para reflexão e não como regra.
+
+**Para refletir.** O que faz você se sentir à vontade em um vínculo? / Que equilíbrio entre proximidade e espaço próprio parece bom para você hoje?
+
+**Limites.**
+
+- Casas e cúspides não consideradas: com horário aproximado, só entram posições em casas que não mudam dentro da janela.
+
+##### 5. Seus talentos e desafios
+
+Este capítulo reúne o que a tradição associa a recursos que podem ser cultivados e a desafios que pedem amadurecimento.
+
+Com Saturno em Capricórnio, a tradição associa a estrutura, os limites e o amadurecimento a temas como responsabilidade, ambição e paciência.
+
+Com Júpiter em Câncer, a tradição associa a expansão, a confiança e a busca de sentido a temas como cuidado, memória afetiva e proteção.
+
+Júpiter na casa 10 é tradicionalmente ligado à expansão pela vocação: a vida profissional pode ser um campo de crescimento e de sentido.
+
+A ausência de corpos em signos de Ar é lida como um convite a dar palavras ao que sente e a buscar outras perspectivas.
+
+Na tradição, a oposição entre Júpiter e Urano sugere que a expansão e a liberdade puxam em direções opostas e pedem integração e equilíbrio.
+
+Na tradição, o sextil entre Marte e Netuno sugere que a ação e a imaginação se apoiam e abrem oportunidades quando há iniciativa.
+
+**Síntese.** Em conjunto, talentos e desafios aparecem aqui como possibilidades simbólicas, que ganham forma com escolhas e experiência.
+
+**Para refletir.** Que habilidade você exerce com naturalidade e poderia valorizar mais? / Qual desafio recente trouxe aprendizado inesperado?
+
+**Limites.**
+
+- Casas e cúspides não consideradas: com horário aproximado, só entram posições em casas que não mudam dentro da janela.
+- Casas que mudam dentro da janela de horário (não interpretadas): Saturno (casas 4, 5).
+- Não interpretado por incerteza do horário: Meio do Céu em Gêmeos no centro da janela (28°30′), variando 13,8° na janela.
+
+#### Parte II — Suas Mãos (ready)
+
+_As características descritas foram observadas numa fotografia e podem não corresponder exatamente à sua mão. Os significados vêm da tradição simbólica da quiromancia — não são fatos científicos, diagnósticos nem previsões. A linha da vida, em particular, é lida como um retrato do modo de viver._
+
+> Leitura simulada: nenhuma inteligência artificial observou uma foto real.
+
+> Leitura parcial: algumas características não puderam ser observadas na foto. Cada capítulo indica o que ficou de fora.
+
+##### 6. As características das suas mãos
+
+Este capítulo parte do formato da sua mão, como ele apareceu na foto, e do que a tradição da quiromancia associa a ele.
+
+- Observado: Palma de formato mais quadrado: a largura é parecida com o comprimento.
+
+Na quiromancia, a palma de formato mais quadrado costuma ser associada a um jeito prático de estar no mundo: gosto por estrutura, constância e soluções concretas.
+
+**Síntese.** É uma leitura simbólica sobre o formato da palma, para comparar com o que você reconhece em si.
+
+**Para refletir.** Em que situações do seu dia a dia você reconhece essa leitura, e em quais não?
+
+**Limites.**
+
+- A análise da foto apontou reflexos; algumas características podem não ter sido observadas.
+- O comprimento dos dedos não ficou visível na foto e não foi interpretado.
+- O formato da palma e o comprimento dos dedos são proporções estimadas a olho na foto; ângulo, perspectiva e enquadramento podem alterá-las.
+
+##### 7. As linhas da sua palma
+
+Aqui estão as linhas da palma que puderam ser observadas na foto e as leituras simbólicas que a tradição da quiromancia faz delas.
+
+- Observado: Linha do coração longa, chegando à área sob o dedo indicador.
+
+Uma linha do coração longa costuma ser associada, na quiromancia, a um afeto expansivo e generoso, que se envolve com intensidade.
+
+- Observado: Linha do coração de traçado mais reto.
+
+Quando a linha do coração segue mais reta, a tradição a relaciona a um modo mais racional e contido de lidar com os afetos.
+(nota: A linha do coração ficou só parcialmente visível na foto; leia essa interpretação com reserva.)
+
+- Observado: Linha da cabeça de comprimento médio, chegando à área sob o dedo anelar.
+
+Uma linha da cabeça de comprimento médio é associada pela tradição a um pensamento que equilibra praticidade e reflexão.
+
+- Observado: Linha da cabeça começando unida à linha da vida.
+
+Quando a linha da cabeça começa unida à da vida, a quiromancia costuma associar isso à cautela: você pode preferir avaliar bem antes de se lançar.
+
+- Observado: Linha da vida em arco amplo, avançando para o centro da palma.
+
+Na quiromancia, um arco amplo da linha da vida é associado ao entusiasmo e à abertura para novas experiências.
+
+**Síntese.** Juntas, as leituras sobre a linha do coração, a linha da cabeça e a linha da vida formam um retrato simbólico para comparar com o que você reconhece em si.
+
+✎ **[alterado na 04E.2B]** **Para refletir.** Qual dessas leituras conversa mais com o que você vive hoje? / Em que situações você se reconhece nessas leituras, e em quais não?
+
+> Antes: **Para refletir.** Entre a linha do coração, a linha da cabeça e a linha da vida, qual leitura conversa mais com o que você vive hoje? / Em que situações você se reconhece nessas leituras, e em quais não?
+
+**Limites.**
+
+- A análise da foto apontou reflexos; algumas características podem não ter sido observadas.
+- A inclinação da linha da cabeça não ficou visível na foto e não foi interpretada.
+- A linha do destino não foi identificada com clareza na foto e não foi interpretada; isso não quer dizer que ela não exista.
+
+#### Parte III — Sua Jornada (ready)
+
+##### 8. Conexões simbólicas entre céu e mãos
+
+✎ **[alterado na 04E.2B]** Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você.
+
+> Antes: Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.
+
+###### Expressão: abertura e reserva · Aproximação
+
+- Nas mãos: linha do coração longa (cap. 7)
+- No céu: Lua em Sagitário (cap. 2)
+
+As duas leituras usam a imagem de uma expressão afetiva mais aberta.
+
+**Síntese.** As aproximações acima mostram onde as duas tradições usam palavras parecidas. Elas servem como ponto de partida para observar a sua experiência, não como conclusão.
+
+**Limites.**
+
+- Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras.
+
+**Limitações desta análise (recolhida).**
+
+- O traçado da linha do coração ficou só parcialmente visível na foto e por isso não sustenta nenhuma comparação.
+- O formato da palma, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto.
+- Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.
+- Esta comparação usa uma leitura das mãos simulada, do ambiente interno de testes.
+
+##### 9. Seu guia pessoal de reflexão
+
+Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+
+###### Expressão: abertura e reserva
+
+- A partir de: Lua em Sagitário (cap. 2); linha do coração longa (cap. 7)
+
+De que formas você costuma demonstrar afeto, e quais delas parecem mais naturais para você?
+
+###### Ritmo: impulso e cautela
+
+- A partir de: linha da cabeça começando unida à da vida (cap. 7)
+
+Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
+
+###### Identidade
+
+- A partir de: Sol em Touro (cap. 1)
+
+Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
+
+###### Prática opcional
+
+Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
+
+###### Para fechar
+
+Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
+
+**Limites.**
+
+- Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.

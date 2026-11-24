@@ -1,5 +1,5 @@
 {
-  "version": "02e.1+02f.2",
+  "version": "02e.2+02f.3",
   "disclaimer": "As posições astronômicas deste relatório são calculadas. Os significados atribuídos a elas são interpretações simbólicas da tradição da astrologia ocidental tropical — não são fatos científicos, diagnósticos nem previsões.",
   "basis": {
     "precision": "exact",
@@ -66,7 +66,7 @@
           "notes": []
         },
         {
-          "text": "Muitos corpos em signos de Terra são associados a senso prático e constância: construir com as próprias mãos pode trazer satisfação.",
+          "text": "Muitos corpos em signos de Terra são associados a senso prático e constância: construir algo concreto, passo a passo, pode trazer satisfação.",
           "itemIds": [
             "identidade:element-dominant:earth"
           ],
@@ -78,7 +78,7 @@
       ],
       "synthesis": "Em conjunto, esses elementos descrevem facetas simbólicas da identidade; vale observar quais delas fazem sentido na sua experiência.",
       "reflectionQuestions": [
-        "Em que situações você se sente mais você?",
+        "Quando alguém acaba de conhecer você, o que costuma perceber primeiro — e o que só aparece com o tempo?",
         "Qual dessas descrições combina menos com a sua experiência, e por quê?"
       ],
       "limitations": [],
@@ -132,7 +132,7 @@
           "notes": []
         },
         {
-          "text": "Com a cúspide da casa 4 (Fundo do Céu) em Sagitário, a tradição associa as raízes, o lar e a vida íntima a temas como busca de sentido, entusiasmo e amplitude de horizontes.",
+          "text": "Com a cúspide da casa 4 (Fundo do Céu) em Sagitário, a tradição associa as raízes, o lar e a vida íntima a temas como entusiasmo, amplitude de horizontes e desejo de compreender.",
           "itemIds": [
             "emocional:cusp-sign:4"
           ],
@@ -198,7 +198,7 @@
           "notes": []
         },
         {
-          "text": "Com a cúspide da casa 3 em Sagitário, a tradição associa a comunicação, o aprendizado e o entorno próximo a temas como busca de sentido, entusiasmo e amplitude de horizontes.",
+          "text": "Com a cúspide da casa 3 em Sagitário, a tradição associa a comunicação, o aprendizado e o entorno próximo a temas como entusiasmo, amplitude de horizontes e desejo de compreender.",
           "itemIds": [
             "mente:cusp-sign:3"
           ],

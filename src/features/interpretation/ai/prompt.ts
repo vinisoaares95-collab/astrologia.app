@@ -11,7 +11,11 @@ import type { ChapterId, InterpretationReport } from "../contract";
 import type { AiRequest } from "./contract";
 import { modelObservation } from "./precision";
 
-export const PROMPT_VERSION = "02f.2";
+/**
+ * 02f.3 (04E.2B): só a versão de reserva mudou (primeira pergunta do
+ * capítulo 1, que repetia a de identidade do capítulo 9). O prompt é o mesmo.
+ */
+export const PROMPT_VERSION = "02f.3";
 
 /** Limites editoriais (também conferidos pelo validador). */
 export const LIMITS = {

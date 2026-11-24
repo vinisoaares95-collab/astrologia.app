@@ -10,7 +10,7 @@
 import type { ToneTag } from "@/features/interpretation/library/base";
 import type { FeatureId } from "@/features/palm-reading/analysis/contract";
 
-export const JOURNEY_LIBRARY_VERSION = "04d.2";
+export const JOURNEY_LIBRARY_VERSION = "04d.3";
 
 export type Axis = "ritmo" | "expressao" | "vinculo" | "foco";
 export type Relation = "A" | "AC" | "D" | "F";
@@ -148,7 +148,7 @@ export const UNCERTAIN_LABEL: Readonly<Record<string, string>> = {
 
 export const C8 = {
   intro:
-    "Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.",
+    "Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você.",
   /** Chave: `{polo das mãos}:{relação}` ou `{eixo}:F`. */
   bridge: {
     "ritmo:cautela:A":
@@ -184,7 +184,7 @@ export const C8 = {
   } as Readonly<Record<string, string>>,
   synthesis: {
     A: "As aproximações acima mostram onde as duas tradições usam palavras parecidas. Elas servem como ponto de partida para observar a sua experiência, não como conclusão.",
-    D: "Nos temas comparados, as duas tradições apontam para lados diferentes. Isso não é um erro de nenhuma delas: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.",
+    D: "Nos temas comparados, as duas tradições apontam para lados diferentes: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.",
     AD: "Há pontos em que as duas tradições usam imagens parecidas e pontos em que seguem caminhos diferentes. Os dois casos valem, no mesmo peso, como material de reflexão.",
     F: "As imagens comparadas aqui convivem dentro de cada leitura e entre elas. Servem como material de reflexão, não como conclusão.",
   },

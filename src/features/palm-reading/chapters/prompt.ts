@@ -15,7 +15,11 @@ import {
   type PalmChapterId,
 } from "../analysis/engine";
 
-export const PALM_PROMPT_VERSION = "03e.2";
+/**
+ * 03e.3 (04E.2B): só a versão de reserva mudou (a primeira pergunta não
+ * repete a lista de características da síntese). O prompt é o mesmo.
+ */
+export const PALM_PROMPT_VERSION = "03e.3";
 
 export const PALM_CHAPTER_SYSTEM_PROMPT = `Você é a redatora editorial do Sidera, um produto brasileiro de autoconhecimento. Sua tarefa: transformar os itens de UM capítulo da leitura das mãos em um texto em português do Brasil, natural, acolhedor e acessível.
 

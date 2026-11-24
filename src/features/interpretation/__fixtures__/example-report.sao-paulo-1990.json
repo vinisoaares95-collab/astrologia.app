@@ -1,5 +1,5 @@
 {
-  "version": "02e.1",
+  "version": "02e.2",
   "disclaimer": "As posições astronômicas deste relatório são calculadas. Os significados atribuídos a elas são interpretações simbólicas da tradição da astrologia ocidental tropical — não são fatos científicos, diagnósticos nem previsões.",
   "chapters": [
     {
@@ -91,7 +91,7 @@
           ],
           "certainty": "determined",
           "observation": "5 de 10 corpos em signos de Terra: Sol, Mercúrio, Saturno, Urano, Netuno.",
-          "symbolic": "Muitos corpos em signos de Terra são associados a senso prático e constância: construir com as próprias mãos pode trazer satisfação.",
+          "symbolic": "Muitos corpos em signos de Terra são associados a senso prático e constância: construir algo concreto, passo a passo, pode trazer satisfação.",
           "caveat": null,
           "score": 40,
           "tags": [
@@ -177,7 +177,7 @@
           ],
           "certainty": "determined",
           "observation": "Cúspide da casa 4 (Fundo do Céu) a 26°24′ de Sagitário.",
-          "symbolic": "Com a cúspide da casa 4 (Fundo do Céu) em Sagitário, a tradição associa as raízes, o lar e a vida íntima a temas como busca de sentido, entusiasmo e amplitude de horizontes.",
+          "symbolic": "Com a cúspide da casa 4 (Fundo do Céu) em Sagitário, a tradição associa as raízes, o lar e a vida íntima a temas como entusiasmo, amplitude de horizontes e desejo de compreender.",
           "caveat": null,
           "score": 45,
           "tags": []
@@ -259,7 +259,7 @@
           ],
           "certainty": "determined",
           "observation": "Cúspide da casa 3 a 1°19′ de Sagitário.",
-          "symbolic": "Com a cúspide da casa 3 em Sagitário, a tradição associa a comunicação, o aprendizado e o entorno próximo a temas como busca de sentido, entusiasmo e amplitude de horizontes.",
+          "symbolic": "Com a cúspide da casa 3 em Sagitário, a tradição associa a comunicação, o aprendizado e o entorno próximo a temas como entusiasmo, amplitude de horizontes e desejo de compreender.",
           "caveat": null,
           "score": 40,
           "tags": []

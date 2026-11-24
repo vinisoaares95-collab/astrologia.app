@@ -16,6 +16,12 @@ consolida e substitui, para efeito de revisão, os documentos anteriores da
 Os três continuam no repositório como **histórico das decisões**. Em caso
 de divergência, vale este documento.
 
+**Versão `04d.3` (04E.2B):** introdução do capítulo 8 mais curta (sem a
+oração final sobre a diferença, já dita pela frase-ponte e pelo selo) e
+síntese "Só diferenças" sem "Isso não é um erro de nenhuma delas", que o
+aviso essencial (R0) já diz. Os exemplos da seção 6 foram atualizados com
+esses dois textos. Histórico: `fase-04e2b-revisao-editorial.md`.
+
 Os textos das seções 3 e 4 e os exemplos da seção 6 foram gerados a partir
 de **uma única fonte de dados**, a biblioteca usada na verificação. O que se
 lê aqui é exatamente o que a verificação testou.
@@ -341,7 +347,7 @@ Os títulos de vínculo e foco só aparecem no capítulo 9.
 
 ### 3.2 Introdução
 
-> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.
+> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você.
 
 ### 3.3 Frases-ponte
 
@@ -380,7 +386,7 @@ outro lado seja sempre uma única posição (Lua ou Vênus).
 | ------------------ | ----- |
 
 | Só aproximações (com ou sem contraponto) | As aproximações acima mostram onde as duas tradições usam palavras parecidas. Elas servem como ponto de partida para observar a sua experiência, não como conclusão. |
-| Só diferenças | Nos temas comparados, as duas tradições apontam para lados diferentes. Isso não é um erro de nenhuma delas: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive. |
+| Só diferenças | Nos temas comparados, as duas tradições apontam para lados diferentes: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive. |
 | Aproximações e diferenças | Há pontos em que as duas tradições usam imagens parecidas e pontos em que seguem caminhos diferentes. Os dois casos valem, no mesmo peso, como material de reflexão. |
 | Há tema de duas imagens nas mãos | As imagens comparadas aqui convivem dentro de cada leitura e entre elas. Servem como material de reflexão, não como conclusão. |
 
@@ -598,7 +604,7 @@ Céu: `C-val2`. Mãos: `M-clara`.
 
 **Capítulo 8 — Conexões simbólicas entre céu e mãos**
 
-> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.
+> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você.
 >
 > **Expressão: abertura e reserva** · Aproximação
 > Nas mãos: linha do coração longa; linha do coração curvada para cima (cap. 7).
@@ -645,7 +651,7 @@ Céu: `K-contraponto` **[construída]** (Lua em Leão, Vênus em Capricórnio, M
 
 **Capítulo 8 — Conexões simbólicas entre céu e mãos**
 
-> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.
+> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você.
 >
 > **Ritmo: impulso e cautela** · Aproximação
 > Nas mãos: linha da cabeça começando unida à da vida (cap. 7).
@@ -699,14 +705,14 @@ Céu: `C-demo2`. Mãos: `M-clara`.
 
 **Capítulo 8 — Conexões simbólicas entre céu e mãos**
 
-> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.
+> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você.
 >
 > **Expressão: abertura e reserva** · Diferença
 > Nas mãos: linha do coração longa; linha do coração curvada para cima (cap. 7).
 > No céu: Vênus em Câncer (cap. 4).
 > Aqui as leituras seguem caminhos diferentes: a quiromancia associa estes traços a uma expressão mais aberta, e a posição citada do mapa, a uma expressão mais reservada. A diferença fica à vista, sem conciliação.
 >
-> _Síntese._ Nos temas comparados, as duas tradições apontam para lados diferentes. Isso não é um erro de nenhuma delas: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.
+> _Síntese._ Nos temas comparados, as duas tradições apontam para lados diferentes: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.
 >
 > _Limites._
 >
@@ -746,7 +752,7 @@ Céu: `K-ritmo-diferença` **[construída]** (Lua em Câncer, Vênus em Touro, M
 
 **Capítulo 8 — Conexões simbólicas entre céu e mãos**
 
-> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.
+> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você.
 >
 > **Ritmo: impulso e cautela** · Diferença
 > Nas mãos: linha da cabeça começando unida à da vida (cap. 7).
@@ -758,7 +764,7 @@ Céu: `K-ritmo-diferença` **[construída]** (Lua em Câncer, Vênus em Touro, M
 > No céu: Lua em Câncer (cap. 2).
 > Aqui as leituras seguem caminhos diferentes: a quiromancia associa estes traços a uma expressão mais aberta, e a posição citada do mapa, a uma expressão mais reservada. A diferença fica à vista, sem conciliação.
 >
-> _Síntese._ Nos temas comparados, as duas tradições apontam para lados diferentes. Isso não é um erro de nenhuma delas: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.
+> _Síntese._ Nos temas comparados, as duas tradições apontam para lados diferentes: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.
 >
 > _Limites._
 >
@@ -799,7 +805,7 @@ Céu: `C-ref exato`. Mãos: `M-duas-imagens` **[construída]** (coração curto 
 
 **Capítulo 8 — Conexões simbólicas entre céu e mãos**
 
-> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.
+> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você.
 >
 > **Expressão: abertura e reserva** · Duas imagens nas mãos
 > Nas mãos: linha do coração curta; linha do coração curvada para cima (cap. 7).
@@ -846,7 +852,7 @@ Céu: `K-lua-incerta` **[construída]** (horário desconhecido: Lua incerta, Vê
 
 **Capítulo 8 — Conexões simbólicas entre céu e mãos**
 
-> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.
+> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você.
 >
 > **Ritmo: impulso e cautela** · Aproximação
 > Nas mãos: linha da cabeça começando unida à da vida (cap. 7).
@@ -901,7 +907,7 @@ Céu: `C-ref exato`. Mãos: `M-clara`.
 
 **Capítulo 8 — Conexões simbólicas entre céu e mãos**
 
-> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.
+> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, a semelhança é de linguagem, não uma constatação sobre você.
 >
 > **Expressão: abertura e reserva** · Aproximação
 > Nas mãos: linha do coração longa; linha do coração curvada para cima (cap. 7).
