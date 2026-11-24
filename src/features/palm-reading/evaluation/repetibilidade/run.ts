@@ -50,6 +50,11 @@ export async function runRepeatability(input: {
   budget: BudgetController;
   maxCalls: number;
   maxSendsPerPhoto?: number;
+  /**
+   * Envios autorizados por foto (do termo de cada pessoa), nunca acima de
+   * `maxSendsPerPhoto`. Conta todas as etapas.
+   */
+  sendsAllowed?: (photoId: string) => number;
   prices?: Record<string, ModelPrice>;
   now?: () => number;
 }): Promise<RunResult> {
@@ -60,6 +65,8 @@ export async function runRepeatability(input: {
   const records: AnalysisRecord[] = [];
   const budgeted = withVisionBudget(input.provider, input.budget, prices);
   let stoppedBy: RunResult["stoppedBy"] = null;
+  /** Fotos que esgotaram os envios autorizados antes da meta. */
+  const exhausted = new Set<string>();
   let calls = 0;
 
   // A mesma entrada em todas as análises: o hash do JPEG preparado é fixado
@@ -75,7 +82,9 @@ export async function runRepeatability(input: {
 
   try {
     for (let round = 1; ; round++) {
-      const pending = order.filter((p) => done(p.id) < input.targetPerPhoto);
+      const pending = order.filter(
+        (p) => done(p.id) < input.targetPerPhoto && !exhausted.has(p.id),
+      );
       if (!pending.length || stoppedBy) break;
       for (const photo of pending) {
         if (sha256(photo.bytes) !== hashes.get(photo.id))
@@ -103,10 +112,15 @@ export async function runRepeatability(input: {
           reason: NonNullable<RunResult["stoppedBy"]>,
         ): AnalysisRecord => ({ ...base, outcome: "not_run", error: reason });
 
-        if (done(photo.id) >= maxSends) {
-          stoppedBy = "max_sends";
+        const allowed = Math.min(
+          maxSends,
+          input.sendsAllowed?.(photo.id) ?? maxSends,
+        );
+        if (done(photo.id) >= allowed) {
+          // Só esta foto para: as outras seguem até a meta.
+          exhausted.add(photo.id);
           records.push(notRun("max_sends"));
-          break;
+          continue;
         }
         if (calls >= input.maxCalls) {
           stoppedBy = "max_calls";
@@ -180,5 +194,6 @@ export async function runRepeatability(input: {
   } finally {
     for (const p of input.photos) p.bytes.fill(0);
   }
+  if (!stoppedBy && exhausted.size) stoppedBy = "max_sends";
   return { records, stoppedBy, spentUsd: input.budget.spentUsd(), calls };
 }

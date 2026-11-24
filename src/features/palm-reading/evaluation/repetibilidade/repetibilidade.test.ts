@@ -407,6 +407,107 @@ describe("decisões pré-registradas", () => {
   });
 });
 
+describe("opção 2: inconclusivas fora do uso comercial (decisão de 24/11/2026)", () => {
+  const three = (script: Script) => ({ p01: script, p02: script, p03: script });
+  const hidden = (fs: FeatureId[]) => {
+    const o = clearHand();
+    for (const f of fs)
+      o.features[f] = { visibility: "not_visible", reason: "too_faint" };
+    return o;
+  };
+
+  it("tudo estável: leitura completa aprovada, sem exclusões", async () => {
+    const { result } = await run(
+      three(() => obs(clearHand())),
+      { target: 10 },
+    );
+    const c = buildReport(result.records).decision.commercial;
+    expect(c.fullReading).toBe("aprovada");
+    expect(c.excludedFeatures).toEqual([]);
+    expect(c.chapters.map((x) => x.approved)).toEqual([true, true]);
+  });
+
+  it("linha do destino sem dado: veredito individual das demais, destino excluído, leitura 'com exclusões'", async () => {
+    const { result } = await run(
+      three(() => obs(hidden(["fate.presence"]))),
+      {
+        target: 10,
+      },
+    );
+    const d = buildReport(result.records).decision;
+    expect(d.verdicts["fate.presence"]).toBe("inconclusiva");
+    expect(d.verdicts["heart.length"]).toBe("estavel");
+    expect(d.primary).toBe("manter");
+    expect(d.commercial.excludedFeatures).toEqual([
+      { feature: "fate.presence", verdict: "inconclusiva" },
+    ]);
+    // Ausência de dado não vira estabilidade, e a leitura não é "aprovada".
+    expect(d.commercial.approvedFeatures).not.toContain("fate.presence");
+    expect(d.commercial.fullReading).toBe("aprovada com exclusões");
+    expect(d.triggered.find((t) => t.key === "manter")!.why).toMatch(
+      /fora do uso comercial por falta de dado: linha do destino/,
+    );
+  });
+
+  it("capítulo 6 sem nenhuma característica com dado: só o 7 aprovado; leitura completa não aprovada", async () => {
+    const { result } = await run(
+      three(() => obs(hidden(["hand.palmShape", "hand.fingerLength"]))),
+      { target: 10 },
+    );
+    const c = buildReport(result.records).decision.commercial;
+    expect(c.chapters[0]).toMatchObject({ chapter: 6, approved: false });
+    expect(c.chapters[1]).toMatchObject({ chapter: 7, approved: true });
+    expect(c.fullReading).toBe("não aprovada");
+  });
+
+  it("utilidade mínima: capítulo com 1 característica liberada não é aprovado; nenhum capítulo → inconclusivo", async () => {
+    const { result } = await run(
+      three(() =>
+        obs(
+          hidden([
+            "hand.palmShape",
+            "hand.fingerLength",
+            "heart.shape",
+            "head.length",
+            "head.slope",
+            "head.start",
+            "life.arc",
+            "fate.presence",
+          ]),
+        ),
+      ),
+      { target: 10 },
+    );
+    const d = buildReport(result.records).decision;
+    expect(d.verdicts["heart.length"]).toBe("estavel");
+    expect(d.commercial.chapters[1].approved).toBe(false);
+    expect(d.commercial.chapters[1].reasons.join(" ")).toMatch(
+      /só 1 característica/,
+    );
+    expect(d.primary).toBe("inconclusivo");
+    expect(d.triggered.at(-1)!.why).toMatch(/nenhum capítulo/);
+  });
+
+  it("restringir convive com inconclusivas: palma instável e destino sem dado", async () => {
+    const { result } = await run(
+      three((n) => {
+        const o = hidden(["fate.presence"]);
+        if (n % 3 === 0)
+          (o.features["hand.palmShape"] as { value: string }).value =
+            "rectangular";
+        return obs(o);
+      }),
+      { target: 10 },
+    );
+    const d = buildReport(result.records).decision;
+    expect(d.primary).toBe("restringir");
+    expect(d.commercial.excludedFeatures.map((x) => x.feature)).toEqual([
+      "hand.palmShape",
+      "fate.presence",
+    ]);
+  });
+});
+
 describe("privacidade e auditoria", () => {
   it("registros sem conteúdo de imagem; bytes zerados ao fim", async () => {
     const { result, photos } = await run({ p01: () => obs(clearHand()) });

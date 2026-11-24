@@ -121,6 +121,12 @@ export function buildReport(
     "",
     '**Leitura dos intervalos.** O IC nominal (Wilson) trata pares de análises como independentes e é otimista. O IC por foto reamostra fotografias; com menos de 5 fotos ele não é informativo. Um resultado "estável" significa só que não houve sinal de instabilidade acima do limite nesta amostra.',
     "",
+    ...(records.every((r) => r.stage === "piloto")
+      ? [
+          "> **Piloto:** os números de estabilidade abaixo são só descritivos e não decidem a ampliação (seção 3.1 do plano). Com 2 fotos, toda característica é inconclusiva por construção (mínimo de 3 fotos).",
+          "",
+        ]
+      : []),
     "## Decisão pré-registrada",
     "",
     `**${DECISION_LABEL[decision.primary]}.**`,
@@ -132,6 +138,29 @@ export function buildReport(
     ...Object.entries(decision.verdicts).map(
       ([f, v]) =>
         `| ${FEATURE_LABELS[f as keyof typeof FEATURE_LABELS]} | ${VERDICT_LABEL[v]} |`,
+    ),
+    "",
+    "## Uso comercial depois das exclusões (opção 2)",
+    "",
+    "Só características **estáveis** ficam liberadas. Inconclusivas (falta de dado), intermediárias e instáveis ficam fora do uso comercial. Ausência de dado nunca conta como estabilidade.",
+    "",
+    `**Leitura completa: ${decision.commercial.fullReading}.**`,
+    "",
+    `- Liberadas: ${decision.commercial.approvedFeatures.map((f) => FEATURE_LABELS[f].toLowerCase()).join(", ") || "nenhuma"}.`,
+    `- Fora do uso comercial: ${
+      decision.commercial.excludedFeatures
+        .map(
+          (x) =>
+            `${FEATURE_LABELS[x.feature].toLowerCase()} (${VERDICT_LABEL[x.verdict]})`,
+        )
+        .join(", ") || "nenhuma"
+    }.`,
+    "",
+    "| Capítulo | Situação | Liberadas | Disponível sem as excluídas | Estável sem as excluídas | Motivos |",
+    "| --- | --- | --- | --- | --- | --- |",
+    ...decision.commercial.chapters.map(
+      (c) =>
+        `| ${c.chapter} | ${c.approved ? "aprovado" : "não aprovado"} | ${c.approvedFeatures.length} | ${pct(c.availabilityKept)} | ${pct(c.stableShare)} | ${c.reasons.join("; ") || "—"} |`,
     ),
     "",
     ...groups.map(groupSection),

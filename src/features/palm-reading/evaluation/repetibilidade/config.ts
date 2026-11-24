@@ -81,6 +81,22 @@ export const DECISION = {
   scopeClearInversion: 0.1,
 } as const;
 
+/**
+ * Uso comercial depois das exclusões (opção 2, decidida em 24/11/2026):
+ * - só características ESTÁVEIS ficam liberadas; inconclusiva (falta de
+ *   dado), intermediária e instável ficam fora do uso comercial;
+ * - um capítulo só é aprovado se, sem as excluídas, continuar disponível na
+ *   maior parte das fotos em que estava, continuar estável e tiver pelo menos
+ *   2 características liberadas (utilidade mínima);
+ * - a leitura completa só é "aprovada" sem nenhuma exclusão.
+ */
+export const COMMERCIAL = {
+  minApprovedFeaturesPerChapter: 2,
+  minChapterAvailability: 0.75,
+  chapterAgreement: 0.9,
+  photoShare: 0.85,
+} as const;
+
 /** Consenso simulado (M9), offline e determinístico. */
 export const CONSENSUS = { size: 3, draws: 1000, seed: 20261124 } as const;
 

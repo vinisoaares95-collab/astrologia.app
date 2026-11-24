@@ -31,7 +31,12 @@ const CACHED_PROMPT_TOKENS = 6507;
 
 export function createSimulatedRepProvider(
   scripts: Map<string, Script>,
-  options: { model?: string } = {},
+  options: {
+    model?: string;
+    fallback?: Script;
+    /** Ajusta a mão da observação à mão pedida (fotos de mãos diferentes). */
+    matchHand?: boolean;
+  } = {},
 ): VisionProvider & { calls: number; perPhoto: Map<string, number> } {
   const perPhoto = new Map<string, number>();
   const cacheWritten = new Set<string>();
@@ -45,7 +50,7 @@ export function createSimulatedRepProvider(
       const sha = createHash("sha256")
         .update(Buffer.from(request.image.base64, "base64"))
         .digest("hex");
-      const script = scripts.get(sha);
+      const script = scripts.get(sha) ?? options.fallback;
       if (!script) throw new AiProviderError("unknown", "Foto sem roteiro.");
       const n = (perPhoto.get(sha) ?? 0) + 1;
       perPhoto.set(sha, n);
@@ -62,7 +67,13 @@ export function createSimulatedRepProvider(
         text:
           step.kind === "invalid-json"
             ? '{"version": "03c.2", "hand"'
-            : JSON.stringify(step.raw),
+            : JSON.stringify(
+                options.matchHand &&
+                  typeof step.raw === "object" &&
+                  step.raw !== null
+                  ? { ...step.raw, hand: hand === "left" ? "left" : "right" }
+                  : step.raw,
+              ),
         stopReason: "end",
         usage: {
           inputTokens: 1671,

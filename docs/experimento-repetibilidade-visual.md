@@ -261,8 +261,28 @@ Sonnet 5.5, por milhão de tokens:
 - O mesmo vale para o limite de chamadas da etapa (`max_calls`) e para o
   teto de 12 envios por foto (`max_sends`).
 
-Nas Ampliações A e B, o teto só interromperia se o custo por análise
-passasse de ~2,9 vezes o observado.
+**Custo esperado não é reserva máxima.**
+
+- O **esperado** é a estimativa pelo consumo real (≈ US$ 0,0083 ou 0,0145
+  por análise).
+- A **reserva** é o pior caso de uma chamada (US$ 0,0667), separada antes
+  de cada chamada e devolvida no acerto.
+- O **teto da etapa** é o gasto máximo aceito; nunca é aumentado
+  automaticamente. Um teto maior exige nova autorização.
+
+**Os tetos podem interromper as ampliações antes das chamadas planejadas.**
+Uma chamada só começa se o saldo cobre a reserva de US$ 0,0667. Então:
+
+| Etapa       | Interrompe antes da meta se o custo médio real por análise passar de | Margem sobre o esperado |
+| ----------- | -------------------------------------------------------------------- | ----------------------- |
+| Piloto      | nunca por teto: 10 × 0,0667 = US$ 0,667 ≤ US$ 0,70                   | —                       |
+| Ampliação A | ≈ US$ 0,028 ((2,00 − 0,0667) ÷ 69)                                   | ≈ 3,4 × o observado     |
+| Ampliação B | ≈ US$ 0,031 ((2,50 − 0,0667) ÷ 79)                                   | ≈ 2,1 × o esperado      |
+
+Se acontecer, a etapa para com `stoppedBy: "budget"`, e o relatório
+mostra as análises que faltaram. As fotos com menos de 10 análises entram
+como estão: com menos de 5 análises classificadas, a célula não conta como
+avaliável. Não há nova tentativa nem aumento de teto sem nova autorização.
 
 **Por fotografia (10 análises):** ≈ US$ 0,08 nas antigas e ≈ US$ 0,15 nas
 novas.
@@ -276,10 +296,13 @@ teto foi verificado com o provedor simulado.
    - **Finalidade:** medir a repetibilidade.
    - **Envios:** **até 12 por foto** ao provedor nos EUA (10 do
      experimento + margem de refação do piloto).
-   - **Retenção pelo provedor:** até 30 dias por padrão, com exceções, como
-     informado em 19/11. Confirmar para a conta usada antes de coletar.
+   - **Retenção pelo provedor:** só o que foi verificado nas fontes
+     oficiais (minuta, seção C). A informação de 19/11 ("até 30 dias") não
+     foi confirmada; o prazo padrão fica a confirmar antes da coleta.
    - **Revisão humana**, se houver a referência da seção 1.4.
-   - **Exclusão** em até 7 dias depois da última sessão.
+   - **Exclusão** em até 7 dias contados do recebimento da foto. Se a
+     janela vencer entre etapas, a foto é apagada e só volta com novo
+     envio pela própria pessoa (conferido pelo SHA-256).
    - **Retirada** a qualquer momento.
    - **Requisitos:** 18 anos ou mais; só a palma, sem rosto, documentos,
      joias ou tatuagens.
@@ -334,12 +357,12 @@ inconclusivas), a decisão é **"inconclusivo"**:
 
 1. ~~**Este plano**~~ e ~~**a preparação da ferramenta**~~: aprovados e
    feitos (seção 9).
-2. **Decisão sobre o ponto em aberto da seção 8.5** (características que
-   quase nunca são classificadas), **antes** da coleta.
+2. ~~**Decisão sobre o ponto em aberto da seção 8.5**~~: opção 2 adotada
+   em 24/11/2026.
 3. **Termo novo**, com revisão jurídica, e **pedido de reenvio** aos 4
    participantes (pendências na seção 8.6).
-4. **Ponto de entrada da execução real** (seção 9.3): escrito e testado
-   só com o simulador, com portão de confirmação.
+4. ~~**Ponto de entrada**~~: escrito e testado só com entradas sintéticas
+   (seção 9.4). A conexão real continua **travada no código**.
 5. **Piloto** (teto US$ 0,70) e, depois do relatório dele, **Ampliação A**
    (teto US$ 2,00).
 6. **Ampliação B** (fotos novas, teto US$ 2,50), com autorização e termo
@@ -432,39 +455,67 @@ Esclarecimentos (não mudam limites):
 5. **Custo do piloto:** a média "com cache lido" usa só as análises sem
    gravação de cache.
 
-**Ponto em aberto, para decidir antes da coleta (proposta, não aplicada):**
+**Decisão de 24/11/2026: opção 2 adotada** (antes de qualquer coleta).
 
-- **O problema.** A **linha do destino** só é classificada quando está
-  "clara", e na 03F.1 não foi classificada em nenhuma das 8 fotos. Ela
-  tende a ficar **inconclusiva**. Pela regra atual, "manter" exige todas as
-  características estáveis e nenhuma inconclusiva. Então "manter" ficaria
-  praticamente inalcançável por falta de dado, e não por instabilidade. O
-  mesmo pode acontecer com outras características pouco classificadas.
-- **Opção 1 (manter a regra atual):** sem dados suficientes, "manter" não
-  se aplica; o resultado é "inconclusivo" ou outra regra.
-- **Opção 2:** aplicar "manter" às características avaliáveis. As
-  inconclusivas ficam **não liberadas** para uso comercial até haver dados,
-  o que na prática é restringi-las. A justificativa é que uma característica
-  nunca classificada não gera contradição na leitura, mas também não teve
-  sua estabilidade demonstrada.
-- **Recomendação:** opção 2, registrada antes da coleta. A ferramenta hoje
-  aplica a **opção 1** (a regra atual) e só muda com a sua decisão.
+- **Veredito individual:** características com dados suficientes recebem
+  veredito individual.
+- **Inconclusivas:** ficam **fora do uso comercial**. Ausência de dado
+  **nunca** conta como estabilidade.
+- **Capítulos:** o capítulo e a leitura completa **não** são aprovados só
+  porque algumas características são estáveis. Um capítulo só é aprovado
+  se, sem as características excluídas (inconclusivas, intermediárias e
+  instáveis):
+  - continuar **disponível** em pelo menos **75%** das fotos em que
+    estava;
+  - continuar **estável** (mesmos itens em ≥ 90% das análises) em pelo
+    menos **85%** dessas fotos;
+  - tiver pelo menos **2 características liberadas** (utilidade mínima);
+  - e o estado da leitura e o pedido de nova foto forem estáveis.
+- **Leitura completa:**
+  - "aprovada" só com os dois capítulos aprovados e **nenhuma**
+    característica excluída;
+  - "aprovada com exclusões" com os dois capítulos aprovados e alguma
+    exclusão;
+  - "não aprovada" nos demais casos.
+- **Manter:** nenhuma característica avaliável instável ou intermediária,
+  **e** pelo menos um capítulo aprovado depois das exclusões. Sem capítulo
+  aprovado, o resultado é "inconclusivo".
+- **Restringir:** 1 a 3 instáveis; as demais estáveis ou inconclusivas
+  (estas já ficam excluídas); disponibilidade medida sem as instáveis e as
+  inconclusivas.
+
+**Limiares novos.** Os de disponibilidade (75%) e estabilidade (90% e 85%)
+são os mesmos já usados na seção 3. O de utilidade (2 características por
+capítulo) é novo, registrado agora, antes da coleta.
+
+**Testes da decisão:** leitura sem exclusões; destino sem dado (leitura
+"com exclusões"); capítulo 6 sem dado (só o 7 aprovado, leitura não
+aprovada); capítulo com 1 característica (não aprovado, "inconclusivo");
+restrição com inconclusivas.
 
 ### 8.6 Pendências do consentimento
+
+**Minuta redigida:** `experimento-repetibilidade-termo-minuta.md` (REP-1),
+com os pontos de revisão jurídica e as fontes oficiais verificadas.
 
 1. **Termo novo**, a partir da minuta da 03F.1, com:
    - finalidade (repetibilidade);
    - até 12 envios por foto à Anthropic (EUA);
    - **guarda da foto entre duas sessões em dias diferentes**, dentro do
-     prazo de exclusão de 7 dias depois da última sessão;
+     prazo de 7 dias contados do recebimento;
    - revisão humana, se houver a referência de exatidão;
    - retirada a qualquer momento e canal de contato;
    - 18 anos ou mais; só a palma.
 2. **Revisão jurídica do termo:** a minuta da 03F.1 já a exigia.
 3. **Controlador dos dados:** a empresa ainda não foi constituída
    (pendência 7 da 03G). Definir quem assina como responsável.
-4. **Retenção pelo provedor:** confirmar para a conta usada o prazo padrão
-   de 30 dias e as exceções (informado em 19/11, ainda não confirmado).
+4. **Retenção pelo provedor:** verificado em 24/11.
+   - Sem treino com o conteúdo da API.
+   - Retenção possível por exigência legal, ou por até 2 anos quando o
+     conteúdo é sinalizado pelos sistemas de segurança.
+   - O artigo oficial do prazo padrão **não abriu neste ambiente** e
+     precisa ser conferido. A informação de 19/11 ("30 dias") não foi
+     confirmada.
 5. **Termos anteriores:** confirmar se cobriram os envios da rodada 2 e da
    Etapa B. Eles ficam fora do Sidera; isso não muda o termo novo, mas fecha
    o histórico.
@@ -522,34 +573,87 @@ Também testados:
 
 ### 9.2 O que a ferramenta não faz (de propósito)
 
-- Não cria provedor real nem lê chave de API.
-- Não lê fotos do disco nem as prepara.
 - Não decide a ampliação pelos números de estabilidade do piloto.
+- Não usa conexão real: o provedor real só pode ser criado com o portão
+  aberto, e o portão está travado no código (seção 9.4).
 
 ### 9.3 Requisitos para iniciar o piloto
 
-1. Sua autorização explícita do piloto (teto US$ 0,70) e a decisão da
-   seção 8.5.
-2. Termos novos assinados, com revisão jurídica e controlador definido
-   (seção 8.6), pelo menos das pessoas das 2 fotos do piloto.
-3. **Ponto de entrada da execução real**, a ser escrito e testado só com o
-   simulador:
-   - portão com frase de confirmação e variáveis próprias, separadas das
-     do produto;
-   - leitura do manifesto (código da foto, mão, origem, pseudônimo,
-     autorização);
-   - preparação com `prepareEvalPhoto` e conferência do SHA-256 do
-     original com o registro de 19/11 (`matchesRegistered`);
-   - gravação com `saveRecords` em
-     `avaliacao-ia/repetibilidade/restrito/`;
-   - relatório;
-   - exclusão com `deleteAndRecord` e busca de cópias com `findCopies`.
-4. **No dia da execução:**
-   - preços reconferidos;
-   - versões confirmadas: prompt `03d.2`, contrato `03c.2`, modelo
-     `claude-sonnet-5-5`, `effort: medium`, `max_tokens` 4000;
-   - commit registrado;
-   - credencial da API configurada pelo responsável, nunca no chat ou nos
-     registros.
-5. Pasta temporária fora do repositório para as fotos, apagada ao fim
-   (prazo máximo de 7 dias depois da última sessão).
+Checklist completo na seção 10.
+
+### 9.4 Ponto de entrada da etapa (preparado em 24/11/2026)
+
+| Arquivo                      | Função                                                                                                                                                                                                                                                                                                                                                                                               |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `manifest.ts`                | Manifesto das fotos autorizadas, na pasta das fotos (fora do repositório). Valida o experimento e a versão do termo (`REP-1`); fotos por etapa (piloto: até 2); código, arquivo, mão, origem, pseudônimo, autorização; SHA-256 registrado nas originais; consentimento assinado, com data e abrangência; envios autorizados (1 a 12). **Recusa campos não previstos** (nenhum nome ou contato entra) |
+| `session.ts`                 | `executeStage` e `recordDeletion`, detalhados abaixo                                                                                                                                                                                                                                                                                                                                                 |
+| `repetibilidade.run.test.ts` | Comandos `simular` (provedor simulado, gravando em `avaliacao-ia/repetibilidade-ensaio/`, nunca junto dos registros reais), `executar` (só com o portão aberto) e `excluir`                                                                                                                                                                                                                          |
+
+**`executeStage`.** Falha fechado: qualquer problema recusa a etapa inteira
+antes de qualquer análise.
+
+1. Confere a pasta das fotos fora do repositório e os registros em
+   `avaliacao-ia/`.
+2. Valida o manifesto.
+3. Confere o SHA-256 de cada original com o registro de 19/11.
+4. Prepara a foto como o produto e zera os bytes originais.
+5. Confere se a entrada preparada é a mesma das sessões anteriores.
+6. Recusa fotos sem envios restantes.
+7. Usa o teto da etapa: um valor informado só pode reduzi-lo.
+8. Aplica a meta cumulativa, o limite de chamadas e os envios autorizados
+   de cada foto. Uma foto que esgota os envios para sozinha; as outras
+   seguem.
+9. Grava os registros sem imagem, sem sobrescrever uma sessão.
+10. Gera o relatório e, no piloto, os critérios operacionais (a exclusão
+    fica pendente).
+
+**`recordDeletion`.**
+
+- Apaga as fotos e o manifesto.
+- Procura cópias pelo SHA-256.
+- Grava o registro (arquivo, tamanho, SHA-256, data) com a nota de que a
+  exclusão não alcança o provedor.
+
+**Conexão real.**
+
+- `REP_REAL_CONNECTION_ENABLED = false` em `session.ts`.
+- Além da trava, o portão exige:
+  - `SIDERA_REP_REAL=1`;
+  - `SIDERA_REP_CONFIRM=autorizo-repetibilidade-<etapa>`;
+  - pasta das fotos fora do repositório;
+  - credencial no servidor;
+  - ambiente fora de produção.
+- Nunca lê nem devolve o valor da chave.
+
+**Testes do ponto de entrada (`session.test.ts`, 15), só com imagens
+sintéticas de cor sólida geradas no teste:**
+
+- piloto de ponta a ponta (10 análises, registros sem imagem, relatório,
+  critérios, exclusão registrada);
+- Ampliação A cumulativa (+5 por foto);
+- não sobrescreve sessão nem aumenta teto;
+- recusas: sem termo assinado; SHA-256 diferente; campo não previsto
+  (nome); envios acima de 12; data futura; foto nova no piloto;
+  consentimento que não abrange a origem; arquivo ausente; pasta dentro do
+  repositório; versão de termo errada; fotos demais; envios esgotados.
+  Em todas, nenhuma análise é feita;
+- conexão real travada mesmo com todas as variáveis.
+
+**Ensaio feito:** o comando `simular` rodou uma vez com duas imagens
+sintéticas e funcionou. Os arquivos do ensaio foram apagados em seguida.
+
+## 10. Checklist para autorizar o piloto
+
+| #   | Item                                                                                                                                                              | Situação                                                                                 |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| 1   | Plano, critérios e decisão sobre inconclusivas (opção 2)                                                                                                          | Feito                                                                                    |
+| 2   | Ferramenta offline e ponto de entrada testados com simulador                                                                                                      | Feito (42 testes)                                                                        |
+| 3   | Minuta do termo (`experimento-repetibilidade-termo-minuta.md`)                                                                                                    | Redigida; **revisão jurídica pendente**                                                  |
+| 4   | Identificação do responsável pelo tratamento e canal de contato                                                                                                   | **Pendente** (empresa não constituída; não inventar dados)                               |
+| 5   | Retenção pelo provedor confirmada para a conta usada                                                                                                              | **Pendente** (termos oficiais verificados; falta confirmar a conta e o regime aplicável) |
+| 6   | Termos assinados pelas pessoas das 2 fotos do piloto (envios autorizados, abrangência "original")                                                                 | **Pendente**: depende de 3 a 5                                                           |
+| 7   | Reenvio dos arquivos originais pela própria pessoa, conferidos pelo SHA-256                                                                                       | **Pendente**: só depois de 6                                                             |
+| 8   | Destrave da conexão real em commit revisado (`REP_REAL_CONNECTION_ENABLED`), só depois da sua autorização da execução                                             | **Pendente**                                                                             |
+| 9   | Credencial configurada pelo responsável (nunca no chat ou nos registros); preços reconferidos; versões confirmadas (03d.2 / 03c.2 / Sonnet 5.5 / `medium` / 4000) | No dia                                                                                   |
+| 10  | Pasta temporária fora do repositório; exclusão até 7 dias contados do recebimento                                                                                 | No dia                                                                                   |
+| 11  | Sua autorização específica do piloto: teto US$ 0,70, 10 chamadas, 2 fotos                                                                                         | **Pendente**                                                                             |

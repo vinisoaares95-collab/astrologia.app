@@ -5,9 +5,13 @@
  * (originais reenviados × fotos novas) é analisado separadamente; o
  * veredito final de uma característica é o pior entre os grupos avaliáveis.
  */
-import { FEATURE_IDS, type FeatureId } from "../../analysis/contract";
+import {
+  FEATURE_GROUP,
+  FEATURE_IDS,
+  type FeatureId,
+} from "../../analysis/contract";
 import { FEATURE_LABELS } from "./labels";
-import { DECISION, PILOT_GATE, PRODUCT, VERDICT } from "./config";
+import { COMMERCIAL, DECISION, PILOT_GATE, PRODUCT, VERDICT } from "./config";
 import type { AnalysisRecord, PhotoOrigin } from "./contract";
 import {
   clusterBootstrap,
@@ -253,12 +257,125 @@ export function overallVerdict(groups: GroupSummary[], f: FeatureId): Verdict {
 export type DecisionKey =
   "manter" | "restringir" | "captura" | "consenso" | "escopo" | "inconclusivo";
 
+export type ChapterCommercial = {
+  chapter: 6 | 7;
+  approved: boolean;
+  /** Características liberadas (estáveis) deste capítulo. */
+  approvedFeatures: FeatureId[];
+  excludedFeatures: FeatureId[];
+  /** Fotos em que o capítulo continua disponível sem as excluídas. */
+  availabilityKept: number | null;
+  /** Fotos com o capítulo estável (itens liberados) ≥ 90% das análises. */
+  stableShare: number | null;
+  reasons: string[];
+};
+
+export type Commercial = {
+  approvedFeatures: FeatureId[];
+  /** Fora do uso comercial: inconclusivas, intermediárias e instáveis. */
+  excludedFeatures: { feature: FeatureId; verdict: Verdict }[];
+  chapters: [ChapterCommercial, ChapterCommercial];
+  /** "aprovada" só sem nenhuma exclusão; nunca por haver algumas estáveis. */
+  fullReading: "aprovada" | "aprovada com exclusões" | "não aprovada";
+};
+
 export type Decision = {
   primary: DecisionKey;
   /** Todas as regras atendidas, com a justificativa citando o critério. */
   triggered: { key: DecisionKey; why: string }[];
   verdicts: Record<FeatureId, Verdict>;
+  commercial: Commercial;
 };
+
+const chapterOf = (f: FeatureId): 6 | 7 =>
+  FEATURE_GROUP[f] === "hand" ? 6 : 7;
+
+/** Capítulo depois das exclusões: disponibilidade e estabilidade. */
+export function chapterAfterExclusion(
+  records: AnalysisRecord[],
+  chapter: 6 | 7,
+  excluded: FeatureId[],
+): { availabilityKept: number | null; stableShare: number | null } {
+  const key = chapter === 6 ? "ch6" : "ch7";
+  let before = 0;
+  let kept = 0;
+  let stable = 0;
+  for (const id of new Set(records.map((r) => r.photoId))) {
+    const os = okObservations(records.filter((r) => r.photoId === id));
+    const m = modalObservation(os);
+    if (!m || !readingEffect(m)[key]) continue;
+    before++;
+    const restricted = os.map(
+      (o) => readingEffect(withoutFeatures(o, excluded))[key],
+    );
+    const modalItems = readingEffect(withoutFeatures(m, excluded))[key];
+    if (modalItems) kept++;
+    const same = restricted.filter((x) => x === modalItems).length;
+    if (os.length && same / os.length >= COMMERCIAL.chapterAgreement) stable++;
+  }
+  return {
+    availabilityKept: before ? kept / before : null,
+    stableShare: before ? stable / before : null,
+  };
+}
+
+export function commercialEvaluation(
+  verdicts: Record<FeatureId, Verdict>,
+  groups: GroupSummary[],
+  records: AnalysisRecord[],
+): Commercial {
+  const approvedFeatures = FEATURE_IDS.filter((f) => verdicts[f] === "estavel");
+  const excluded = FEATURE_IDS.filter((f) => verdicts[f] !== "estavel");
+  const productOk = groups.every(
+    (g) => g.product.retakeStable && g.product.statusStable,
+  );
+  const chapters = ([6, 7] as const).map((chapter): ChapterCommercial => {
+    const own = FEATURE_IDS.filter((f) => chapterOf(f) === chapter);
+    const ok = own.filter((f) => approvedFeatures.includes(f));
+    const after = chapterAfterExclusion(records, chapter, excluded);
+    const reasons: string[] = [];
+    if (ok.length < COMMERCIAL.minApprovedFeaturesPerChapter)
+      reasons.push(
+        `só ${ok.length} característica(s) liberada(s); mínimo ${COMMERCIAL.minApprovedFeaturesPerChapter}`,
+      );
+    if (
+      after.availabilityKept === null ||
+      after.availabilityKept < COMMERCIAL.minChapterAvailability
+    )
+      reasons.push(
+        `disponível sem as excluídas em ${pct(after.availabilityKept)} das fotos; mínimo 75%`,
+      );
+    if (after.stableShare === null || after.stableShare < COMMERCIAL.photoShare)
+      reasons.push(
+        `estável sem as excluídas em ${pct(after.stableShare)} das fotos; mínimo 85%`,
+      );
+    if (!productOk)
+      reasons.push("estado da leitura ou pedido de nova foto instável");
+    return {
+      chapter,
+      approved: reasons.length === 0,
+      approvedFeatures: ok,
+      excludedFeatures: own.filter((f) => !ok.includes(f)),
+      ...after,
+      reasons,
+    };
+  }) as [ChapterCommercial, ChapterCommercial];
+  const both = chapters.every((c) => c.approved);
+  return {
+    approvedFeatures,
+    excludedFeatures: excluded.map((feature) => ({
+      feature,
+      verdict: verdicts[feature],
+    })),
+    chapters,
+    fullReading:
+      both && !excluded.length
+        ? "aprovada"
+        : both
+          ? "aprovada com exclusões"
+          : "não aprovada",
+  };
+}
 
 /** Disponibilidade dos capítulos mantida ao retirar características. */
 export function availabilityKept(
@@ -367,10 +484,14 @@ export function decide(
 
   // Restrição.
   if (unstable.length >= 1 && unstable.length <= DECISION.restrictMaxFeatures) {
+    // Opção 2: inconclusivas já ficam fora do uso comercial e não impedem a
+    // restrição; intermediárias impedem (não são estáveis nem instáveis).
     const others = FEATURE_IDS.filter((f) => !unstable.includes(f));
-    const kept = availabilityKept(records, unstable);
+    const kept = availabilityKept(records, [...unstable, ...inconclusive]);
     if (
-      others.every((f) => verdicts[f] === "estavel") &&
+      others.every(
+        (f) => verdicts[f] === "estavel" || verdicts[f] === "inconclusiva",
+      ) &&
       kept !== null &&
       kept >= DECISION.restrictMinAvailability
     )
@@ -391,18 +512,26 @@ export function decide(
         why: `grupo ${g.origin}: inversão ${pct(g.clearInversionRate)} nas claras e ${pct(g.partialInversionRate)} nas parciais`,
       });
 
-  // Manter.
-  const productOk = groups.every(
-    (g) =>
-      g.product.ch6Stable !== false &&
-      g.product.ch7Stable !== false &&
-      g.product.retakeStable &&
-      g.product.statusStable,
-  );
-  if (FEATURE_IDS.every((f) => verdicts[f] === "estavel") && productOk)
+  // Manter (opção 2): nenhuma característica avaliável instável ou
+  // intermediária, ao menos um capítulo aprovado depois das exclusões. As
+  // inconclusivas ficam fora do uso comercial e são listadas.
+  const commercial = commercialEvaluation(verdicts, groups, records);
+  const evaluable = FEATURE_IDS.filter((f) => verdicts[f] !== "inconclusiva");
+  const approvedChapters = commercial.chapters.filter((c) => c.approved);
+  if (
+    evaluable.length > 0 &&
+    evaluable.every((f) => verdicts[f] === "estavel") &&
+    approvedChapters.length > 0
+  )
     triggered.push({
       key: "manter",
-      why: "todas as características estáveis; capítulos, estado e pedido de nova foto estáveis",
+      why: `características avaliáveis estáveis; capítulo(s) ${approvedChapters
+        .map((c) => c.chapter)
+        .join(" e ")} aprovado(s) depois das exclusões${
+        inconclusive.length
+          ? `; fora do uso comercial por falta de dado: ${names(inconclusive)}`
+          : ""
+      }`,
     });
 
   const priority: DecisionKey[] = [
@@ -417,11 +546,14 @@ export function decide(
   if (primary === "inconclusivo")
     triggered.push({
       key: "inconclusivo",
-      why: inconclusive.length
-        ? `sem dados suficientes: ${names(inconclusive)}`
-        : "nenhuma regra atendida",
+      why:
+        evaluable.length && !approvedChapters.length
+          ? "nenhum capítulo continua disponível, estável e útil depois das exclusões"
+          : inconclusive.length
+            ? `sem dados suficientes: ${names(inconclusive)}`
+            : "nenhuma regra atendida",
     });
-  return { primary, triggered, verdicts };
+  return { primary, triggered, verdicts, commercial };
 }
 
 const pct = (x: number | null) =>
