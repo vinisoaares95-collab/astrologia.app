@@ -41,11 +41,14 @@ export function JourneyReading() {
   // presentes na memória da jornada. Nenhuma requisição nova.
   const journey = useMemo((): JourneyInput => {
     if (sky?.state === "loading") return { state: "loading" };
-    const { chapter8, chapter9 } = buildJourneyChapters(
+    const { chapter8, chapter9, selection9 } = buildJourneyChapters(
       sky?.state === "ready" ? sky.bridge : null,
       hands ? hands.bridge : null,
     );
-    return { state: "ready", chapter8, chapter9 };
+    const handsUsedIn9 = selection9.themes.some((t) =>
+      t.sources.some((r) => r.side === "hands"),
+    );
+    return { state: "ready", chapter8, chapter9, handsUsedIn9 };
   }, [sky, hands]);
   const report = buildIntegratedReport({
     sky: skyInput(sky),

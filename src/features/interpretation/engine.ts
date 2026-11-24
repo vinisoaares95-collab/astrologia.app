@@ -74,10 +74,35 @@ const named = (p: Point) =>
 const capitalize = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 /** Preposição "a" + artigo: "a a" → "à", "a os" → "aos". */
+/**
+ * "a" + lista de áreas, contraindo o artigo de CADA item (04E.1):
+ * "as viagens, os estudos e a busca de sentido" → "às viagens, aos estudos e
+ * à busca de sentido". Só gramática: o conteúdo da área não muda.
+ */
 function toPrep(phrase: string): string {
-  const [first, ...rest] = phrase.split(" ");
-  const contracted = { a: "à", as: "às", o: "ao", os: "aos" }[first];
-  return contracted ? [contracted, ...rest].join(" ") : `a ${phrase}`;
+  const CONTRACT: Record<string, string> = {
+    a: "à",
+    as: "às",
+    o: "ao",
+    os: "aos",
+  };
+  const one = (item: string) => {
+    const [first, ...rest] = item.split(" ");
+    const contracted = CONTRACT[first];
+    return contracted ? [contracted, ...rest].join(" ") : `a ${item}`;
+  };
+  // Itens separados por vírgula ou pelo último " e ".
+  const parts = phrase.split(", ");
+  const last = parts.pop()!;
+  const tail = last.split(" e ");
+  const items = [
+    ...parts,
+    ...(tail.length === 2 && /^(a|as|o|os) /.test(tail[1]) ? tail : [last]),
+  ];
+  const joined = items.map(one);
+  return joined.length === 1
+    ? joined[0]
+    : `${joined.slice(0, -1).join(", ")} e ${joined.at(-1)}`;
 }
 
 function retroKey(body: Body) {
@@ -139,13 +164,16 @@ function composeText(fact: Fact): string {
             : "";
       return `Com a cúspide da casa ${fact.house}${label} em ${sign!.name}, a tradição associa ${HOUSE_MEANINGS[fact.house!].area} a temas como ${sign!.qualities}.`;
     }
+    // Concordância do regente (04E.1): a função de Mercúrio ("o modo de
+    // pensar, aprender e se comunicar") é um só sujeito; as dos demais corpos
+    // são sujeitos compostos ("o afeto, o prazer e a forma de se vincular").
     case "chart-ruler": {
       const ruler = fact.values.ruler as Body;
       const house =
         typeof fact.values.rulerHouse === "number"
           ? `, na casa ${fact.values.rulerHouse}`
           : "";
-      return `Com o Ascendente em ${SIGN_MEANINGS[fact.values.ascSign as keyof typeof SIGN_MEANINGS].name}, o regente tradicional do mapa é ${named(ruler)}. A tradição sugere que ${BODY_MEANINGS[ruler].function} — aqui em ${sign!.name}${house} — ganha peso especial na condução da sua trajetória.`;
+      return `Com o Ascendente em ${SIGN_MEANINGS[fact.values.ascSign as keyof typeof SIGN_MEANINGS].name}, o regente tradicional do mapa é ${named(ruler)}. A tradição sugere que ${BODY_MEANINGS[ruler].function} — aqui em ${sign!.name}${house} — ${ruler === "mercury" ? "ganha" : "ganham"} peso especial na condução da sua trajetória.`;
     }
     case "element-dominant":
     case "element-absent":

@@ -34,6 +34,16 @@ const upper = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const fill = (t: { one: string; many: string }, list: string, n: number) =>
   (n > 1 ? t.many : t.one).replace("{Lista}", upper(list));
 
+/** Concordância das frases-ponte com o número real de referências. */
+function agree(text: string, hands: number, sky: number): string {
+  const n = (k: string, count: number) =>
+    C8.agreement[`${k}:${count > 1 ? "many" : "one"}`];
+  return text
+    .replace("{traço}", n("traço", hands))
+    .replace("{posição}", n("posição", sky))
+    .replace("{associada}", n("associada", sky));
+}
+
 /** "Lua em Leão (cap. 2); linha do coração longa; … (cap. 7)". */
 export function refList(refs: BridgeRef[]): string {
   const groups = new Map<number, string[]>();
@@ -114,7 +124,7 @@ export function renderChapter8(
           ? [{ label: C8.labels.opposite, text: refList(t.skyOpposite) }]
           : []),
       ],
-      text: C8.bridge[t.libraryKey],
+      text: agree(C8.bridge[t.libraryKey], t.hands.length, t.sky.length),
     })),
     synthesis,
     reflectionQuestions: [],

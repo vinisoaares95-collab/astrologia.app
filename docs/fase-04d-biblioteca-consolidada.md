@@ -342,14 +342,27 @@ As duas fontes são sempre citadas no bloco do tema.
 | ----- | --------------- | ----- |
 
 | `ritmo:cautela:A` | mãos `ritmo:cautela` (cabeça unida); Marte com `cautela` | Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir. |
-| `ritmo:cautela:D` | mãos `ritmo:cautela`; Marte com `impulso` | Aqui as leituras apontam para lados diferentes: a quiromancia associa este traço à cautela, e as posições citadas do mapa são associadas a uma ação mais imediata. As duas descrições ficam registradas como estão, sem uma conciliação forçada. |
+| `ritmo:cautela:D` | mãos `ritmo:cautela`; Marte com `impulso` | Aqui as leituras apontam para lados diferentes: a quiromancia associa {traço} à cautela, e {posição} {associada} a uma ação mais imediata. As duas descrições ficam registradas como estão, sem uma conciliação forçada. |
 | `expressao:expansiva:A` | mãos `expansiva`; Lua e/ou Vênus com `expansiva` e nenhuma das duas com `reservada` | As duas leituras usam a imagem de uma expressão afetiva mais aberta. |
-| `expressao:expansiva:AC` | mãos `expansiva`; uma de Lua/Vênus com `expansiva` **e** a outra com `reservada` | Nas duas tradições aparece a imagem de uma expressão afetiva mais aberta. No mapa, ela divide espaço com imagens de reserva: são facetas descritas lado a lado, não uma conta que precise fechar. |
-| `expressao:expansiva:D` | mãos `expansiva`; Lua/Vênus só com `reservada` | Aqui as leituras seguem caminhos diferentes: a quiromancia associa estes traços a uma expressão mais aberta, e as posições citadas do mapa, a uma expressão mais reservada. A diferença fica à vista, sem conciliação. |
+| `expressao:expansiva:AC` | mãos `expansiva`; uma de Lua/Vênus com `expansiva` **e** a outra com `reservada` | Nas duas tradições aparece a imagem de uma expressão afetiva mais aberta. No mapa, ela divide espaço com uma imagem de reserva: são facetas descritas lado a lado, não uma conta que precise fechar. |
+| `expressao:expansiva:D` | mãos `expansiva`; Lua/Vênus só com `reservada` | Aqui as leituras seguem caminhos diferentes: a quiromancia associa {traço} a uma expressão mais aberta, e {posição}, a uma expressão mais reservada. A diferença fica à vista, sem conciliação. |
 | `expressao:reservada:A` | mãos `reservada`; Lua e/ou Vênus com `reservada` e nenhuma com `expansiva` | As duas leituras usam a imagem de uma expressão afetiva mais reservada, que se revela aos poucos. |
-| `expressao:reservada:AC` | mãos `reservada`; uma de Lua/Vênus com `reservada` **e** a outra com `expansiva` | Nas duas tradições aparece a imagem de uma expressão afetiva mais reservada. O mapa também traz imagens de abertura: as duas convivem na leitura, sem que uma corrija a outra. |
-| `expressao:reservada:D` | mãos `reservada`; Lua/Vênus só com `expansiva` | Aqui as leituras apontam para lados diferentes: a quiromancia associa estes traços a uma expressão mais reservada, e as posições citadas do mapa, a uma expressão mais aberta. As duas descrições ficam como estão. |
+| `expressao:reservada:AC` | mãos `reservada`; uma de Lua/Vênus com `reservada` **e** a outra com `expansiva` | Nas duas tradições aparece a imagem de uma expressão afetiva mais reservada. O mapa também traz uma imagem de abertura: as duas convivem na leitura, sem que uma corrija a outra. |
+| `expressao:reservada:D` | mãos `reservada`; Lua/Vênus só com `expansiva` | Aqui as leituras apontam para lados diferentes: a quiromancia associa {traço} a uma expressão mais reservada, e {posição}, a uma expressão mais aberta. As duas descrições ficam como estão. |
 | `expressao:F` | mãos com `expansiva` **e** `reservada` (dois traços do coração); Lua ou Vênus com algum polo de expressão | Nas mãos, a própria linha do coração traz duas imagens: uma de abertura e outra de reserva. Por isso, aqui não se aponta aproximação nem diferença; as imagens do mapa aparecem ao lado, só para comparação. |
+
+**Concordância (04E.1).** Nas frases de diferença, `{traço}`, `{posição}` e
+`{associada}` concordam com o número real de referências do tema:
+
+| Marcador      | Uma referência           | Várias referências          |
+| ------------- | ------------------------ | --------------------------- |
+| `{traço}`     | este traço               | estes traços                |
+| `{posição}`   | a posição citada do mapa | as posições citadas do mapa |
+| `{associada}` | é associada              | são associadas              |
+
+Antes, essas frases diziam sempre "estes traços" e "as posições citadas",
+mesmo com uma só referência, e as de contraponto diziam "imagens", embora o
+outro lado seja sempre uma única posição (Lua ou Vênus).
 
 ### 3.4 Sínteses (uma por capítulo)
 
@@ -633,7 +646,7 @@ Céu: `K-contraponto` **[construída]** (Lua em Leão, Vênus em Capricórnio, M
 > Nas mãos: linha do coração longa; linha do coração curvada para cima (cap. 7).
 > No céu: Lua em Leão (cap. 2).
 > No céu, o outro lado: Vênus em Capricórnio (cap. 4).
-> Nas duas tradições aparece a imagem de uma expressão afetiva mais aberta. No mapa, ela divide espaço com imagens de reserva: são facetas descritas lado a lado, não uma conta que precise fechar.
+> Nas duas tradições aparece a imagem de uma expressão afetiva mais aberta. No mapa, ela divide espaço com uma imagem de reserva: são facetas descritas lado a lado, não uma conta que precise fechar.
 >
 > _Síntese._ As aproximações acima mostram onde as duas tradições usam palavras parecidas. Elas servem como ponto de partida para observar a sua experiência, não como conclusão.
 >
@@ -681,7 +694,7 @@ Céu: `C-demo2`. Mãos: `M-clara`.
 > **Expressão: abertura e reserva** · Diferença
 > Nas mãos: linha do coração longa; linha do coração curvada para cima (cap. 7).
 > No céu: Vênus em Câncer (cap. 4).
-> Aqui as leituras seguem caminhos diferentes: a quiromancia associa estes traços a uma expressão mais aberta, e as posições citadas do mapa, a uma expressão mais reservada. A diferença fica à vista, sem conciliação.
+> Aqui as leituras seguem caminhos diferentes: a quiromancia associa estes traços a uma expressão mais aberta, e a posição citada do mapa, a uma expressão mais reservada. A diferença fica à vista, sem conciliação.
 >
 > _Síntese._ Nos temas comparados, as duas tradições apontam para lados diferentes. Isso não é um erro de nenhuma delas: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.
 >
@@ -728,12 +741,12 @@ Céu: `K-ritmo-diferença` **[construída]** (Lua em Câncer, Vênus em Touro, M
 > **Ritmo: impulso e cautela** · Diferença
 > Nas mãos: linha da cabeça começando unida à da vida (cap. 7).
 > No céu: Marte em Áries (cap. 4).
-> Aqui as leituras apontam para lados diferentes: a quiromancia associa este traço à cautela, e as posições citadas do mapa são associadas a uma ação mais imediata. As duas descrições ficam registradas como estão, sem uma conciliação forçada.
+> Aqui as leituras apontam para lados diferentes: a quiromancia associa este traço à cautela, e a posição citada do mapa é associada a uma ação mais imediata. As duas descrições ficam registradas como estão, sem uma conciliação forçada.
 >
 > **Expressão: abertura e reserva** · Diferença
 > Nas mãos: linha do coração longa; linha do coração curvada para cima (cap. 7).
 > No céu: Lua em Câncer (cap. 2).
-> Aqui as leituras seguem caminhos diferentes: a quiromancia associa estes traços a uma expressão mais aberta, e as posições citadas do mapa, a uma expressão mais reservada. A diferença fica à vista, sem conciliação.
+> Aqui as leituras seguem caminhos diferentes: a quiromancia associa estes traços a uma expressão mais aberta, e a posição citada do mapa, a uma expressão mais reservada. A diferença fica à vista, sem conciliação.
 >
 > _Síntese._ Nos temas comparados, as duas tradições apontam para lados diferentes. Isso não é um erro de nenhuma delas: são sistemas simbólicos distintos, e cada um pode ser confrontado com o que você vive.
 >
@@ -833,7 +846,7 @@ Céu: `K-lua-incerta` **[construída]** (horário desconhecido: Lua incerta, Vê
 > **Expressão: abertura e reserva** · Diferença
 > Nas mãos: linha do coração longa (cap. 7).
 > No céu: Vênus em Capricórnio (cap. 4).
-> Aqui as leituras seguem caminhos diferentes: a quiromancia associa estes traços a uma expressão mais aberta, e as posições citadas do mapa, a uma expressão mais reservada. A diferença fica à vista, sem conciliação.
+> Aqui as leituras seguem caminhos diferentes: a quiromancia associa este traço a uma expressão mais aberta, e a posição citada do mapa, a uma expressão mais reservada. A diferença fica à vista, sem conciliação.
 >
 > _Síntese._ Há pontos em que as duas tradições usam imagens parecidas e pontos em que seguem caminhos diferentes. Os dois casos valem, no mesmo peso, como material de reflexão.
 >

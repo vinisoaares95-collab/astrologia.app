@@ -39,6 +39,8 @@ export type JourneyInput =
       state: "ready";
       chapter8: ChapterArticleData;
       chapter9: ChapterArticleData;
+      /** O capítulo 9 cita a leitura das mãos (para o aviso de simulação). */
+      handsUsedIn9: boolean;
     }
   | { state: "loading" }
   /** Demonstração interna (`?cenario=`): só título e resumo. */
@@ -258,14 +260,21 @@ function journeyPart(
         article.status === "content" ? null : article.unavailableMessage,
     });
   });
-  const used = chapters.some((c) => c.availability === "content");
+  // Aviso de simulação só quando acrescenta: o capítulo 8 com conteúdo já traz
+  // a sua ressalva (R-simulada); aqui, só se o 9 usa as mãos sem o 8 (04E.1).
+  const notice =
+    simulatedHands &&
+    input.state === "ready" &&
+    input.chapter8.status !== "content" &&
+    input.chapter9.status === "content" &&
+    input.handsUsedIn9;
   return {
     numeral: part.numeral,
     title: part.title,
     basis: part.source,
     status: statusOf(chapters),
     disclaimer: null,
-    notices: used && simulatedHands ? [JOURNEY_SIMULATED_NOTICE] : [],
+    notices: notice ? [JOURNEY_SIMULATED_NOTICE] : [],
     chapters,
   };
 }

@@ -257,12 +257,12 @@ describe("capítulos 8 e 9 montados na jornada (04D)", () => {
     expect(within(c9).getByText(C9.final)).toBeInTheDocument();
     expect(within(c9).getByText(C9.closing)).toBeInTheDocument();
     expect(screen.getByText(/9 de 9 capítulos/)).toBeInTheDocument();
-    // Leitura simulada: avisado também na Parte III.
+    // Leitura simulada: a ressalva do capítulo 8 basta; sem aviso repetido na Parte III.
     expect(
-      screen.getByText(
+      screen.queryByText(
         /Parte montada também a partir de uma leitura das mãos simulada/,
       ),
-    ).toBeInTheDocument();
+    ).toBeNull();
     // Ids internos nunca aparecem no texto.
     expect(container.textContent).not.toMatch(
       /body-sign|linhas:|heart\.|identidade:/,
@@ -277,5 +277,19 @@ describe("capítulos 8 e 9 montados na jornada (04D)", () => {
       .closest("article")!;
     expect(within(c9).getByText(C9.q.identidade)).toBeInTheDocument();
     expect(within(c9).queryByText(/conex/i)).toBeNull();
+  });
+
+  it("cap. 8 indisponível e cap. 9 com as mãos simuladas: o aviso aparece na Parte III", () => {
+    const sky2 = {
+      ...skyBridge,
+      items: skyBridge.items.filter((r) => r.key === "sun"),
+    };
+    renderWith(fullHands, { state: "ready", report: skyReport, bridge: sky2 });
+    expect(screen.getByText(C8.U.U6)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Parte montada também a partir de uma leitura das mãos simulada/,
+      ),
+    ).toBeInTheDocument();
   });
 });

@@ -532,3 +532,26 @@ describe("casos adversariais: referências de assuntos incompatíveis", () => {
     expect(c9).toMatchObject({ status: "unavailable", reason: "V2" });
   });
 });
+
+describe("concordância das frases-ponte (04E.1)", () => {
+  it("singular e plural seguem o número real de referências; nenhum marcador sobra", () => {
+    let singular = 0;
+    for (const r of rows) {
+      const s = r.out.selection8;
+      if (s.status !== "content") continue;
+      s.themes.forEach((t, i) => {
+        const text = r.out.chapter8.sections[i].text;
+        expect(text).not.toMatch(/\{|\}/);
+        if (t.relation === "D") {
+          expect(text.includes("estes traços")).toBe(t.hands.length > 1);
+          expect(text.includes("este traço ")).toBe(t.hands.length === 1);
+          expect(text.includes("as posições citadas")).toBe(t.sky.length > 1);
+          expect(text.includes("a posição citada")).toBe(t.sky.length === 1);
+          if (t.sky.length === 1) singular++;
+        }
+        if (t.relation === "AC") expect(t.skyOpposite).toHaveLength(1);
+      });
+    }
+    expect(singular).toBeGreaterThan(0);
+  });
+});

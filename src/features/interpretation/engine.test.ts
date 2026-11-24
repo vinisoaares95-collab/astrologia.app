@@ -485,3 +485,67 @@ describe("estabilidade", () => {
     );
   });
 });
+
+describe("português dos textos compostos (04E.1)", () => {
+  // Vários mapas fictícios: datas espalhadas em 1985–1995, ao meio-dia.
+  const charts = Array.from({ length: 24 }, (_, i) => {
+    const d = new Date(Date.UTC(1985, 0, 1) + i * 157 * 86400000);
+    const date = `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${d.getUTCFullYear()}`;
+    return buildInterpretation(
+      (() => {
+        const r = normalizeBirthData(
+          {
+            date,
+            placeId: "t:sp",
+            time: { precision: "exact", value: "12:00" },
+          },
+          {
+            getPlace: () => ({
+              id: "t:sp",
+              name: "São Paulo",
+              admin1: "São Paulo",
+              admin1Code: "SP",
+              country: "BR",
+              lat: -23.5505,
+              lon: -46.6333,
+              tz: "America/Sao_Paulo",
+            }),
+            today: { year: 2026, month: 10, day: 30 },
+            tzdbVersion: "teste",
+          },
+        );
+        if (r.status !== "ok") throw new Error(JSON.stringify(r));
+        return buildChartView(r.birth, swissEphemeris);
+      })(),
+    );
+  });
+  const texts = charts.flatMap((r) =>
+    r.chapters.flatMap((c) => c.items.map((i) => i.symbolic)),
+  );
+
+  it("a preposição se contrai em todos os itens da área da casa", () => {
+    const houseTexts = texts.filter((t) =>
+      /na casa \d+, a tradição associa/.test(t),
+    );
+    expect(houseTexts.length).toBeGreaterThan(5);
+    for (const t of houseTexts) {
+      // Depois de "à/às/ao/aos …", nenhum item seguinte começa com artigo sem contração.
+      expect(t).not.toMatch(
+        /(?:\bà|\bàs|\bao|\baos) [^.]*?(?:, | e )(?:a|as|o|os) (?!que\b)/u,
+      );
+    }
+  });
+
+  it("o regente concorda com a função do corpo", () => {
+    const ruler = texts.filter((t) =>
+      /o regente tradicional do mapa é/.test(t),
+    );
+    expect(ruler.length).toBeGreaterThan(5);
+    for (const t of ruler)
+      expect(t).toMatch(
+        /é Mercúrio\./.test(t)
+          ? /— ganha peso especial/
+          : /— ganham peso especial/,
+      );
+  });
+});

@@ -10,7 +10,7 @@
 import type { ToneTag } from "@/features/interpretation/library/base";
 import type { FeatureId } from "@/features/palm-reading/analysis/contract";
 
-export const JOURNEY_LIBRARY_VERSION = "04d.1";
+export const JOURNEY_LIBRARY_VERSION = "04d.2";
 
 export type Axis = "ritmo" | "expressao" | "vinculo" | "foco";
 export type Relation = "A" | "AC" | "D" | "F";
@@ -154,21 +154,33 @@ export const C8 = {
     "ritmo:cautela:A":
       "Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir.",
     "ritmo:cautela:D":
-      "Aqui as leituras apontam para lados diferentes: a quiromancia associa este traço à cautela, e as posições citadas do mapa são associadas a uma ação mais imediata. As duas descrições ficam registradas como estão, sem uma conciliação forçada.",
+      "Aqui as leituras apontam para lados diferentes: a quiromancia associa {traço} à cautela, e {posição} {associada} a uma ação mais imediata. As duas descrições ficam registradas como estão, sem uma conciliação forçada.",
     "expressao:expansiva:A":
       "As duas leituras usam a imagem de uma expressão afetiva mais aberta.",
     "expressao:expansiva:AC":
-      "Nas duas tradições aparece a imagem de uma expressão afetiva mais aberta. No mapa, ela divide espaço com imagens de reserva: são facetas descritas lado a lado, não uma conta que precise fechar.",
+      "Nas duas tradições aparece a imagem de uma expressão afetiva mais aberta. No mapa, ela divide espaço com uma imagem de reserva: são facetas descritas lado a lado, não uma conta que precise fechar.",
     "expressao:expansiva:D":
-      "Aqui as leituras seguem caminhos diferentes: a quiromancia associa estes traços a uma expressão mais aberta, e as posições citadas do mapa, a uma expressão mais reservada. A diferença fica à vista, sem conciliação.",
+      "Aqui as leituras seguem caminhos diferentes: a quiromancia associa {traço} a uma expressão mais aberta, e {posição}, a uma expressão mais reservada. A diferença fica à vista, sem conciliação.",
     "expressao:reservada:A":
       "As duas leituras usam a imagem de uma expressão afetiva mais reservada, que se revela aos poucos.",
     "expressao:reservada:AC":
-      "Nas duas tradições aparece a imagem de uma expressão afetiva mais reservada. O mapa também traz imagens de abertura: as duas convivem na leitura, sem que uma corrija a outra.",
+      "Nas duas tradições aparece a imagem de uma expressão afetiva mais reservada. O mapa também traz uma imagem de abertura: as duas convivem na leitura, sem que uma corrija a outra.",
     "expressao:reservada:D":
-      "Aqui as leituras apontam para lados diferentes: a quiromancia associa estes traços a uma expressão mais reservada, e as posições citadas do mapa, a uma expressão mais aberta. As duas descrições ficam como estão.",
+      "Aqui as leituras apontam para lados diferentes: a quiromancia associa {traço} a uma expressão mais reservada, e {posição}, a uma expressão mais aberta. As duas descrições ficam como estão.",
     "expressao:F":
       "Nas mãos, a própria linha do coração traz duas imagens: uma de abertura e outra de reserva. Por isso, aqui não se aponta aproximação nem diferença; as imagens do mapa aparecem ao lado, só para comparação.",
+  } as Readonly<Record<string, string>>,
+  /**
+   * Concordância das frases-ponte de diferença (04E.1): o número de traços
+   * das mãos e de posições do mapa citados no tema.
+   */
+  agreement: {
+    "traço:one": "este traço",
+    "traço:many": "estes traços",
+    "posição:one": "a posição citada do mapa",
+    "posição:many": "as posições citadas do mapa",
+    "associada:one": "é associada",
+    "associada:many": "são associadas",
   } as Readonly<Record<string, string>>,
   synthesis: {
     A: "As aproximações acima mostram onde as duas tradições usam palavras parecidas. Elas servem como ponto de partida para observar a sua experiência, não como conclusão.",
