@@ -93,9 +93,16 @@ describe("leitura completa", () => {
 
   it("o cliente não recebe origem, motivo da reserva, IDs, modelo nem custo", async () => {
     const { client } = await run(clearHand(), ["error:timeout"]);
-    const text = JSON.stringify(client);
+    // O texto do cliente (tudo menos a ponte da 04D) continua sem dados internos.
+    const { bridge, ...rest } = client;
+    const text = JSON.stringify(rest);
     expect(text).not.toMatch(
       /source|fallback|itemIds|factIds|maos:|linhas:|hand\.|heart\.|mock|usage|token|usd|biblioteca|library/iu,
+    );
+    // A ponte leva ids e rótulos (rastreabilidade aprovada na 04D), mas nunca
+    // origem do texto, evidência visual, mão ou custos.
+    expect(JSON.stringify(bridge)).not.toMatch(
+      /source|fallback|evidence|evidência|mock|usage|token|usd|biblioteca|library|left|right/iu,
     );
     for (const c of client.chapters)
       expect(Object.keys(c).sort()).toEqual(

@@ -7,9 +7,11 @@ import { toClientReport } from "../../interpretation/ai/presentation";
 import type { PalmAnalysisResult } from "../../palm-reading/chapters/presentation";
 import { buildIntegratedReport } from "./build";
 import { ReportReader, SYMBOLIC_NOTICE } from "./report-reader";
+import { emptyHandsBridge } from "@/features/report/journey-chapters/test-support";
 
 const sky = toClientReport(exact as unknown as GeneratedReport);
 const hands: PalmAnalysisResult = {
+  bridge: emptyHandsBridge(),
   status: "partial",
   retakeRecommended: false,
   simulated: true,

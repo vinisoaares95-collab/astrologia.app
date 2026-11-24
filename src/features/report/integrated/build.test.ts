@@ -14,6 +14,7 @@ import {
   skyArticle,
 } from "./build";
 import { isSampleScenario, sampleInputs, SAMPLE_SCENARIOS } from "./samples";
+import { emptyHandsBridge } from "@/features/report/journey-chapters/test-support";
 
 const sky = toClientReport(exact as unknown as GeneratedReport);
 
@@ -48,6 +49,7 @@ const palm = (
   simulated: false,
   disclaimer: "Aviso das mãos.",
   chapters: [palmChapter(6, s6), palmChapter(7, s7)],
+  bridge: emptyHandsBridge(),
   ...over,
 });
 

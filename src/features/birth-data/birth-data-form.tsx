@@ -125,14 +125,16 @@ const SKY_RECHECK =
   "Os dados de nascimento precisam ser conferidos de novo antes de calcular o mapa.";
 
 /** Resultado da ação → estado da jornada (sem conteúdo fictício). */
-function skyResult(
-  r: Awaited<ReturnType<typeof generateSkyChaptersAction>>,
-):
-  | { state: "ready"; report: Extract<typeof r, { status: "ok" }>["report"] }
+function skyResult(r: Awaited<ReturnType<typeof generateSkyChaptersAction>>):
+  | {
+      state: "ready";
+      report: Extract<typeof r, { status: "ok" }>["report"];
+      bridge: Extract<typeof r, { status: "ok" }>["bridge"];
+    }
   | { state: "unavailable"; reason: string } {
   switch (r.status) {
     case "ok":
-      return { state: "ready", report: r.report };
+      return { state: "ready", report: r.report, bridge: r.bridge };
     case "engine-disabled":
       return { state: "unavailable", reason: SKY_ENGINE_OFF };
     case "engine-error":

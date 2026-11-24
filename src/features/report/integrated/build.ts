@@ -5,7 +5,8 @@
  * Entradas (os mesmos formatos que já chegam ao navegador):
  * - Parte I: `ClientReport` (02F.2) — capítulos 1 a 5;
  * - Parte II: `PalmAnalysisResult` (03E) — capítulos 6 e 7;
- * - Parte III: sem motor; os capítulos 8 e 9 ficam pendentes.
+ * - Parte III: capítulos 8 e 9 montados no navegador a partir das pontes
+ *   (04D, `journey-chapters`); pendentes só na demonstração interna.
  */
 import { reportParts, type ReportPart } from "@/content/report-chapters";
 
@@ -32,6 +33,19 @@ export type SkyInput =
   | { state: "unavailable"; reason: string }
   /** Ainda não integrado à jornada (até a 04C): só título e resumo. */
   | { state: "pending"; reason: string };
+
+export type JourneyInput =
+  | {
+      state: "ready";
+      chapter8: ChapterArticleData;
+      chapter9: ChapterArticleData;
+    }
+  | { state: "loading" }
+  /** Demonstração interna (`?cenario=`): só título e resumo. */
+  | { state: "pending"; reason: string };
+
+export const JOURNEY_SIMULATED_NOTICE =
+  "Parte montada também a partir de uma leitura das mãos simulada: nenhuma inteligência artificial observou uma foto real.";
 
 export type HandsInput =
   | { state: "ready"; result: PalmAnalysisResult }
@@ -218,22 +232,40 @@ function handsPart(input: HandsInput): ReportPartView {
   };
 }
 
-function journeyPart(): ReportPartView {
+function journeyPart(
+  input: JourneyInput,
+  simulatedHands: boolean,
+): ReportPartView {
   const part = partOf("journey");
-  const chapters = part.chapters.map((ch) =>
-    view(part, ch, {
-      availability: "pending",
-      article: null,
-      unavailableReason: PENDING_REASON,
-    }),
-  );
+  const chapters = part.chapters.map((ch) => {
+    if (input.state === "loading")
+      return view(part, ch, {
+        availability: "loading",
+        article: null,
+        unavailableReason: null,
+      });
+    if (input.state === "pending")
+      return view(part, ch, {
+        availability: "pending",
+        article: null,
+        unavailableReason: input.reason,
+      });
+    const article = ch.number === 8 ? input.chapter8 : input.chapter9;
+    return view(part, ch, {
+      availability: article.status === "content" ? "content" : "unavailable",
+      article,
+      unavailableReason:
+        article.status === "content" ? null : article.unavailableMessage,
+    });
+  });
+  const used = chapters.some((c) => c.availability === "content");
   return {
     numeral: part.numeral,
     title: part.title,
     basis: part.source,
     status: statusOf(chapters),
     disclaimer: null,
-    notices: [],
+    notices: used && simulatedHands ? [JOURNEY_SIMULATED_NOTICE] : [],
     chapters,
   };
 }
@@ -241,8 +273,19 @@ function journeyPart(): ReportPartView {
 export function buildIntegratedReport(input: {
   sky: SkyInput;
   hands: HandsInput;
+  /** Omitido: pendente (demonstração interna). */
+  journey?: JourneyInput;
 }): IntegratedReportView {
-  const parts = [skyPart(input.sky), handsPart(input.hands), journeyPart()];
+  const simulated =
+    input.hands.state === "ready" && input.hands.result.simulated;
+  const parts = [
+    skyPart(input.sky),
+    handsPart(input.hands),
+    journeyPart(
+      input.journey ?? { state: "pending", reason: PENDING_REASON },
+      simulated,
+    ),
+  ];
   const all = parts.flatMap((p) => p.chapters);
   return {
     parts,

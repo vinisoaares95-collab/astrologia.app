@@ -7,7 +7,10 @@
  * oferta e leitura do relatório. Guarda SÓ texto já entregue pelos motores,
  * copiado campo a campo: capítulos 6 e 7 (`toJourneyHands`; nunca foto, JPEG,
  * URL de imagem, hash, recibo ou credenciais) e, desde a 04C, capítulos 1 a 5
- * (`toJourneySky`; nunca data, hora ou local de nascimento).
+ * (`toJourneySky`; nunca data, hora ou local de nascimento). Desde a 04D,
+ * cada parte leva também a sua "ponte" (`copySkyBridge`, `copyHandsBridge`):
+ * ids dos itens apresentados, rótulos já exibidos e polos, só para montar
+ * os capítulos 8 e 9 no navegador. Ela segue as mesmas regras de descarte.
  *
  * - A transferência é explícita (`transferHands`), no clique de "Continuar"
  *   da prévia — antes de o layout das mãos ser escondido e o D5 descartar a
@@ -35,6 +38,12 @@ import {
 
 import type { ClientReport } from "@/features/interpretation/ai/presentation";
 import type { PalmAnalysisResult } from "@/features/palm-reading/chapters/presentation";
+
+import {
+  copyHandsBridge,
+  copySkyBridge,
+  type SkyBridge,
+} from "../journey-chapters/bridge";
 
 /** Exatamente o que a apresentação usa; nada além disso. */
 export type JourneyHands = PalmAnalysisResult;
@@ -64,6 +73,7 @@ export function toJourneyHands(r: PalmAnalysisResult): JourneyHands {
       limitations: [...c.limitations],
       unavailableMessage: c.unavailableMessage,
     })),
+    bridge: copyHandsBridge(r.bridge),
   };
 }
 
@@ -73,7 +83,7 @@ export function toJourneyHands(r: PalmAnalysisResult): JourneyHands {
  */
 export type JourneySky =
   | { state: "loading" }
-  | { state: "ready"; report: ClientReport }
+  | { state: "ready"; report: ClientReport; bridge: SkyBridge }
   | { state: "unavailable"; reason: string };
 
 export function toJourneySky(r: ClientReport): ClientReport {
@@ -97,7 +107,7 @@ export type SkyTask = {
   /** Grava o resultado só se ainda for o pedido atual (ignora atrasados). */
   settle: (
     result:
-      | { state: "ready"; report: ClientReport }
+      | { state: "ready"; report: ClientReport; bridge: SkyBridge }
       | { state: "unavailable"; reason: string },
   ) => boolean;
 };
@@ -144,7 +154,11 @@ export function JourneyProvider({
         if (!isCurrent()) return false;
         setSky(
           result.state === "ready"
-            ? { state: "ready", report: toJourneySky(result.report) }
+            ? {
+                state: "ready",
+                report: toJourneySky(result.report),
+                bridge: copySkyBridge(result.bridge),
+              }
             : { state: "unavailable", reason: result.reason },
         );
         return true;

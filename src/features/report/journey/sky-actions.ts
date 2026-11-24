@@ -18,9 +18,15 @@ import { normalizeOnServer } from "../../birth-data/server-normalize";
 import type { Issue } from "../../birth-data/contract";
 import { isInternalEngineEnabled } from "../../natal-chart/engine-gate";
 import type { ClientReport } from "../../interpretation/ai/presentation";
+import type { SkyBridge } from "../journey-chapters/bridge";
 
 export type SkyChaptersResult =
-  | { status: "ok"; report: ClientReport }
+  /**
+   * `bridge` (04D): metadados mínimos para os capítulos 8 e 9 — ids dos itens
+   * apresentados, rótulos já exibidos e polos do motor. Nunca data, hora ou
+   * local.
+   */
+  | { status: "ok"; report: ClientReport; bridge: SkyBridge }
   /** Motor desligado neste ambiente. */
   | { status: "engine-disabled" }
   /** Dados recusados pela mesma normalização da conferência. */
@@ -57,6 +63,7 @@ export async function generateSkyChaptersAction(
     { buildInterpretation },
     { libraryReport },
     { toClientReport },
+    { buildSkyBridge },
   ] = await Promise.all([
     import("../../natal-chart/build-chart"),
     import("../../astrology/engine/swiss-ephemeris"),
@@ -64,14 +71,20 @@ export async function generateSkyChaptersAction(
     import("../../interpretation/engine"),
     import("../../interpretation/ai/generate"),
     import("../../interpretation/ai/presentation"),
+    import("../journey-chapters/bridge"),
   ]);
   try {
     const chart = buildChartView(normalized.birth, swissEphemeris);
+    const interpretation = buildInterpretation(chart);
     const report = libraryReport(
-      buildInterpretation(chart),
+      interpretation,
       "Fase 04C: biblioteca como fonte padrão (sem IA).",
     );
-    return { status: "ok", report: toClientReport(report) };
+    return {
+      status: "ok",
+      report: toClientReport(report),
+      bridge: buildSkyBridge(interpretation),
+    };
   } catch (error) {
     if (error instanceof ChartError)
       return {

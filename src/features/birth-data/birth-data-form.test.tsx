@@ -11,6 +11,7 @@ import {
 
 import { BirthDataForm } from "./birth-data-form";
 import type { NormalizationResult } from "./contract";
+import { emptySkyBridge } from "@/features/report/journey-chapters/test-support";
 
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
@@ -340,8 +341,10 @@ describe("confirmação e capítulos do céu na jornada (04C)", () => {
     expect(
       screen.getByRole("button", { name: /calculando o mapa/i }),
     ).toBeDisabled();
-    await act(async () => resolveAction!({ status: "ok", report }));
-    expect(sky()).toEqual({ state: "ready", report });
+    await act(async () =>
+      resolveAction!({ status: "ok", report, bridge: emptySkyBridge() }),
+    );
+    expect(sky()).toEqual({ state: "ready", report, bridge: emptySkyBridge() });
     // O mesmo envio confirmado de novo não gera de novo.
     await user.click(
       screen.getByRole("button", { name: /confirmar e ver a proposta/i }),
@@ -391,9 +394,11 @@ describe("confirmação e capítulos do céu na jornada (04C)", () => {
     );
     expect(generateSkyChaptersAction).toHaveBeenCalledTimes(2);
     const second = resolveAction!;
-    await act(async () => second({ status: "ok", report }));
+    await act(async () =>
+      second({ status: "ok", report, bridge: emptySkyBridge() }),
+    );
     // Uma resposta tardia do primeiro envio não sobrescreve o segundo.
     await act(async () => first({ status: "engine-error", message: "tarde" }));
-    expect(sky()).toEqual({ state: "ready", report });
+    expect(sky()).toEqual({ state: "ready", report, bridge: emptySkyBridge() });
   });
 });

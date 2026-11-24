@@ -16,7 +16,16 @@ export type ChapterArticleData = {
   title: string;
   status: "content" | "unavailable";
   introduction: string;
-  sections: { text: string; observed?: string[]; notes?: string[] }[];
+  sections: {
+    text: string;
+    observed?: string[];
+    notes?: string[];
+    /** Capítulos 8 e 9 (04D): título do tema e selo da relação. */
+    heading?: string;
+    badge?: string;
+    /** Capítulos 8 e 9 (04D): referências aos capítulos anteriores. */
+    refs?: { label: string; text: string }[];
+  }[];
   synthesis: string;
   reflectionQuestions: string[];
   limitations: string[];
@@ -60,6 +69,24 @@ export function ChapterArticle({
           <div className="space-y-5">
             {chapter.sections.map((s, i) => (
               <section key={i} className="space-y-2.5">
+                {s.heading && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="font-semibold text-fg">{s.heading}</h4>
+                    {s.badge && <Badge tone="neutral">{s.badge}</Badge>}
+                  </div>
+                )}
+                {s.refs && s.refs.length > 0 && (
+                  <dl className="space-y-0.5 rounded-xl bg-surface-bright/60 px-3.5 py-2.5 text-sm">
+                    {s.refs.map((r) => (
+                      <div key={r.label} className="flex flex-wrap gap-x-1.5">
+                        <dt className="font-medium text-fg-subtle">
+                          {r.label}:
+                        </dt>
+                        <dd className="text-fg-muted">{r.text}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
                 {s.observed && s.observed.length > 0 && (
                   <div className="space-y-1 rounded-xl bg-surface-bright/60 px-3.5 py-2.5">
                     <p className="flex items-center gap-1.5 font-mono text-[0.65rem] tracking-[0.14em] text-fg-subtle uppercase">
@@ -86,10 +113,12 @@ export function ChapterArticle({
               </section>
             ))}
           </div>
-          <div className="space-y-1.5 border-t border-line-soft pt-4">
-            <Badge tone="accent">Síntese</Badge>
-            <p className="leading-relaxed text-fg">{chapter.synthesis}</p>
-          </div>
+          {chapter.synthesis && (
+            <div className="space-y-1.5 border-t border-line-soft pt-4">
+              <Badge tone="accent">Síntese</Badge>
+              <p className="leading-relaxed text-fg">{chapter.synthesis}</p>
+            </div>
+          )}
           {chapter.reflectionQuestions.length > 0 && (
             <div className="space-y-2">
               <p className="text-sm font-semibold text-fg">Para refletir</p>

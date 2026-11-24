@@ -445,11 +445,12 @@ menos um traço comparável fica não classificado sempre que não há tema.
 
 ### 4.4 Fechamento
 
-| Elemento       | Texto                                                                                                                                                                               |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pergunta final | Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?                                                      |
-| Nota           | Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa. |
-| Rótulos        | Prática opcional. / Para fechar. / Nota.                                                                                                                                            |
+| Elemento               | Texto                                                                                                                                                                               |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pergunta final         | Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?                                                      |
+| Nota                   | Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa. |
+| Rótulos                | Prática opcional. / Para fechar. / Nota.                                                                                                                                            |
+| Rótulo das referências | A partir de                                                                                                                                                                         |
 
 ### 4.5 Indisponibilidade
 

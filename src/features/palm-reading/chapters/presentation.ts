@@ -10,6 +10,10 @@ import type { AttemptMetrics } from "../../interpretation/ai/contract";
 import type { PalmChapterId, PalmReport } from "../analysis/engine";
 import type { ReadingStatus } from "../analysis/validate-observation";
 import type { PalmGeneratedChapter, PalmGeneratedReport } from "./contract";
+import {
+  buildHandsBridge,
+  type HandsBridge,
+} from "../../report/journey-chapters/bridge";
 
 export type ClientPalmSection = {
   text: string;
@@ -38,6 +42,12 @@ export type PalmAnalysisResult = {
   simulated: boolean;
   disclaimer: string;
   chapters: ClientPalmChapter[];
+  /**
+   * Metadados mínimos para os capítulos 8 e 9 (04D): ids dos itens, rótulos
+   * curtos e polos da tabela aprovada. Sem evidência, imagem, mão ou origem.
+   * Não é exibido; o texto do cliente continua só em `chapters`.
+   */
+  bridge: HandsBridge;
 };
 
 /** Menos que isto observado → sugerir nova foto mesmo com leitura parcial. */
@@ -63,20 +73,28 @@ export function toClientPalmChapter(
   };
 }
 
+/** Sugerir nova foto: insuficiente, ou parcial com pouco observado. */
+export function retakeRecommendedFor(report: PalmReport): boolean {
+  const observed = report.facts.filter((f) => f.id !== "hand.type").length;
+  return (
+    report.status === "insufficient" ||
+    (report.status === "partial" && observed < MIN_OBSERVED_FOR_PARTIAL)
+  );
+}
+
 export function toClientPalmResult(
   report: PalmReport,
   generated: PalmGeneratedReport,
   simulated: boolean,
 ): PalmAnalysisResult {
-  const observed = report.facts.filter((f) => f.id !== "hand.type").length;
+  const retakeRecommended = retakeRecommendedFor(report);
   return {
     status: report.status,
-    retakeRecommended:
-      report.status === "insufficient" ||
-      (report.status === "partial" && observed < MIN_OBSERVED_FOR_PARTIAL),
+    retakeRecommended,
     simulated,
     disclaimer: generated.disclaimer,
     chapters: generated.chapters.map(toClientPalmChapter),
+    bridge: buildHandsBridge(report, retakeRecommended, simulated),
   };
 }
 

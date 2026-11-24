@@ -31,6 +31,8 @@ const PREVIEW = 'img[alt="Pré-visualização da foto da sua palma"]';
 
 async function consent(p) {
   await p.goto(base + "/leitura-das-maos");
+  // Espera a hidratação antes de clicar (servidor de desenvolvimento).
+  await p.waitForLoadState("networkidle");
   await p.click('a[href="/leitura-das-maos/consentimento"]');
   await p.waitForURL(/consentimento/);
   await p.locator('input[type="radio"]').first().check({ force: true });

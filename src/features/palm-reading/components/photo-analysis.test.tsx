@@ -8,6 +8,7 @@ import type { LocalPhoto } from "../lib/load-image";
 import { PalmPhotoProvider } from "../palm-photo-context";
 import type { PalmAnalysisResult } from "../chapters/presentation";
 import { PhotoCapture } from "./photo-capture";
+import { emptyHandsBridge } from "@/features/report/journey-chapters/test-support";
 
 const push = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
@@ -78,6 +79,7 @@ const result = (
   simulated: true,
   disclaimer: "Leitura simbólica.",
   chapters: [content(6), content(7)],
+  bridge: emptyHandsBridge(),
   ...over,
 });
 
@@ -228,6 +230,7 @@ describe("análise na jornada (provedor simulado)", () => {
         status: "partial",
         retakeRecommended: true,
         chapters: [content(6), content(7)],
+        bridge: emptyHandsBridge(),
       }),
       remaining: 1,
     });

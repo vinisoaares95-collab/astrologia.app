@@ -13,8 +13,14 @@ import {
   JourneyReading,
   SKY_ABSENT_REASON,
 } from "./journey-reading";
+import { C8, C9 } from "@/features/report/journey-chapters/library";
+import {
+  emptyHandsBridge,
+  emptySkyBridge,
+} from "@/features/report/journey-chapters/test-support";
 
 const hands: PalmAnalysisResult = {
+  bridge: emptyHandsBridge({ retakeRecommended: true }),
   status: "partial",
   retakeRecommended: true,
   simulated: false,
@@ -82,8 +88,12 @@ describe("leitura da jornada real (04B)", () => {
     expect(screen.getByText(/Uma nova foto/)).toBeInTheDocument();
   });
 
-  it("capítulos 1–5 da biblioteca exatamente como o motor entregou; 8–9 em definição; nunca completo", () => {
-    renderWith(hands, { state: "ready", report: skyReport });
+  it("capítulos 1–5 exatamente como o motor entregou; 8–9 montados das pontes, com o motivo real quando indisponíveis", () => {
+    renderWith(hands, {
+      state: "ready",
+      report: skyReport,
+      bridge: emptySkyBridge(),
+    });
     for (const c of skyReport.chapters) {
       const article = screen
         .getByRole("heading", { level: 3, name: c.title })
@@ -94,10 +104,19 @@ describe("leitura da jornada real (04B)", () => {
     const c9 = screen
       .getByRole("heading", { level: 3, name: "Seu guia pessoal de reflexão" })
       .closest("article")!;
-    expect(within(c9).getByText("Em definição")).toBeInTheDocument();
+    // Mãos com pedido de nova foto e céu sem item elegível nas pontes:
+    // cap. 8 indisponível pela causa real (U5); cap. 9 sem temas (V1).
+    expect(within(c9).getByText(C9.V.V1)).toBeInTheDocument();
+    const c8 = screen
+      .getByRole("heading", {
+        level: 3,
+        name: "Conexões simbólicas entre céu e mãos",
+      })
+      .closest("article")!;
+    expect(within(c8).getByText(C8.U.U5)).toBeInTheDocument();
+    expect(screen.queryByText("Em definição")).toBeNull();
     expect(screen.queryByText("Em integração")).toBeNull();
     expect(screen.getByText(skyReport.disclaimer)).toBeInTheDocument();
-    expect(screen.getByText(/Não é o relatório completo/)).toBeInTheDocument();
     // 5 do céu + capítulo 6 (o 7 está indisponível no exemplo).
     expect(
       screen.getByText(/6 de 9 capítulos com leitura nesta versão/),
@@ -106,8 +125,9 @@ describe("leitura da jornada real (04B)", () => {
 
   it("céu carregando: capítulos ocupados, mãos intactas", () => {
     renderWith(hands, { state: "loading" });
+    // 5 do céu + 8 e 9, que dependem dos capítulos do céu.
     expect(document.querySelectorAll('article[aria-busy="true"]')).toHaveLength(
-      5,
+      7,
     );
     expect(screen.getByText("Introdução exata do motor.")).toBeInTheDocument();
   });
@@ -134,5 +154,128 @@ describe("leitura da jornada real (04B)", () => {
     expect(container.textContent).not.toMatch(
       /Sol em|Palma de formato|Demonstração interna|observações fictícias/,
     );
+  });
+});
+
+describe("capítulos 8 e 9 montados na jornada (04D)", () => {
+  const ref = (
+    r: string,
+    side: "sky" | "hands",
+    chapter: number,
+    label: string,
+    key: string,
+    poles: string[],
+  ) => ({
+    ref: r,
+    side,
+    chapter,
+    label,
+    key,
+    poles: poles as never,
+  });
+  const fullHands: PalmAnalysisResult = {
+    ...hands,
+    status: "complete",
+    retakeRecommended: false,
+    simulated: true,
+    chapters: hands.chapters.map((c) => ({
+      ...c,
+      status: "content" as const,
+      unavailableMessage: null,
+      introduction: c.introduction || "Introdução do capítulo 7.",
+    })),
+    bridge: emptyHandsBridge({
+      simulated: true,
+      items: [
+        ref(
+          "linhas:heart.length:long",
+          "hands",
+          7,
+          "linha do coração longa",
+          "heart.length",
+          ["expressao:expansiva"],
+        ),
+        ref(
+          "linhas:head.start:joined_life",
+          "hands",
+          7,
+          "linha da cabeça começando unida à da vida",
+          "head.start",
+          ["ritmo:cautela"],
+        ),
+      ],
+    }),
+  };
+  const skyBridge = {
+    ...emptySkyBridge(),
+    items: [
+      ref("identidade:body-sign:sun", "sky", 1, "Sol em Touro", "sun", [
+        "ritmo:cautela",
+        "foco:estabilidade",
+      ]),
+      ref("emocional:body-sign:moon", "sky", 2, "Lua em Leão", "moon", [
+        "expressao:expansiva",
+      ]),
+      ref(
+        "relacionamentos:body-sign:mars",
+        "sky",
+        4,
+        "Marte em Touro",
+        "mars",
+        ["ritmo:cautela", "foco:estabilidade"],
+      ),
+    ],
+  };
+
+  it("nove capítulos: conexões com referências rastreáveis e guia com temas de assuntos distintos", () => {
+    const { container } = renderWith(fullHands, {
+      state: "ready",
+      report: skyReport,
+      bridge: skyBridge,
+    });
+    const c8 = screen
+      .getByRole("heading", {
+        level: 3,
+        name: "Conexões simbólicas entre céu e mãos",
+      })
+      .closest("article")!;
+    expect(within(c8).getByText(C8.intro)).toBeInTheDocument();
+    expect(
+      within(c8).getByText("Ritmo: impulso e cautela"),
+    ).toBeInTheDocument();
+    expect(within(c8).getAllByText("Aproximação")).toHaveLength(2);
+    expect(within(c8).getByText("Lua em Leão (cap. 2)")).toBeInTheDocument();
+    expect(within(c8).getByText(C8.Rsim)).toBeInTheDocument();
+    const c9 = screen
+      .getByRole("heading", { level: 3, name: "Seu guia pessoal de reflexão" })
+      .closest("article")!;
+    expect(within(c9).getByText(C9.q["ritmo:cautela"])).toBeInTheDocument();
+    expect(
+      within(c9).getByText(C9.q["expressao:expansiva"]),
+    ).toBeInTheDocument();
+    expect(within(c9).getByText(C9.q.identidade)).toBeInTheDocument();
+    expect(within(c9).getByText(C9.final)).toBeInTheDocument();
+    expect(within(c9).getByText(C9.closing)).toBeInTheDocument();
+    expect(screen.getByText(/9 de 9 capítulos/)).toBeInTheDocument();
+    // Leitura simulada: avisado também na Parte III.
+    expect(
+      screen.getByText(
+        /Parte montada também a partir de uma leitura das mãos simulada/,
+      ),
+    ).toBeInTheDocument();
+    // Ids internos nunca aparecem no texto.
+    expect(container.textContent).not.toMatch(
+      /body-sign|linhas:|heart\.|identidade:/,
+    );
+  });
+
+  it("só astrologia: capítulo 8 indisponível (U1) e capítulo 9 disponível", () => {
+    renderWith(null, { state: "ready", report: skyReport, bridge: skyBridge });
+    expect(screen.getByText(C8.U.U1)).toBeInTheDocument();
+    const c9 = screen
+      .getByRole("heading", { level: 3, name: "Seu guia pessoal de reflexão" })
+      .closest("article")!;
+    expect(within(c9).getByText(C9.q.identidade)).toBeInTheDocument();
+    expect(within(c9).queryByText(/conex/i)).toBeNull();
   });
 });

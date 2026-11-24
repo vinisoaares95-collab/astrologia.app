@@ -11,6 +11,7 @@ import { createConsent } from "../consent";
 import type { LocalPhoto } from "../lib/load-image";
 import { PalmPhotoProvider, usePalmPhoto } from "../palm-photo-context";
 import { DemoPreview } from "./demo-preview";
+import { emptyHandsBridge } from "@/features/report/journey-chapters/test-support";
 
 const push = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
@@ -66,6 +67,7 @@ const renderWith = (analysis: PalmAnalysisResult | null) =>
 const result = (
   chapters: ReturnType<typeof chapter>[],
 ): PalmAnalysisResult => ({
+  bridge: emptyHandsBridge(),
   status: "partial",
   retakeRecommended: false,
   simulated: false,

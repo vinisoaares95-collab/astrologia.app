@@ -159,15 +159,21 @@ for (const [vp, options] of [
       sky === 5 && skyWithSynthesis === 5,
       tag(`capítulos 1–5 com leitura (${skyWithSynthesis}/5)`),
     );
-    check(/7 de 9 capítulos com leitura/.test(r), tag("indicador: 7 de 9"));
+    // 04D: com os capítulos 8 e 9, o caso Recife + mão clara chega a 9 de 9.
+    check(
+      /9 de 9 capítulos com leitura/.test(r),
+      tag("indicador: 9 de 9 (04D)"),
+    );
     check(
       /não são fatos científicos/.test(r),
       tag("aviso de não cientificidade do céu"),
     );
   } else {
     check(
-      /não é calculado neste ambiente/.test(r) && /2 de 9 capítulos/.test(r),
-      tag("sem motor: Parte I indisponível com o motivo, 2 de 9"),
+      /não é calculado neste ambiente/.test(r) && /3 de 9 capítulos/.test(r),
+      tag(
+        "sem motor: Parte I indisponível com o motivo; 6, 7 e 9 (04D): 3 de 9",
+      ),
     );
   }
   // 5. Mãos preservadas.
@@ -176,9 +182,13 @@ for (const [vp, options] of [
       (await chapterText(p, 7)) === preview[7],
     tag("capítulos 6 e 7 idênticos aos da prévia"),
   );
+  // 04D: 8 e 9 deixam de ser "em definição" na jornada real.
   check(
-    /Em definição/i.test(r) && /Não é o relatório completo/.test(r),
-    tag("8 e 9 em definição; não se apresenta como completo"),
+    !/Em definição/i.test(r) &&
+      (await p
+        .locator('article[aria-labelledby="capitulo-9"]:visible')
+        .count()) === 1,
+    tag("8 e 9 montados na jornada (sem 'em definição')"),
   );
   // A foto não está em lugar nenhum do DOM (nem nas rotas escondidas). A
   // leitura visível não traz data, hora nem local digitados; o formulário de

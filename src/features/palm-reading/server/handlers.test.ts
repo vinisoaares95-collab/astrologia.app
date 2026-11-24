@@ -300,12 +300,32 @@ describe("análise: requisição válida", () => {
     });
     expect(Object.keys(result).sort()).toEqual(
       [
+        "bridge",
         "chapters",
         "disclaimer",
         "retakeRecommended",
         "simulated",
         "status",
       ].sort(),
+    );
+    // Ponte dos capítulos 8 e 9 (04D): só metadados aprovados, sem evidência,
+    // imagem, mão, recibo nem origem do texto.
+    const bridge = result.bridge as Record<string, unknown>;
+    expect(Object.keys(bridge).sort()).toEqual(
+      [
+        "items",
+        "noPole",
+        "partial",
+        "reflect",
+        "retakeRecommended",
+        "simulated",
+        "unclassified",
+        "unreliable",
+        "version",
+      ].sort(),
+    );
+    expect(JSON.stringify(bridge)).not.toMatch(
+      /evidence|evidência|left|right|esquerda|direita|receipt|token|source|fallback|base64|jpeg|blob:/iu,
     );
     // A mão vem do recibo assinado (left), não de um campo do cliente.
     expect(

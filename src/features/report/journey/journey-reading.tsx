@@ -7,12 +7,21 @@
  *   dados de nascimento (04C); carregando enquanto o cálculo não termina;
  *   indisponível, com o motivo, se o cálculo falhar ou não houver dados.
  * - Capítulos 6 e 7: exatamente o texto levado da prévia (04B).
- * - Capítulos 8 e 9: pendentes de especificação editorial.
+ * - Capítulos 8 e 9 (04D): montados no navegador a partir das pontes
+ *   (biblioteca `journey-chapters`); indisponíveis, com o motivo, quando
+ *   falta conteúdo.
  * Nunca há dados de exemplo aqui.
  */
 import { Callout } from "@/components/ui";
 
-import { buildIntegratedReport, type SkyInput } from "../integrated/build";
+import { useMemo } from "react";
+
+import {
+  buildIntegratedReport,
+  type JourneyInput,
+  type SkyInput,
+} from "../integrated/build";
+import { buildJourneyChapters } from "../journey-chapters/render";
 import { ReportReader } from "../integrated/report-reader";
 import { useJourney, type JourneySky } from "./journey-context";
 
@@ -28,20 +37,32 @@ function skyInput(sky: JourneySky | null): SkyInput {
 
 export function JourneyReading() {
   const { hands, sky } = useJourney();
+  // Capítulos 8 e 9 (04D): montados aqui, no navegador, só com as pontes já
+  // presentes na memória da jornada. Nenhuma requisição nova.
+  const journey = useMemo((): JourneyInput => {
+    if (sky?.state === "loading") return { state: "loading" };
+    const { chapter8, chapter9 } = buildJourneyChapters(
+      sky?.state === "ready" ? sky.bridge : null,
+      hands ? hands.bridge : null,
+    );
+    return { state: "ready", chapter8, chapter9 };
+  }, [sky, hands]);
   const report = buildIntegratedReport({
     sky: skyInput(sky),
     hands: hands
       ? { state: "ready", result: hands }
       : { state: "absent", reason: HANDS_ABSENT_REASON },
+    journey,
   });
   return (
     <>
-      <Callout tone="demo" title="Leitura interna em construção">
-        Esta página mostra o que já está integrado à jornada: os capítulos 1 a
-        5, calculados a partir dos seus dados de nascimento com a biblioteca do
-        Sidera, e os capítulos 6 e 7, quando levados da sua prévia. Os capítulos
-        8 e 9 ainda não têm definição. Não é o relatório completo. O texto da
-        leitura fica só na memória desta aba, até você sair da jornada,
+      <Callout tone="demo" title="Leitura interna">
+        Esta página mostra a leitura montada nesta jornada: os capítulos 1 a 5,
+        calculados a partir dos seus dados de nascimento com a biblioteca do
+        Sidera; os capítulos 6 e 7, quando levados da sua prévia; e os capítulos
+        8 e 9, que só organizam o que esses capítulos apresentaram. Um capítulo
+        sem conteúdo suficiente aparece como indisponível, com o motivo. O texto
+        da leitura fica só na memória desta aba, até você sair da jornada,
         recarregar ou fechar a página.
       </Callout>
       <ReportReader report={report} />

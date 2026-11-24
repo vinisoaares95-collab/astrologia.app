@@ -218,11 +218,12 @@ for (const [vp, options] of [
   );
   const r = await visible(p);
   check(
-    /Leitura interna em construção/.test(r) &&
+    /Leitura interna/.test(r) &&
       /não é calculado neste ambiente|Em integração/i.test(r) &&
-      /Em definição/i.test(r),
+      !/Em definição/i.test(r) &&
+      /capítulos do mapa natal não estão nesta jornada/.test(r),
     tag(
-      "1–5 sem motor (04C: indisponível com o motivo), 8–9 em definição; não se apresenta como completo",
+      "1–5 sem motor (indisponível com o motivo); 04D: cap. 8 indisponível pela causa real (U2), sem 'em definição'",
     ),
   );
   check(

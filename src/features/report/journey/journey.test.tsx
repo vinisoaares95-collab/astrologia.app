@@ -23,11 +23,16 @@ import {
   useJourney,
   type SkyTask,
 } from "./journey-context";
+import {
+  emptyHandsBridge,
+  emptySkyBridge,
+} from "@/features/report/journey-chapters/test-support";
 
 const push = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
 const result: PalmAnalysisResult = {
+  bridge: emptyHandsBridge(),
   status: "partial",
   retakeRecommended: false,
   simulated: false,
@@ -345,8 +350,19 @@ describe("capítulos do céu na jornada (04C)", () => {
     expect(read("sky")).toEqual({ state: "unavailable", reason: "Falhou." });
     expect(read("hands2")).toEqual(result);
     await user.click(screen.getByText("céu"));
-    act(() => void task!.settle({ state: "ready", report: skyReport }));
-    expect(read("sky")).toEqual({ state: "ready", report: skyReport });
+    act(
+      () =>
+        void task!.settle({
+          state: "ready",
+          report: skyReport,
+          bridge: emptySkyBridge(),
+        }),
+    );
+    expect(read("sky")).toEqual({
+      state: "ready",
+      report: skyReport,
+      bridge: emptySkyBridge(),
+    });
     expect(read("hands2")).toEqual(result);
   });
 
@@ -361,9 +377,142 @@ describe("capítulos do céu na jornada (04C)", () => {
     expect(read("sky")).toBeNull();
     let accepted = true;
     act(() => {
-      accepted = late.settle({ state: "ready", report: skyReport });
+      accepted = late.settle({
+        state: "ready",
+        report: skyReport,
+        bridge: emptySkyBridge(),
+      });
     });
     expect(accepted).toBe(false);
     expect(read("sky")).toBeNull();
+  });
+});
+
+describe("pontes dos capítulos 8 e 9 na jornada (04D)", () => {
+  const ref = {
+    ref: "linhas:heart.length:long",
+    side: "hands" as const,
+    chapter: 7,
+    label: "linha do coração longa",
+    key: "heart.length",
+    poles: ["expressao:expansiva" as const],
+  };
+  const skyRef = {
+    ref: "emocional:body-sign:moon",
+    side: "sky" as const,
+    chapter: 2,
+    label: "Lua em Leão",
+    key: "moon",
+    poles: ["expressao:expansiva" as const],
+  };
+
+  it("toJourneyHands copia a ponte campo a campo; nada além do contrato", () => {
+    const clean = { ...result, bridge: emptyHandsBridge({ items: [ref] }) };
+    const polluted = {
+      ...clean,
+      bridge: {
+        ...clean.bridge,
+        evidence: ["Trecho da foto."],
+        hand: "left",
+        items: [
+          {
+            ...ref,
+            evidence: "linha sob o indicador",
+            certainty: "determined",
+          },
+        ],
+      },
+    } as unknown as PalmAnalysisResult;
+    const copy = toJourneyHands(polluted);
+    expect(copy).toEqual(clean);
+    expect(JSON.stringify(copy)).not.toMatch(/evidence|Trecho|left|indicador/);
+    expect(copy.bridge.items[0]).not.toBe(polluted.bridge.items[0]);
+  });
+
+  it("a ponte do céu entra só pelo settle, copiada; sem dados de nascimento", async () => {
+    let t: SkyTask | null = null;
+    function Probe() {
+      const j = useJourney();
+      return (
+        <div>
+          <p data-testid="sky">{JSON.stringify(j.sky)}</p>
+          <button onClick={() => (t = j.beginSky())}>céu</button>
+        </div>
+      );
+    }
+    const user = userEvent.setup();
+    render(
+      <JourneyProvider>
+        <Probe />
+      </JourneyProvider>,
+    );
+    await user.click(screen.getByText("céu"));
+    const bridge = { ...emptySkyBridge(), items: [skyRef] };
+    const polluted = {
+      ...bridge,
+      birth: { date: "12/05/1990", place: "Recife" },
+      items: [{ ...skyRef, degrees: 12.5, factIds: ["body-sign:moon"] }],
+    } as unknown as typeof bridge;
+    const report = { disclaimer: "Aviso.", chapters: [] };
+    act(() => void t!.settle({ state: "ready", report, bridge: polluted }));
+    const sky = JSON.parse(screen.getByTestId("sky").textContent!);
+    expect(sky).toEqual({ state: "ready", report, bridge });
+    expect(JSON.stringify(sky)).not.toMatch(/1990|Recife|degrees|factIds/);
+  });
+
+  it("sair da jornada descarta as duas pontes junto com o texto", async () => {
+    function Probe() {
+      const j = useJourney();
+      return (
+        <div>
+          <p data-testid="state">
+            {JSON.stringify({ hands: j.hands, sky: j.sky })}
+          </p>
+          <button
+            onClick={() =>
+              j.transferHands({
+                ...result,
+                bridge: emptyHandsBridge({ items: [ref] }),
+              })
+            }
+          >
+            mãos
+          </button>
+          <button
+            onClick={() => {
+              const task = j.beginSky();
+              task.settle({
+                state: "ready",
+                report: { disclaimer: "A.", chapters: [] },
+                bridge: { ...emptySkyBridge(), items: [skyRef] },
+              });
+            }}
+          >
+            céu
+          </button>
+        </div>
+      );
+    }
+    const Tree = ({ mode }: { mode: "visible" | "hidden" }) => (
+      <Activity mode={mode}>
+        <JourneyProvider>
+          <Probe />
+        </JourneyProvider>
+      </Activity>
+    );
+    const user = userEvent.setup();
+    const { rerender } = render(<Tree mode="visible" />);
+    await user.click(screen.getByText("mãos"));
+    await user.click(screen.getByText("céu"));
+    expect(screen.getByTestId("state").textContent).toMatch(
+      /linha do coração longa/,
+    );
+    expect(screen.getByTestId("state").textContent).toMatch(/Lua em Leão/);
+    rerender(<Tree mode="hidden" />);
+    rerender(<Tree mode="visible" />);
+    expect(JSON.parse(screen.getByTestId("state").textContent!)).toEqual({
+      hands: null,
+      sky: null,
+    });
   });
 });
