@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node scripts/with-tzdata.mjs next dev",
     "build": "node scripts/with-tzdata.mjs next build",
-    "vercel-build": "node scripts/fetch-ephemeris.mjs --if-missing && npm run build",
+    "vercel-build": "node scripts/fetch-ephemeris.mjs --if-missing && ICU_TIMEZONE_FILES_DIR=tzdata/2026f npm run build",
     "start": "node scripts/with-tzdata.mjs next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
