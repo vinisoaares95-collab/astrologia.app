@@ -296,9 +296,15 @@ teto foi verificado com o provedor simulado.
    - **Finalidade:** medir a repetibilidade.
    - **Envios:** **até 12 por foto** ao provedor nos EUA (10 do
      experimento + margem de refação do piloto).
-   - **Retenção pelo provedor:** só o que foi verificado nas fontes
-     oficiais (minuta, seção C). A informação de 19/11 ("até 30 dias") não
-     foi confirmada; o prazo padrão fica a confirmar antes da coleta.
+   - **Retenção pelo provedor:** política comercial da Anthropic
+     (publicada em 01/07/2026). Entradas e saídas da API são apagadas por
+     padrão em até 30 dias, com exceções contratuais, legais e de aplicação
+     das políticas de uso. Conteúdo sinalizado pode ficar mais tempo. Não se
+     promete exclusão individual imediata no provedor. A configuração da
+     conta e o DPA serão confirmados antes da coleta (minuta, seções B.8 e
+     C).
+   - **Dado sensível:** a foto é tratada preventivamente como dado
+     biométrico sensível (minuta, pendência J2).
    - **Revisão humana**, se houver a referência da seção 1.4.
    - **Exclusão** em até 7 dias contados do recebimento da foto. Se a
      janela vencer entre etapas, a foto é apagada e só volta com novo
@@ -488,10 +494,39 @@ Esclarecimentos (não mudam limites):
 são os mesmos já usados na seção 3. O de utilidade (2 características por
 capítulo) é novo, registrado agora, antes da coleta.
 
+**Esclarecimento de 24/11/2026 (antes da coleta): o que conta para a
+utilidade.**
+
+- **Observação independente:** só as 9 características **observadas** do
+  contrato (`FEATURE_IDS`). O **tipo de mão** é derivado de palma + dedos
+  e **nunca** conta como observação independente.
+- O capítulo 6 tem 2 observações independentes (palma e dedos). Para ser
+  aprovado, precisa das duas estáveis. Com isso, o tipo de mão aparece como
+  um terceiro item exibido.
+- O critério não mudou: a contagem já usava só as características
+  observadas. Agora o relatório mostra separadamente:
+  - **observações independentes liberadas** (critério de utilidade, ≥ 2);
+  - **itens exibidos** (mediana entre as fotos, incluindo derivados;
+    informativo);
+  - **estabilidade dos itens** (mesmos itens em ≥ 90% das análises, em
+    ≥ 85% das fotos);
+  - **disponibilidade** (capítulo com itens em ≥ 75% das fotos em que
+    estava).
+- **Limite conhecido:** no capítulo 7, as três características da linha
+  da cabeça (e as duas do coração) são classificações separadas da mesma
+  linha. Contam como observações distintas, mas não são estatisticamente
+  independentes entre si. O mínimo de 2 é um piso de utilidade, não uma
+  medida de força da evidência.
+- Continuam valendo: inconclusivas excluídas, e leitura completa não
+  aprovada quando só um capítulo é aprovado.
+
 **Testes da decisão:** leitura sem exclusões; destino sem dado (leitura
 "com exclusões"); capítulo 6 sem dado (só o 7 aprovado, leitura não
-aprovada); capítulo com 1 característica (não aprovado, "inconclusivo");
-restrição com inconclusivas.
+aprovada); capítulo com 1 observação (não aprovado, "inconclusivo");
+restrição com inconclusivas. Também: o tipo de mão nunca é observação
+independente; capítulo 6 com 3 itens exibidos e 2 observações; palma
+estável sem dedos (disponível, mas não aprovado); disponibilidade,
+estabilidade e utilidade como critérios separados.
 
 ### 8.6 Pendências do consentimento
 
@@ -509,13 +544,9 @@ com os pontos de revisão jurídica e as fontes oficiais verificadas.
 2. **Revisão jurídica do termo:** a minuta da 03F.1 já a exigia.
 3. **Controlador dos dados:** a empresa ainda não foi constituída
    (pendência 7 da 03G). Definir quem assina como responsável.
-4. **Retenção pelo provedor:** verificado em 24/11.
-   - Sem treino com o conteúdo da API.
-   - Retenção possível por exigência legal, ou por até 2 anos quando o
-     conteúdo é sinalizado pelos sistemas de segurança.
-   - O artigo oficial do prazo padrão **não abriu neste ambiente** e
-     precisa ser conferido. A informação de 19/11 ("30 dias") não foi
-     confirmada.
+4. **Retenção pelo provedor:** política comercial (até 30 dias por padrão,
+   com exceções). Falta confirmar a configuração da conta e o DPA na data
+   da coleta (minuta, J4).
 5. **Termos anteriores:** confirmar se cobriram os envios da rodada 2 e da
    Etapa B. Eles ficam fora do Sidera; isso não muda o termo novo, mas fecha
    o histórico.
@@ -642,18 +673,19 @@ sintéticas de cor sólida geradas no teste:**
 **Ensaio feito:** o comando `simular` rodou uma vez com duas imagens
 sintéticas e funcionou. Os arquivos do ensaio foram apagados em seguida.
 
-## 10. Checklist para autorizar o piloto
+## 10. Checklist mínimo para iniciar o piloto
 
-| #   | Item                                                                                                                                                              | Situação                                                                                 |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| 1   | Plano, critérios e decisão sobre inconclusivas (opção 2)                                                                                                          | Feito                                                                                    |
-| 2   | Ferramenta offline e ponto de entrada testados com simulador                                                                                                      | Feito (42 testes)                                                                        |
-| 3   | Minuta do termo (`experimento-repetibilidade-termo-minuta.md`)                                                                                                    | Redigida; **revisão jurídica pendente**                                                  |
-| 4   | Identificação do responsável pelo tratamento e canal de contato                                                                                                   | **Pendente** (empresa não constituída; não inventar dados)                               |
-| 5   | Retenção pelo provedor confirmada para a conta usada                                                                                                              | **Pendente** (termos oficiais verificados; falta confirmar a conta e o regime aplicável) |
-| 6   | Termos assinados pelas pessoas das 2 fotos do piloto (envios autorizados, abrangência "original")                                                                 | **Pendente**: depende de 3 a 5                                                           |
-| 7   | Reenvio dos arquivos originais pela própria pessoa, conferidos pelo SHA-256                                                                                       | **Pendente**: só depois de 6                                                             |
-| 8   | Destrave da conexão real em commit revisado (`REP_REAL_CONNECTION_ENABLED`), só depois da sua autorização da execução                                             | **Pendente**                                                                             |
-| 9   | Credencial configurada pelo responsável (nunca no chat ou nos registros); preços reconferidos; versões confirmadas (03d.2 / 03c.2 / Sonnet 5.5 / `medium` / 4000) | No dia                                                                                   |
-| 10  | Pasta temporária fora do repositório; exclusão até 7 dias contados do recebimento                                                                                 | No dia                                                                                   |
-| 11  | Sua autorização específica do piloto: teto US$ 0,70, 10 chamadas, 2 fotos                                                                                         | **Pendente**                                                                             |
+| #   | Item                                                                                                                                                                                                     | Situação                                                             |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1   | Plano, critérios, opção 2 e esclarecimento das observações independentes                                                                                                                                 | Feito, antes da coleta                                               |
+| 2   | Ferramenta offline e ponto de entrada testados com simulador                                                                                                                                             | Feito (46 testes)                                                    |
+| 3   | Minuta REP-1 revisada                                                                                                                                                                                    | Feita; **revisão jurídica profissional pendente** (J1–J10 da minuta) |
+| 4   | Responsável pelo tratamento e canal de contato (J1)                                                                                                                                                      | **Pendente**; não inventar dados                                     |
+| 5   | Classificação como dado sensível e fundamento da transferência internacional (J2, J3)                                                                                                                    | **Pendente** (revisão profissional)                                  |
+| 6   | Configuração da conta da API e DPA conferidos; política de retenção reconferida na data (J4)                                                                                                             | **Pendente**                                                         |
+| 7   | Prazos dos registros em texto e dos registros mínimos de auditoria (J5, J6)                                                                                                                              | **Pendente**                                                         |
+| 8   | Termos REP-1 assinados pelas pessoas das 2 fotos do piloto                                                                                                                                               | **Pendente**: depende de 3 a 7                                       |
+| 9   | Reenvio dos arquivos originais pela própria pessoa, conferidos pelo SHA-256                                                                                                                              | **Pendente**: depois de 8                                            |
+| 10  | Destrave da conexão real em commit revisado                                                                                                                                                              | **Pendente**: só com a sua autorização da execução                   |
+| 11  | No dia: credencial configurada pelo responsável; preços e versões (03d.2 / 03c.2 / Sonnet 5.5 / `medium` / 4000) conferidos; pasta temporária fora do repositório; exclusão em até 7 dias do recebimento | No dia                                                               |
+| 12  | Sua autorização específica do piloto: teto US$ 0,70, 10 chamadas, 2 fotos                                                                                                                                | **Pendente**                                                         |

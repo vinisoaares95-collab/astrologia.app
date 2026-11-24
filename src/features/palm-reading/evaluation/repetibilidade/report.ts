@@ -156,11 +156,11 @@ export function buildReport(
         .join(", ") || "nenhuma"
     }.`,
     "",
-    "| Capítulo | Situação | Liberadas | Disponível sem as excluídas | Estável sem as excluídas | Motivos |",
-    "| --- | --- | --- | --- | --- | --- |",
+    "| Capítulo | Situação | Observações independentes liberadas | Itens exibidos (mediana, com derivados) | Disponível sem as excluídas | Estável sem as excluídas | Motivos |",
+    "| --- | --- | --- | --- | --- | --- | --- |",
     ...decision.commercial.chapters.map(
       (c) =>
-        `| ${c.chapter} | ${c.approved ? "aprovado" : "não aprovado"} | ${c.approvedFeatures.length} | ${pct(c.availabilityKept)} | ${pct(c.stableShare)} | ${c.reasons.join("; ") || "—"} |`,
+        `| ${c.chapter} | ${c.approved ? "aprovado" : "não aprovado"} | ${c.independentObservations} | ${c.displayedItems ?? "—"} | ${pct(c.availabilityKept)} | ${pct(c.stableShare)} | ${c.reasons.join("; ") || "—"} |`,
     ),
     "",
     ...groups.map(groupSection),

@@ -260,12 +260,22 @@ export type DecisionKey =
 export type ChapterCommercial = {
   chapter: 6 | 7;
   approved: boolean;
-  /** Características liberadas (estáveis) deste capítulo. */
+  /**
+   * Observações independentes liberadas: características OBSERVADAS do
+   * contrato (estáveis). Itens derivados de outras observações (o tipo de
+   * mão, de palma + dedos) nunca contam aqui.
+   */
   approvedFeatures: FeatureId[];
+  independentObservations: number;
   excludedFeatures: FeatureId[];
-  /** Fotos em que o capítulo continua disponível sem as excluídas. */
+  /**
+   * Itens exibidos sem as excluídas (mediana entre as fotos): inclui os
+   * derivados. Informativo; o critério de utilidade usa as observações.
+   */
+  displayedItems: number | null;
+  /** Disponibilidade: fotos em que o capítulo continua com itens. */
   availabilityKept: number | null;
-  /** Fotos com o capítulo estável (itens liberados) ≥ 90% das análises. */
+  /** Estabilidade: fotos com os mesmos itens em ≥ 90% das análises. */
   stableShare: number | null;
   reasons: string[];
 };
@@ -295,11 +305,16 @@ export function chapterAfterExclusion(
   records: AnalysisRecord[],
   chapter: 6 | 7,
   excluded: FeatureId[],
-): { availabilityKept: number | null; stableShare: number | null } {
+): {
+  availabilityKept: number | null;
+  stableShare: number | null;
+  displayedItems: number | null;
+} {
   const key = chapter === 6 ? "ch6" : "ch7";
   let before = 0;
   let kept = 0;
   let stable = 0;
+  const counts: number[] = [];
   for (const id of new Set(records.map((r) => r.photoId))) {
     const os = okObservations(records.filter((r) => r.photoId === id));
     const m = modalObservation(os);
@@ -309,15 +324,29 @@ export function chapterAfterExclusion(
       (o) => readingEffect(withoutFeatures(o, excluded))[key],
     );
     const modalItems = readingEffect(withoutFeatures(m, excluded))[key];
-    if (modalItems) kept++;
+    if (modalItems) {
+      kept++;
+      counts.push(modalItems.split(" ").length);
+    }
     const same = restricted.filter((x) => x === modalItems).length;
     if (os.length && same / os.length >= COMMERCIAL.chapterAgreement) stable++;
   }
   return {
     availabilityKept: before ? kept / before : null,
     stableShare: before ? stable / before : null,
+    displayedItems: counts.length
+      ? counts.sort((a, b) => a - b)[Math.floor((counts.length - 1) / 2)]
+      : null,
   };
 }
+
+/**
+ * Observações independentes de um capítulo: só as características
+ * observadas do contrato (`FEATURE_IDS`). O tipo de mão é derivado e não
+ * está entre elas.
+ */
+export const independentFeaturesOf = (chapter: 6 | 7): FeatureId[] =>
+  FEATURE_IDS.filter((f) => chapterOf(f) === chapter);
 
 export function commercialEvaluation(
   verdicts: Record<FeatureId, Verdict>,
@@ -330,13 +359,13 @@ export function commercialEvaluation(
     (g) => g.product.retakeStable && g.product.statusStable,
   );
   const chapters = ([6, 7] as const).map((chapter): ChapterCommercial => {
-    const own = FEATURE_IDS.filter((f) => chapterOf(f) === chapter);
+    const own = independentFeaturesOf(chapter);
     const ok = own.filter((f) => approvedFeatures.includes(f));
     const after = chapterAfterExclusion(records, chapter, excluded);
     const reasons: string[] = [];
     if (ok.length < COMMERCIAL.minApprovedFeaturesPerChapter)
       reasons.push(
-        `só ${ok.length} característica(s) liberada(s); mínimo ${COMMERCIAL.minApprovedFeaturesPerChapter}`,
+        `só ${ok.length} observação(ões) independente(s) liberada(s); mínimo ${COMMERCIAL.minApprovedFeaturesPerChapter} (itens derivados não contam)`,
       );
     if (
       after.availabilityKept === null ||
@@ -355,6 +384,7 @@ export function commercialEvaluation(
       chapter,
       approved: reasons.length === 0,
       approvedFeatures: ok,
+      independentObservations: ok.length,
       excludedFeatures: own.filter((f) => !ok.includes(f)),
       ...after,
       reasons,

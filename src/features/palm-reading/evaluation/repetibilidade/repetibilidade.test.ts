@@ -30,6 +30,7 @@ import type { AnalysisRecord, PhotoOrigin, RepPhoto } from "./contract";
 import {
   decide,
   evaluatePilotGate,
+  independentFeaturesOf,
   summarizeGroup,
   verdictOf,
 } from "./decision";
@@ -460,7 +461,7 @@ describe("opção 2: inconclusivas fora do uso comercial (decisão de 24/11/2026
     expect(c.fullReading).toBe("não aprovada");
   });
 
-  it("utilidade mínima: capítulo com 1 característica liberada não é aprovado; nenhum capítulo → inconclusivo", async () => {
+  it("utilidade mínima: capítulo com 1 observação independente liberada não é aprovado; nenhum capítulo → inconclusivo", async () => {
     const { result } = await run(
       three(() =>
         obs(
@@ -482,7 +483,7 @@ describe("opção 2: inconclusivas fora do uso comercial (decisão de 24/11/2026
     expect(d.verdicts["heart.length"]).toBe("estavel");
     expect(d.commercial.chapters[1].approved).toBe(false);
     expect(d.commercial.chapters[1].reasons.join(" ")).toMatch(
-      /só 1 característica/,
+      /só 1 observação/,
     );
     expect(d.primary).toBe("inconclusivo");
     expect(d.triggered.at(-1)!.why).toMatch(/nenhum capítulo/);
@@ -505,6 +506,75 @@ describe("opção 2: inconclusivas fora do uso comercial (decisão de 24/11/2026
       "hand.palmShape",
       "fate.presence",
     ]);
+  });
+});
+
+describe("utilidade do capítulo: observações independentes × itens exibidos (24/11/2026)", () => {
+  const three = (script: Script) => ({ p01: script, p02: script, p03: script });
+  const hidden = (fs: FeatureId[]) => {
+    const o = clearHand();
+    for (const f of fs)
+      o.features[f] = { visibility: "not_visible", reason: "too_faint" };
+    return o;
+  };
+
+  it("o tipo de mão (derivado) nunca é observação independente", () => {
+    expect(independentFeaturesOf(6)).toEqual([
+      "hand.palmShape",
+      "hand.fingerLength",
+    ]);
+    expect(independentFeaturesOf(6) as string[]).not.toContain("hand.type");
+    expect(independentFeaturesOf(7)).toHaveLength(7);
+  });
+
+  it("tudo estável: 3 itens exibidos no capítulo 6, mas só 2 observações independentes", async () => {
+    const { result } = await run(
+      three(() => obs(clearHand())),
+      { target: 10 },
+    );
+    const ch6 = buildReport(result.records).decision.commercial.chapters[0];
+    expect(ch6.displayedItems).toBe(3);
+    expect(ch6.independentObservations).toBe(2);
+    expect(ch6.approved).toBe(true);
+  });
+
+  it("palma estável e dedos sem dado: 1 observação independente → capítulo 6 não aprovado", async () => {
+    const { result } = await run(
+      three(() => obs(hidden(["hand.fingerLength"]))),
+      {
+        target: 10,
+      },
+    );
+    const d = buildReport(result.records).decision;
+    const ch6 = d.commercial.chapters[0];
+    expect(d.verdicts["hand.palmShape"]).toBe("estavel");
+    expect(ch6.independentObservations).toBe(1);
+    expect(ch6.displayedItems).toBe(1); // sem dedos, o tipo de mão some
+    expect(ch6.availabilityKept).toBe(1); // disponível…
+    expect(ch6.approved).toBe(false); // …mas sem utilidade mínima
+    expect(ch6.reasons.join(" ")).toMatch(/itens derivados não contam/);
+    // Só o capítulo 7 aprovado: a leitura completa não é aprovada.
+    expect(d.commercial.chapters[1].approved).toBe(true);
+    expect(d.commercial.fullReading).toBe("não aprovada");
+  });
+
+  it("disponibilidade, estabilidade e utilidade são critérios separados", async () => {
+    // Capítulo 6 com palma instável: excluída; sobram os dedos (1 observação).
+    const { result } = await run(
+      three((n) =>
+        obs(
+          n % 3 === 0
+            ? withValue("hand.palmShape", "rectangular")
+            : clearHand(),
+        ),
+      ),
+      { target: 10 },
+    );
+    const ch6 = buildReport(result.records).decision.commercial.chapters[0];
+    expect(ch6.availabilityKept).toBe(1);
+    expect(ch6.stableShare).toBe(1);
+    expect(ch6.independentObservations).toBe(1);
+    expect(ch6.approved).toBe(false);
   });
 });
 
