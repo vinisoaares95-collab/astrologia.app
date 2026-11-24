@@ -62,6 +62,7 @@ const texts = (a: ChapterArticleData) =>
     a.synthesis,
     ...a.reflectionQuestions,
     ...a.limitations,
+    ...(a.limitationDetails ?? []),
     a.unavailableMessage ?? "",
   ].filter(Boolean);
 const C8_BAN =
@@ -179,7 +180,7 @@ describe("variantes ausentes nas 84 (fixtures construídas)", () => {
 
   it("horário desconhecido: posição incerta fora das comparações, com a ressalva", () => {
     const a = find("K-lua-incerta", "M-clara").out.chapter8;
-    expect(a.limitations).toContain(
+    expect(a.limitationDetails).toContain(
       "A posição da Lua depende do horário de nascimento informado e não entra nestas comparações.",
     );
     expect(texts(a).join(" ")).not.toMatch(/Lua em/);
@@ -187,10 +188,37 @@ describe("variantes ausentes nas 84 (fixtures construídas)", () => {
 
   it("características parciais não sustentam conexões e aparecem nas ressalvas", () => {
     const a = find("C-ref exato", "M-parcial").out.chapter8;
-    expect(a.limitations).toContain(
+    expect(a.limitationDetails).toContain(
       "O traçado da linha do coração ficou só parcialmente visível na foto e por isso não sustenta nenhuma comparação.",
     );
     expect(texts(a).join(" ")).not.toMatch(/curvada para cima|traçado reto/);
+  });
+});
+
+describe("ressalvas em dois níveis (04E.2A)", () => {
+  it("aviso essencial sempre visível; as demais ressalvas, completas e na ordem, na seção expansível", () => {
+    for (const r of rows) {
+      const a = r.out.chapter8;
+      if (a.status !== "content") {
+        // Indisponível: só a mensagem, nada recolhido.
+        expect(a.limitations).toEqual([]);
+        expect(a.limitationDetails).toBeUndefined();
+        expect(a.unavailableMessage).toBeTruthy();
+        continue;
+      }
+      expect(a.limitations).toEqual([C8.R0]);
+      const d = a.limitationDetails!;
+      const sim = d.includes(C8.Rsim);
+      if (sim) expect(d.at(-1)).toBe(C8.Rsim);
+      expect(d.at(sim ? -2 : -1)).toBe(C8.Rescopo);
+      expect(d).not.toContain(C8.R0);
+      expect(new Set(d).size).toBe(d.length);
+    }
+  });
+
+  it("o capítulo 9 não usa a seção expansível", () => {
+    for (const r of rows)
+      expect(r.out.chapter9.limitationDetails).toBeUndefined();
   });
 });
 

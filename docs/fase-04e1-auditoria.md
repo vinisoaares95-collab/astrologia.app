@@ -93,6 +93,12 @@ Todos executados depois das correções.
 
 **Total de navegador: 254 verificações, 0 falhas.**
 
+> Nota (04E.2A): uma mensagem intermediária da conversa citou 293
+> verificações. Era um erro de soma, sem base em nenhum log. O número
+> sustentado é 254: as linhas `OK` de 10 execuções únicas, cada roteiro ou
+> cenário rodado uma vez, sem reexecuções. Detalhes em
+> `fase-04e2a-leitura.md`, seção 4.
+
 **Não executados, com justificativa:**
 
 - **Jornada em build de produção:** a leitura das mãos responde 503 por

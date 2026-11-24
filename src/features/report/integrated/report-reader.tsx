@@ -167,11 +167,10 @@ function Chapter({ chapter }: { chapter: ReportChapterView }) {
         }
       />
     );
-  return (
-    <div id={anchor(chapter.number)} className="scroll-mt-32">
-      {body}
-    </div>
-  );
+  // Sem scroll-margin próprio: o `scroll-padding-top` do <html> já deixa o
+  // título abaixo do cabeçalho fixo; somar os dois abria um vão de ~200 px
+  // (04E.2A).
+  return <div id={anchor(chapter.number)}>{body}</div>;
 }
 
 function PartSection({ part }: { part: ReportPartView }) {
@@ -185,7 +184,7 @@ function PartSection({ part }: { part: ReportPartView }) {
     <section
       id={partAnchor(part.numeral)}
       aria-labelledby={headingId}
-      className="scroll-mt-32 space-y-5"
+      className="space-y-5"
     >
       <header className="space-y-3">
         <p className="font-mono text-[0.65rem] tracking-[0.18em] text-accent uppercase">
@@ -395,7 +394,7 @@ export function ReportReader({ report }: { report: IntegratedReportView }) {
       </aside>
 
       <div className="min-w-0 space-y-10">
-        <header id="sumario" className="scroll-mt-32 space-y-4">
+        <header id="sumario" className="space-y-4">
           <div className="space-y-2">
             <p className="font-mono text-[0.65rem] tracking-[0.18em] text-accent uppercase">
               Relatório Sidera

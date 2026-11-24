@@ -93,7 +93,9 @@ export function renderChapter8(
       : rel.has("D")
         ? C8.synthesis.D
         : C8.synthesis.A;
-  const limitations: string[] = [C8.R0];
+  // Dois níveis (04E.2A): o aviso essencial sempre visível; exclusões e
+  // limites de classificação na seção expansível, com o mesmo texto.
+  const limitations: string[] = [];
   const part = hands!.partial as FeatureId[];
   const unr = hands!.unreliable as FeatureId[];
   if (part.length)
@@ -128,7 +130,8 @@ export function renderChapter8(
     })),
     synthesis,
     reflectionQuestions: [],
-    limitations,
+    limitations: [C8.R0],
+    limitationDetails: limitations,
     unavailableMessage: null,
   };
 }

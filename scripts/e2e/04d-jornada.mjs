@@ -64,6 +64,8 @@ const check = (ok, msg) => {
 const chapter = (p, n) =>
   p.locator(`article[aria-labelledby="capitulo-${n}"]:visible`).first();
 const chapterText = (p, n) => chapter(p, n).innerText();
+/** Texto integral, inclusive o da seção expansível recolhida (04E.2A). */
+const chapterAll = (p, n) => chapter(p, n).evaluate((e) => e.textContent);
 const reading = (p) =>
   p.locator("#sumario:visible").first().locator("xpath=..").innerText();
 const h1 = (p) => p.getByRole("heading", { level: 1 }).first().waitFor();
@@ -184,7 +186,7 @@ for (const [vp, options] of [
       ),
     );
     check(
-      /leitura das mãos simulada/.test(c8),
+      /leitura das mãos simulada/.test(await chapterAll(p, 8)),
       tag("cap. 8: ressalva de leitura simulada"),
     );
     const c9 = await chapterText(p, 9);
@@ -296,7 +298,7 @@ for (const [vp, options] of [
     await birthAndRead(p, "Recife, horário de verão (1986)", /Recife — PE/);
     const c8 = await chapterText(p, 8);
     check(
-      /ficou só parcialmente visível/.test(c8) &&
+      /ficou só parcialmente visível/.test(await chapterAll(p, 8)) &&
         !/curvada para cima|traçado reto/.test(c8),
       tag("parcial: traçado do coração fora das conexões, com R-parcial"),
     );

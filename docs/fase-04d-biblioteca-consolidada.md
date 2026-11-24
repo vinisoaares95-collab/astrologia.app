@@ -157,6 +157,16 @@ Depois dos temas vêm a síntese e os limites, nesta ordem:
 5. R-escopo;
 6. R-simulada.
 
+Apresentação em dois níveis (04E.2A; os textos e a ordem não mudam):
+
+- **sempre visível:** R0, o aviso essencial de natureza simbólica;
+- **seção expansível "Limitações desta análise (n)":** R-parcial, R-conf,
+  R-hora, R-escopo e R-simulada, recolhida por padrão (`<details>`
+  nativo, acessível por teclado e com estado expandido/recolhido anunciado
+  pelos leitores de tela).
+
+As mensagens de indisponibilidade (U1–U6) nunca ficam recolhidas.
+
 Capítulo 9, por tema:
 
 ```
