@@ -1,11 +1,15 @@
 # Experimento de repetibilidade visual — plano operacional
 
-Status: **plano revisado em 24/11/2026, aguardando autorização explícita.**
-Nada foi executado:
+Status: **plano revisado em 24/11/2026; ferramenta de avaliação preparada
+e testada só com dados simulados (seção 9).** Aguarda autorização explícita
+para o piloto. Nada foi executado:
 
 - nenhuma chamada paga;
-- nenhuma foto pedida;
-- nenhuma mudança no produto ou na ferramenta.
+- nenhuma foto pedida ou recuperada;
+- nenhuma mudança no produto (motor visual, prompt, contrato, validador).
+
+Os ajustes metodológicos feitos **antes de qualquer coleta** estão na
+seção 8.
 
 Esta versão substitui a proposta anterior deste mesmo arquivo. O histórico
 está no Git.
@@ -95,8 +99,16 @@ agregadas por característica.
 | M8  | **Calibração**                           | M1 e M3 separados pela visibilidade declarada (clara × parcial). Testa a H3                                                                                                                                                                                                                       |
 | M9  | **Consenso simulado**                    | Offline e gratuito; só informa a decisão, nada é implementado. Sortear 3 análises por foto (1.000 sorteios); manter a característica quando as 3 concordam (variante: 2 de 3); divergência vira indeterminada. Medir a inversão entre dois consensos independentes e a perda de itens e capítulos |
 
-**Intervalos.** Cada taxa sai com intervalo de Wilson de 95%. Com 10
-análises e poucas fotos por característica, os intervalos serão largos.
+**Intervalos.** Cada taxa sai com dois intervalos de 95% (detalhes na
+seção 8.1):
+
+- **Wilson nominal:** trata os pares de análises como independentes. É
+  otimista, porque as repetições de uma mesma foto não são independentes.
+- **Bootstrap por foto:** reamostra fotografias, a unidade independente.
+  Com menos de 5 fotos com dado, vem marcado como "não informativo".
+
+Com 10 análises e poucas fotos por característica, os intervalos serão
+largos.
 
 - Um resultado "estável" quer dizer **"sem sinal de instabilidade acima do
   limite nesta amostra"**.
@@ -138,11 +150,11 @@ mão dentro da rodada para aproveitar o cache. Assim, uma deriva no tempo se
 distribui entre as fotos. O cache muda o custo, não a resposta (verificado
 na 03F.2).
 
-| Etapa                                                                | Fotos                                                                                                                                                                                                  | Análises                                                                       | Chamadas   | Sessões                                |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ---------- | -------------------------------------- |
-| **Piloto**                                                           | 2 das antigas, reenviadas e conferidas pelo SHA-256: a **foto-05** (a única completa e o caso que motivou o experimento) e uma parcial com classificações (foto-06 ou foto-08, conforme a autorização) | 5 por foto                                                                     | **10**     | 1                                      |
-| **Ampliação A** (histórico)                                          | Todas as antigas reautorizadas: até 8, de 4 pessoas                                                                                                                                                    | 10 por foto. As 2 do piloto ganham +5, se o piloto entrar na conta (seção 3.1) | até **70** | 2, em dias diferentes (5 + 5 por foto) |
-| **Ampliação B** (opcional, recomendada, **com autorização própria**) | Fotos **novas**, tiradas com o guia de captura atual: 8, de pelo menos 4 pessoas                                                                                                                       | 10 por foto                                                                    | **80**     | 2, em dias diferentes                  |
+| Etapa                                                                | Fotos                                                                                                                                                                                                  | Análises                                                                                                  | Chamadas   | Sessões                                |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- | ---------- | -------------------------------------- |
+| **Piloto**                                                           | 2 das antigas, reenviadas e conferidas pelo SHA-256: a **foto-05** (a única completa e o caso que motivou o experimento) e uma parcial com classificações (foto-06 ou foto-08, conforme a autorização) | 5 por foto                                                                                                | **10**     | 1                                      |
+| **Ampliação A** (histórico)                                          | Todas as antigas reautorizadas: até 8, de 4 pessoas                                                                                                                                                    | 10 por foto, **cumulativas**: as 5 do piloto contam, e as 2 fotos do piloto recebem só mais 5 (seção 8.3) | até **70** | 2, em dias diferentes (5 + 5 por foto) |
+| **Ampliação B** (opcional, recomendada, **com autorização própria**) | Fotos **novas**, tiradas com o guia de captura atual: 8, de pelo menos 4 pessoas                                                                                                                       | 10 por foto                                                                                               | **80**     | 2, em dias diferentes                  |
 
 **Por que 10 análises por foto.** É a chance de ver pelo menos uma
 inversão numa foto, conforme a taxa real:
@@ -210,32 +222,53 @@ classificadas cada.
 - **Pedido de nova foto e estado da leitura estáveis:** iguais em todas as
   análises em pelo menos 85% das fotos.
 
-## 4. Custo estimado e teto
+## 4. Custo estimado e teto (revisado em 24/11/2026)
 
-Base:
+**Preços:** documentação oficial da Anthropic consultada em 24/11/2026.
+Sonnet 5.5, por milhão de tokens:
 
-- **preços do código:** Sonnet 5.5 a US$ 2 / 10 / 2,50 / 0,10 por milhão
-  de tokens (entrada / saída / gravação do cache / leitura do cache),
-  conferidos em 11/11/2026. **Reconferir antes da execução**;
-- **consumo real** da seção 0;
-- **câmbio:** R$ 5,50.
+| Entrada | Saída  | Gravação do cache (5 min) | Leitura do cache |
+| ------- | ------ | ------------------------- | ---------------- |
+| US$ 2   | US$ 10 | US$ 2,50                  | US$ 0,10         |
 
-**Reserva do pior caso.** O orçamento separa o pior caso de cada chamada
-(`visionWorstCaseUsd` ≈ US$ 0,0645) antes de ela começar e acerta pelo
-consumo real. Ao atingir o teto, para e registra o que faltou.
+- São iguais à tabela do código (`pricing.ts`, conferida em 11/11).
+- A gravação de cache de 1 hora (US$ 4) e o lote com desconto (Batch API)
+  **não** são usados, porque mudariam as condições do produto.
+- **Câmbio:** R$ 5,50.
 
-| Etapa       | Chamadas    | Esperado                                                                                          | Teto da etapa                                    |
-| ----------- | ----------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| Piloto      | 10          | 10 × US$ 0,0083 + 2 gravações de cache ≈ **US$ 0,12**                                             | **US$ 0,70 (R$ 3,85)**: cobre o pior caso das 10 |
-| Ampliação A | até 70      | ≈ US$ 0,58 + gravações (2 sessões × 2 mãos) ≈ **US$ 0,65**                                        | **US$ 2,00 (R$ 11,00)**                          |
-| Ampliação B | 80          | Fotos novas podem ser maiores (até ~4.800 tokens visuais): ≈ US$ 0,015 por análise ≈ **US$ 1,30** | **US$ 2,50 (R$ 13,75)**                          |
-| **Total**   | **até 160** | **≈ US$ 2,10 (≈ R$ 11,50)**                                                                       | **US$ 5,20 (R$ 28,60)**                          |
+| Medida                                    | Valor                                                                                                       | Base                                                                                                                                                                            |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Custo médio observado**, com cache lido | **US$ 0,0083** por análise (faixa US$ 0,0064–0,0113)                                                        | 6 análises do Sonnet com prompt 03d.2 e cache lido (rodada 2 da 03F.1)                                                                                                          |
+| Custo médio observado, todas              | US$ 0,0129 por análise (máx. US$ 0,0251)                                                                    | 16 análises do Sonnet (rodadas 1 e 2), incluindo as que gravaram o cache                                                                                                        |
+| Gravação do cache                         | ≈ US$ 0,016 por mão e janela de 5 min                                                                       | idem                                                                                                                                                                            |
+| **Custo esperado** por análise            | US$ 0,0083 nas fotos antigas; ≈ US$ 0,0145 nas novas, até ~4.800 tokens visuais (+~3.100 tokens de entrada) | consumo real + preços                                                                                                                                                           |
+| **Pior custo reservado por chamada**      | **US$ 0,0667**                                                                                              | `visionWorstCaseUsd` com o prompt atual: texto a 2 caracteres por token, imagem no teto, preço de gravação, todo o `max_tokens`. O valor citado antes (US$ 0,0645) era da 03F.1 |
 
-- **Por fotografia:** ≈ US$ 0,08 nas antigas e ≈ US$ 0,15 nas novas (10
-  análises).
-- **Orçamento:** exclusivo, separado do produto, uma execução por etapa.
-- **A simulação de consenso** e a passagem pelo motor das mãos são locais e
-  gratuitas.
+| Etapa       | Chamadas    | Esperado                                                      | Teto da etapa                                                                        |
+| ----------- | ----------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Piloto      | 10          | 2 análises frias + 8 com cache ≈ **US$ 0,12**                 | **US$ 0,70 (R$ 3,85)**, que cobre o pior caso das 10 (US$ 0,667; conferido em teste) |
+| Ampliação A | até 70      | 70 × 0,0083 + 4 gravações (2 sessões × 2 mãos) ≈ **US$ 0,65** | **US$ 2,00 (R$ 11,00)**                                                              |
+| Ampliação B | 80          | 80 × 0,0145 + 4 gravações ≈ **US$ 1,23**                      | **US$ 2,50 (R$ 13,75)**                                                              |
+| **Total**   | **até 160** | **≈ US$ 2,00 (≈ R$ 11,00)**                                   | **US$ 5,20 (R$ 28,60)**                                                              |
+
+**Como o teto age:**
+
+- Cada etapa tem orçamento **exclusivo**.
+- O pior caso de cada chamada é reservado antes dela, e o gasto é acertado
+  pelo consumo real.
+- A chamada só começa se o saldo cobre o pior caso. Sem saldo, a etapa para
+  e registra o que faltou (`stoppedBy: "budget"`).
+- O mesmo vale para o limite de chamadas da etapa (`max_calls`) e para o
+  teto de 12 envios por foto (`max_sends`).
+
+Nas Ampliações A e B, o teto só interromperia se o custo por análise
+passasse de ~2,9 vezes o observado.
+
+**Por fotografia (10 análises):** ≈ US$ 0,08 nas antigas e ≈ US$ 0,15 nas
+novas.
+
+**Nenhuma chamada foi feita para testar o orçamento.** O comportamento do
+teto foi verificado com o provedor simulado.
 
 ## 5. Procedimentos de privacidade
 
@@ -299,16 +332,224 @@ inconclusivas), a decisão é **"inconclusivo"**:
 
 ## 7. O que precisa de autorização (nesta ordem)
 
-1. **Este plano**, com os critérios das seções 3 e 6.
-2. **Preparação da ferramenta de avaliação, sem custo:**
-   - repetições, 1 tentativa, rodadas, sessões, métricas M1–M9 e consenso
-     simulado;
-   - testes só com o simulador.
-   - O produto não muda.
+1. ~~**Este plano**~~ e ~~**a preparação da ferramenta**~~: aprovados e
+   feitos (seção 9).
+2. **Decisão sobre o ponto em aberto da seção 8.5** (características que
+   quase nunca são classificadas), **antes** da coleta.
 3. **Termo novo**, com revisão jurídica, e **pedido de reenvio** aos 4
-   participantes.
-4. **Piloto** (teto US$ 0,70) e, depois do relatório dele, **Ampliação A**
+   participantes (pendências na seção 8.6).
+4. **Ponto de entrada da execução real** (seção 9.3): escrito e testado
+   só com o simulador, com portão de confirmação.
+5. **Piloto** (teto US$ 0,70) e, depois do relatório dele, **Ampliação A**
    (teto US$ 2,00).
-5. **Ampliação B** (fotos novas, teto US$ 2,50), com autorização à parte.
+6. **Ampliação B** (fotos novas, teto US$ 2,50), com autorização e termo
+   à parte.
 
 Nada disso começa sem autorização explícita.
+
+## 8. Ajustes metodológicos (antes da coleta, 24/11/2026)
+
+Registrados **antes** de qualquer dado. Os limites numéricos das seções 3
+e 6 **não mudaram**. Os itens abaixo são esclarecimentos de como as regras
+já propostas são aplicadas, e mais um ponto que fica para sua decisão
+(8.5).
+
+### 8.1 Análises repetidas × fotografias independentes
+
+- **As 10 análises de uma foto são medições repetidas da mesma entrada.**
+  Elas medem a variação do modelo, mas não somam informação sobre outras
+  mãos ou outras fotos. A unidade independente é a **fotografia**.
+- Por isso:
+  - toda contagem por característica traz o número de **fotos** com dado,
+    além do número de pares de análises;
+  - o veredito exige pelo menos 3 fotos avaliáveis, e não um número de
+    pares;
+  - o intervalo agrupado reamostra **fotos**. O Wilson nominal fica como
+    referência otimista.
+- **Limite do tamanho da amostra:**
+  - a Ampliação A tem no máximo 8 fotos, e cada característica terá
+    tipicamente de 1 a 8 fotos com classificação;
+  - com menos de 5 fotos, o intervalo agrupado é marcado como não
+    informativo;
+  - mesmo com 8, ele é largo.
+- **Nenhum resultado será apresentado como taxa de confiabilidade da
+  população.** Ele descreve esta amostra.
+
+### 8.2 Diversidade de imagens × diversidade de participantes
+
+- As 8 fotos antigas são de **4 pessoas** (as duas mãos de cada uma). Duas
+  fotos da mesma pessoa não são duas pessoas.
+- O relatório mostra, por característica, **fotos e pessoas** com dado, e
+  por grupo, o número de pessoas.
+- O critério "3 fotos" não mudou. Na Ampliação A, 3 fotos implicam pelo
+  menos 2 pessoas (no máximo 2 fotos por pessoa).
+- Na Ampliação B, o plano já pede pelo menos 4 pessoas. Se as fotos com
+  dado de uma característica vierem de uma só pessoa, o relatório diz isso
+  ao lado do veredito.
+
+### 8.3 Meta cumulativa por fotografia
+
+- **A meta é de 10 análises por foto no total das etapas.**
+- As 5 do piloto contam para as 10 da Ampliação A, se o piloto passar sem
+  mudança na ferramenta (seção 3.1). As 2 fotos do piloto recebem só mais 5
+  análises.
+- A numeração das análises (`index`) é cumulativa entre etapas.
+- Análises inválidas **contam** para a meta e para os envios: foram
+  enviadas e medem a resposta crua. Por isso uma foto pode ter menos de 10
+  análises **válidas**.
+- O teto de **12 envios por foto**, coberto pelo termo, vale para a soma de
+  todas as etapas.
+
+### 8.4 Originais × fotografias recém-capturadas
+
+- Os arquivos originais reenviados (grupo "original") e as fotos novas
+  (grupo "nova") são **analisados e relatados em separado**. Nunca se somam
+  numa mesma taxa.
+- O veredito final de uma característica é o **pior entre os grupos
+  avaliáveis**. Um grupo inconclusivo não melhora nem piora o outro.
+- A comparação com a rodada 2 e a Etapa B da 03F.2 só vale para arquivos
+  com o mesmo SHA-256, e é descritiva.
+
+### 8.5 Esclarecimentos das regras e um ponto em aberto
+
+Esclarecimentos (não mudam limites):
+
+1. **Inversão oposta.**
+   - Nas características binárias (palma, traçado do coração, inclinação e
+     início da cabeça, arco da vida), toda troca de valor é inversão
+     **oposta**.
+   - Consequência: "estável" exige **nenhuma** troca nelas, porque a regra
+     já pedia "nenhuma inversão oposta".
+   - Nas de 3 níveis, só curta ↔ longa é oposta.
+2. **Perda de capítulo no consenso** é o capítulo **desaparecer** (ficar
+   sem itens), não perder um item. Conta como perda na foto quando acontece
+   em mais da metade dos sorteios.
+3. **"Restringir"** exige as demais características **estáveis**, como no
+   texto da seção 6. Inconclusiva não conta como estável.
+4. **Quando várias decisões se aplicam,** todas são relatadas, e a
+   principal segue a ordem escopo > consenso > restringir > captura >
+   manter. Sem nenhuma: "inconclusivo".
+5. **Custo do piloto:** a média "com cache lido" usa só as análises sem
+   gravação de cache.
+
+**Ponto em aberto, para decidir antes da coleta (proposta, não aplicada):**
+
+- **O problema.** A **linha do destino** só é classificada quando está
+  "clara", e na 03F.1 não foi classificada em nenhuma das 8 fotos. Ela
+  tende a ficar **inconclusiva**. Pela regra atual, "manter" exige todas as
+  características estáveis e nenhuma inconclusiva. Então "manter" ficaria
+  praticamente inalcançável por falta de dado, e não por instabilidade. O
+  mesmo pode acontecer com outras características pouco classificadas.
+- **Opção 1 (manter a regra atual):** sem dados suficientes, "manter" não
+  se aplica; o resultado é "inconclusivo" ou outra regra.
+- **Opção 2:** aplicar "manter" às características avaliáveis. As
+  inconclusivas ficam **não liberadas** para uso comercial até haver dados,
+  o que na prática é restringi-las. A justificativa é que uma característica
+  nunca classificada não gera contradição na leitura, mas também não teve
+  sua estabilidade demonstrada.
+- **Recomendação:** opção 2, registrada antes da coleta. A ferramenta hoje
+  aplica a **opção 1** (a regra atual) e só muda com a sua decisão.
+
+### 8.6 Pendências do consentimento
+
+1. **Termo novo**, a partir da minuta da 03F.1, com:
+   - finalidade (repetibilidade);
+   - até 12 envios por foto à Anthropic (EUA);
+   - **guarda da foto entre duas sessões em dias diferentes**, dentro do
+     prazo de exclusão de 7 dias depois da última sessão;
+   - revisão humana, se houver a referência de exatidão;
+   - retirada a qualquer momento e canal de contato;
+   - 18 anos ou mais; só a palma.
+2. **Revisão jurídica do termo:** a minuta da 03F.1 já a exigia.
+3. **Controlador dos dados:** a empresa ainda não foi constituída
+   (pendência 7 da 03G). Definir quem assina como responsável.
+4. **Retenção pelo provedor:** confirmar para a conta usada o prazo padrão
+   de 30 dias e as exceções (informado em 19/11, ainda não confirmado).
+5. **Termos anteriores:** confirmar se cobriram os envios da rodada 2 e da
+   Etapa B. Eles ficam fora do Sidera; isso não muda o termo novo, mas fecha
+   o histórico.
+6. **Fotos novas (Ampliação B):** termo próprio, com as mesmas cláusulas e
+   a orientação de captura atual.
+
+## 9. Ferramenta de avaliação (preparada em 24/11/2026)
+
+Código em `src/features/palm-reading/evaluation/repetibilidade/`, isolado do
+produto: o produto não importa nada dela, e ela não muda nada nele.
+
+| Arquivo                 | Função                                                                                                                                                                                                                                                                                                    |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config.ts`             | Parâmetros pré-registrados: modelo, 1 tentativa, metas, 12 envios por foto, limites e tetos por etapa, critérios do piloto, vereditos, decisões, consenso, intervalos                                                                                                                                     |
+| `contract.ts`           | Foto (código opaco, mão, origem, pseudônimo, autorização) e registro por análise: sem imagem, nome de arquivo ou nome de pessoa                                                                                                                                                                           |
+| `run.ts`                | Execução em rodadas, agrupadas por mão. Usa o orquestrador do produto com 1 tentativa e o teto de gasto do produto; meta cumulativa; para por teto, chamadas ou envios. Confere o SHA-256 da entrada antes de cada análise e zera os bytes ao fim. **O provedor é sempre injetado**                       |
+| `metrics.ts`            | Leitura por característica; tipos de divergência (inversão oposta ou gradual, oscilação, só motivo); concordância de leitura e estrita; itens dos capítulos 6 e 7 pelo motor atual; pedido de nova foto e estado; custo, tokens e duração; sessões; Wilson e bootstrap por foto; consenso 3 de 3 e 2 de 3 |
+| `decision.ts`           | Vereditos por característica e grupo; veredito final; decisões da seção 6 com a justificativa; critérios operacionais do piloto                                                                                                                                                                           |
+| `report.ts`             | Relatório em Markdown: decisão, consolidado por grupo, por característica, por fotografia e por célula. Só números e códigos: sem evidência textual                                                                                                                                                       |
+| `audit.ts`              | Detecção de conteúdo de imagem (base64 de JPEG, PNG ou WebP, data URL, blocos longos); gravação só em `avaliacao-ia/`; conferência do SHA-256 com o registro de 19/11; exclusão registrada (tamanho, SHA-256, data); busca de cópias                                                                      |
+| `simulated-provider.ts` | Provedor simulado: roteiro por "foto" (bytes sintéticos) e consumo parecido com o da 03F.1                                                                                                                                                                                                                |
+
+### 9.1 Testes (só dados simulados)
+
+`repetibilidade.test.ts`: **22 testes**, sem rede, sem fotos e sem custo.
+
+| #   | Caso pedido                    | Verificação                                                                                                                       |
+| --- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Classificações idênticas       | Concordância 100%; nenhuma divergência; capítulos 6 e 7 iguais                                                                    |
+| 2   | Divergência gradual            | Comprimento da cabeça média ↔ longa = gradual, não oposta                                                                         |
+| 3   | Inversão de significado        | Palma quadrada ↔ retangular = oposta; o capítulo 6 muda em 40% das análises, o 7 não                                              |
+| 4   | Clara que vira indeterminada   | Oscilação, sem inversão; 40% indeterminada                                                                                        |
+| 5   | Só o motivo muda               | Concordância de leitura 100%, estrita 60%; 6 pares "só motivo"                                                                    |
+| 6   | Completa ↔ pedido de nova foto | Estado e pedido de nova foto instáveis (40%)                                                                                      |
+| 7   | Saída inválida                 | Registrada, conta como envio, fica fora das métricas                                                                              |
+| 8   | Consenso de três               | Divergência vira indeterminada (3 de 3) ou fica com a maioria (2 de 3); sorteios determinísticos; item perdido ≠ capítulo perdido |
+| 9   | Amostra insuficiente           | Inconclusiva (2 fotos; ou célula com 4 classificadas); decisão "inconclusivo"                                                     |
+| 10  | Interrupção por orçamento      | Para antes de reservar além do teto: 1 chamada, `stoppedBy: "budget"`                                                             |
+
+Também testados:
+
+- meta cumulativa (piloto 5 + Ampliação A até 10, com índice contínuo e
+  sessões separadas);
+- limite de chamadas e teto de 12 envios;
+- ordem em rodadas e registro de tokens, custo e duração;
+- separação de originais e novas, com contagem de fotos e de pessoas;
+- decisões "manter", "restringir" e "consenso";
+- critérios do piloto;
+- ausência de imagem nos registros e de evidência no relatório;
+- bytes zerados;
+- recusa de gravação fora de `avaliacao-ia/`;
+- exclusão registrada e busca de cópias (com arquivo sintético);
+- o teto do piloto cobre o pior caso das 10 chamadas;
+- o teto total é US$ 5,20.
+
+### 9.2 O que a ferramenta não faz (de propósito)
+
+- Não cria provedor real nem lê chave de API.
+- Não lê fotos do disco nem as prepara.
+- Não decide a ampliação pelos números de estabilidade do piloto.
+
+### 9.3 Requisitos para iniciar o piloto
+
+1. Sua autorização explícita do piloto (teto US$ 0,70) e a decisão da
+   seção 8.5.
+2. Termos novos assinados, com revisão jurídica e controlador definido
+   (seção 8.6), pelo menos das pessoas das 2 fotos do piloto.
+3. **Ponto de entrada da execução real**, a ser escrito e testado só com o
+   simulador:
+   - portão com frase de confirmação e variáveis próprias, separadas das
+     do produto;
+   - leitura do manifesto (código da foto, mão, origem, pseudônimo,
+     autorização);
+   - preparação com `prepareEvalPhoto` e conferência do SHA-256 do
+     original com o registro de 19/11 (`matchesRegistered`);
+   - gravação com `saveRecords` em
+     `avaliacao-ia/repetibilidade/restrito/`;
+   - relatório;
+   - exclusão com `deleteAndRecord` e busca de cópias com `findCopies`.
+4. **No dia da execução:**
+   - preços reconferidos;
+   - versões confirmadas: prompt `03d.2`, contrato `03c.2`, modelo
+     `claude-sonnet-5-5`, `effort: medium`, `max_tokens` 4000;
+   - commit registrado;
+   - credencial da API configurada pelo responsável, nunca no chat ou nos
+     registros.
+5. Pasta temporária fora do repositório para as fotos, apagada ao fim
+   (prazo máximo de 7 dias depois da última sessão).
