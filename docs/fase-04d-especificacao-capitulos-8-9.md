@@ -1,5 +1,7 @@
 # Fase 04D — Especificação editorial dos capítulos 8 e 9
 
+> **Histórico.** Para a revisão dos textos, das correspondências e das regras dos capítulos 8 e 9, a referência única é `docs/fase-04d-biblioteca-consolidada.md`.
+
 Estado: **proposta para aprovação.** Nenhum código foi implementado, nenhum
 motor foi alterado e não houve chamada paga nem deploy. Todos os textos
 marcados como **[PROPOSTA]** precisam de aprovação editorial antes da

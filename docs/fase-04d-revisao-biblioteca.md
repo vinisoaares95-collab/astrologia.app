@@ -1,5 +1,7 @@
 # Fase 04D — Revisão: correspondências e biblioteca editorial (capítulos 8 e 9)
 
+> **Histórico.** Para a revisão dos textos, das correspondências e das regras dos capítulos 8 e 9, a referência única é `docs/fase-04d-biblioteca-consolidada.md`.
+
 Estado: **proposta para revisão editorial.** Nenhum código do produto foi
 escrito ou alterado. Não houve chamada paga, mudança nos motores nem deploy.
 
