@@ -81,55 +81,60 @@ lê aqui é exatamente o que a verificação testou.
    ritmo **nunca** tem contraponto. A frase-ponte de ritmo com contraponto
    foi **retirada** porque não é alcançável (seção 5).
 
-### 1.3 Capítulo 9 (E6 ajustada)
+### 1.3 Capítulo 9 (revisão definitiva: temas por assunto)
 
-**Seleção dos temas** (no máximo 3, um por eixo), em ordem:
+**Finalidade.** O capítulo 9 é um guia de reflexão **sobre o relatório**.
+Ao contrário do capítulo 8, ele **não** relaciona as tradições. Cada tema
+vem de interpretações **efetivamente apresentadas** nos capítulos 1 a 7,
+com os `ref` dos itens originais.
 
-1. **Temas do capítulo 8**, na mesma ordem:
-   - "dois lados" quando o tema é aproximação com contraponto, diferença ou
-     duas imagens nas mãos (todos já são do mesmo assunto, por F1 e F2);
-   - "um polo", o das mãos, quando é aproximação.
-2. **Tensão fundamentada** (variante "dois lados"), em eixo ainda não usado.
-   Exige duas referências elegíveis em polos opostos que:
-   - (a) sejam do **mesmo assunto**, pela tabela 2.4: no céu, cada posição
-     tem o seu assunto, e Lua e Vênus compartilham "afeto"; nas mãos, o
-     assunto do traço;
-   - (b) estejam num eixo que esse assunto **trata** (tabela 2.5).
+**Unidade do tema:** um **assunto** (tabela 2.6).
 
-   Exemplos válidos: Lua × Vênus no vínculo ou na expressão; as duas imagens
-   da linha do coração. Polos opostos de posições sem relação temática
-   **nunca** formam "dois lados".
+**Seleção** (determinística, no máximo 3 temas, nunca 2 do mesmo assunto):
 
-3. **Um polo** (variante de um único tema), em eixo ainda não usado e sem
-   tensão fundamentada.
-   - **Toda referência precisa ser de um assunto que o eixo trata** (tabela
-     2.5). O mesmo princípio vale para as tensões: a presença de um polo
-     `ToneTag` não basta.
-   - Exige pelo menos **2 referências compatíveis**, todas no mesmo polo.
-   - Referências de outros assuntos são ignoradas. Se as compatíveis não
-     chegarem a 2, o tema é **descartado**, sem procurar substituto.
+1. **Temas do capítulo 8**, os únicos que juntam céu e mãos (afeto ou agir).
+2. **Os demais assuntos**, cada um com **uma só tradição**: a primeira, na
+   ordem do relatório, que sustente a pergunta. Sem o capítulo 8, céu e mãos
+   não são juntados.
+3. **Pergunta:**
+   - **afeto e agir:** pergunta de eixo.
+     - "Dois lados" quando as interpretações do assunto têm os dois polos do
+       eixo (por exemplo, Lua × Vênus).
+     - "Um polo" quando têm o mesmo.
+     - Só contam eixos que o assunto trata (2.5). Sem polo neles (por
+       exemplo, Marte em Peixes), o assunto é **excluído**.
+   - **identidade e pensamento:** a pergunta do assunto (4.2).
+4. **Prioridade:**
+   1. capítulo 8;
+   2. tensão;
+   3. um polo;
+   4. pergunta geral do assunto.
 
-   Exemplo: uma pergunta sobre vínculo nunca é sustentada por Sol, Mercúrio
-   ou Júpiter, mesmo que os três tenham polo de vínculo pelo signo.
+   Dentro de cada nível, vale a ordem do relatório. Assim, as perguntas que
+   dependem da leitura da pessoa vêm antes das gerais.
 
-4. Empate entre candidatos: tensão antes de um polo; depois o eixo apoiado
-   por mais capítulos; depois a ordem fixa.
+**Não entram:**
 
-**Mínimos (mantidos):**
+- interpretações incertas pelo horário;
+- traços das mãos parciais, não visíveis, instáveis (D4), de proporção (D3)
+  ou sem polo nem assunto (por exemplo, a cabeça separada, E1);
+- a linha do destino;
+- leitura das mãos com pedido de nova foto;
+- Saturno e Júpiter (capítulo 5): as perguntas propostas nunca seriam
+  usadas nas fixtures e foram retiradas (5.3);
+- casas, aspectos, cúspides e corpos lentos.
 
-- pelo menos **2 temas**;
-- tema de um polo com pelo menos 2 referências;
-- de 4 a 5 itens de reflexão: 2 ou 3 perguntas, 1 prática opcional e a
-  pergunta final.
+**Mínimo mantido: 2 temas distintos.** Abaixo disso, vale V1 ou V2. Cada
+tema precisa de **pelo menos uma** interpretação apresentada do seu
+assunto. A regra anterior de 2 referências por tema de um polo servia para
+evitar temas montados com polos de signo espalhados entre assuntos. Com o
+tema ancorado no assunto, ela deixa de ser necessária (seção 8, decisão 1).
 
-Abaixo do mínimo, vale V1 (nenhum tema) ou V2 (só um). Uma variante de
-contraponto que não se sustenta não derruba o capítulo sozinha: o eixo passa
-para "um polo" se houver referências compatíveis. **Os mínimos não foram
-alterados.** O impacto real na cobertura está na seção 7.
+**Prática opcional:** a do eixo do primeiro tema que tem eixo. Nenhuma
+prática nova foi criada.
 
-**Rastreabilidade:** cada tema guarda os `ref` das referências que o
-sustentam (seção 6), de que lado vieram, o assunto e a chave do texto da
-biblioteca.
+**Rastreabilidade:** cada tema guarda os `ref`, a tradição, o assunto, a
+base e a chave da pergunta.
 
 ### 1.4 Formatos montados pelo sistema
 
@@ -155,7 +160,7 @@ Depois dos temas vêm a síntese e os limites, nesta ordem:
 Capítulo 9, por tema:
 
 ```
-{n}. **{título do eixo}** — a partir {do capítulo N | dos capítulos N, M e K}.
+{n}. **{título do eixo ou do assunto}** — a partir de: {interpretações, agrupadas por capítulo}.
    {pergunta}
 ```
 
@@ -271,7 +276,8 @@ Assuntos dos traços das mãos, pelo texto aprovado:
 
 ### 2.5 Eixos que cada assunto trata
 
-Usada **só no capítulo 9**, para as tensões e para os temas de um polo.
+Usada **só no capítulo 9**, para escolher a pergunta de eixo de afeto e de
+agir.
 
 | Assunto | Eixos              | Fundamento (texto aprovado)                                                                                                       |
 | ------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -279,9 +285,27 @@ Usada **só no capítulo 9**, para as tensões e para os temas de um polo.
 | agir    | ritmo              | Início da linha da cabeça → ritmo (tabela 2.2); Marte: "a iniciativa, o desejo e **a maneira de agir**"                           |
 | demais  | —                  | As funções de Sol, Mercúrio, Júpiter, Saturno e Ascendente não tratam de nenhum eixo de forma direta                              |
 
-O eixo **foco** não é tratado por nenhum assunto. Por isso, **nunca vira
-tema** no capítulo 9. No ritmo, o céu só tem Marte: um tema de ritmo
-precisa das mãos e, na prática, vem do capítulo 8.
+O eixo **foco** não é tratado por nenhum assunto. Por isso, as perguntas de
+foco ficam inativas (5.4).
+
+### 2.6 Assuntos do capítulo 9 [NOVO, PARA APROVAÇÃO]
+
+Cada assunto vem da função aprovada do corpo (`BODY_MEANINGS`, 02E) ou do
+texto aprovado do traço (03C).
+
+| Interpretação                                   | Assunto    | Fundamento                                                                                                                    |
+| ----------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Sol, Ascendente (signo)                         | identidade | Sol: "o núcleo de identidade…"; o Ascendente acompanha o Sol no núcleo do capítulo 1 (`ChapterDef.core`)                      |
+| Lua, Vênus (signo); linha do coração            | afeto      | Tabelas 2.2 e 2.4 (F1, aprovada)                                                                                              |
+| Marte (signo); início da linha da cabeça        | agir       | Tabelas 2.2 e 2.4 (F1, aprovada)                                                                                              |
+| Mercúrio (signo); inclinação da linha da cabeça | pensamento | Mercúrio: "o modo de pensar, aprender e se comunicar"; inclinação: "raciocínio prático e lógico" / "pensamento mais criativo" |
+
+O mesmo assunto nos dois lados (por exemplo, pensamento) **não** forma tema
+conjunto: só o capítulo 8 relaciona as tradições, e ele só cobre afeto e
+agir. Rótulos novos das mãos para o capítulo 9, descritivos:
+
+- "linha da cabeça de traçado mais reto";
+- "linha da cabeça descendo em direção ao pulso".
 
 ---
 
@@ -406,6 +430,8 @@ menos um traço comparável fica não classificado sempre que não há tema.
 | Foco | dois lados | O que na sua vida você gostaria de manter como está, e o que gostaria de ver mudar? |
 | Foco | um polo: mudança | Que novidade recente despertou o seu interesse, e o que ela trouxe de bom ou de difícil? |
 | Foco | um polo: estabilidade | Que hábitos ou lugares trazem a você uma sensação de continuidade? |
+| Identidade | pergunta do assunto **[NOVA, PARA APROVAÇÃO]** | Que atividade ou escolha do seu dia a dia parece mais com você, e por quê? |
+| Pensamento | pergunta do assunto **[NOVA, PARA APROVAÇÃO]** | Como você costuma chegar a uma conclusão quando algo importante está em jogo? |
 
 ### 4.3 Práticas opcionais (uma por capítulo: a do eixo do primeiro tema)
 
@@ -435,6 +461,17 @@ menos um traço comparável fica não classificado sempre que não há tema.
 ---
 
 ## 5. Alterações em relação aos textos registrados
+
+### 5.0 Revisão definitiva do capítulo 9 (esta entrega)
+
+| Mudança                              | Detalhe                                                                                                                                                                                |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Regra de seleção                     | Temas por **assunto da interpretação apresentada** (1.3 e 2.6), não por polo de signo em qualquer posição; sem juntar tradições fora do capítulo 8                                     |
+| Perguntas novas **[PARA APROVAÇÃO]** | Identidade: "Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?" · Pensamento: "Como você costuma chegar a uma conclusão quando algo importante está em jogo?" |
+| Perguntas propostas e retiradas      | Estrutura (Saturno) e expansão (Júpiter): nunca seriam usadas nas fixtures, porque as vagas são preenchidas antes (5.3)                                                                |
+| Rótulos novos das mãos               | "linha da cabeça de traçado mais reto"; "linha da cabeça descendo em direção ao pulso" (inclinação da cabeça, só no capítulo 9)                                                        |
+| Regra retirada                       | 2 referências por tema de um polo (seção 8, decisão 1)                                                                                                                                 |
+| Sem mudança                          | Capítulo 8, correspondências, as 12 perguntas de eixo, as práticas, os mínimos (2 temas), R-conf, U4 e as ressalvas da revisão anterior                                                |
 
 ### 5.1 Correções desta revisão final
 
@@ -490,6 +527,8 @@ caso.
 | Texto                                                                                                                                                                                                                                     | Motivo                                                   |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | Prática genérica: "Se quiser, volte a um dos capítulos daqui a algumas semanas e veja se a leitura parece diferente. Mudar de opinião sobre ela também faz parte."                                                                        | Inalcançável: sempre há um primeiro tema (revisão final) |
+| Pergunta de estrutura (proposta nesta revisão): "Que limite ou compromisso tem ajudado você a construir algo, e qual deles pesa mais do que deveria?"                                                                                     | Não seria usada nas fixtures (5.0)                       |
+| Pergunta de expansão (proposta nesta revisão): "Onde você tem buscado crescer ou encontrar sentido ultimamente, e o que tem alimentado essa busca?"                                                                                       | Não seria usada nas fixtures (5.0)                       |
 | Frase-ponte ritmo com contraponto: "As duas leituras usam a imagem de um ritmo cuidadoso, de avaliar antes de seguir. O mapa, porém, também traz uma imagem de ação mais imediata. As duas ficam lado a lado, sem que uma anule a outra." | Inalcançável: Marte é a única posição do assunto "agir"  |
 | R-sem-hora                                                                                                                                                                                                                                | O Ascendente não entra nas comparações                   |
 | Anexo A (vínculo)                                                                                                                                                                                                                         | E1 recusada                                              |
@@ -500,9 +539,11 @@ Pela instrução de preservar perguntas e práticas, os textos abaixo ficam na
 biblioteca **inativos**. A verificação confere que nenhum deles é usado.
 
 - **as três perguntas de foco e a prática de foco:** nenhum assunto trata o
-  foco (2.5);
-- **a pergunta de ritmo com o polo impulso:** o único caminho seria Marte
-  mais um traço das mãos com impulso, e nenhum traço tem esse polo.
+  foco (2.5).
+
+A pergunta de ritmo com impulso voltou a ser alcançável, com Marte em Áries
+como tema de agir. Perguntas aprovadas e alcançáveis, mas que não
+apareceram nas fixtures: vinculo:autonomia.
 
 Ver a decisão 2 da seção 8.
 
@@ -550,11 +591,27 @@ Céu: `C-val2`. Mãos: `M-clara`.
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> [indisponível — V2] Os capítulos disponíveis sustentam só um tema com segurança, e o guia precisa de pelo menos dois. Para não preencher o espaço com temas inventados, ele não foi montado nesta jornada.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+>
+> 1. **Expressão: abertura e reserva** — a partir de: Lua em Leão (cap. 2); Vênus em Gêmeos (cap. 4); linha do coração longa; linha do coração curvada para cima (cap. 7).
+>    De que formas você costuma demonstrar afeto, e quais delas parecem mais naturais para você?
+> 2. **Ritmo: impulso e cautela** — a partir de: linha da cabeça começando unida à da vida (cap. 7).
+>    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
+> 3. **Identidade** — a partir de: Sol em Câncer (cap. 1).
+>    Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
+>
+> _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
+>
+> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
+>
+> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
 
 <details><summary>Rastreabilidade</summary>
 
 - Cap. 8 · Expressão · chave `expressao:expansiva:A`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Expressão: abertura e reserva · assunto `afeto` · base `c8` · tradição ambas · pergunta `expressao:expansiva`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Ritmo: impulso e cautela · assunto `agir` · base `um-polo` · tradição mãos · pergunta `ritmo:cautela`: `linhas:head.start:joined_life`
+- Cap. 9 · Identidade · assunto `identidade` · base `assunto` · tradição céu · pergunta `identidade`: `identidade:body-sign:sun`
 
 </details>
 
@@ -587,12 +644,14 @@ Céu: `K-contraponto` **[construída]** (Lua em Leão, Vênus em Capricórnio, M
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
 >
-> 1. **Ritmo: impulso e cautela** — a partir dos capítulos 4 e 7.
+> 1. **Ritmo: impulso e cautela** — a partir de: Marte em Touro (cap. 4); linha da cabeça começando unida à da vida (cap. 7).
 >    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
-> 2. **Expressão: abertura e reserva** — a partir dos capítulos 2, 4 e 7.
+> 2. **Expressão: abertura e reserva** — a partir de: Lua em Leão (cap. 2); Vênus em Capricórnio (cap. 4); linha do coração longa; linha do coração curvada para cima (cap. 7).
 >    Com quem você mostra com facilidade o que sente, e com quem prefere guardar mais para si?
+> 3. **Identidade** — a partir de: Sol em Capricórnio; Ascendente em Peixes (cap. 1).
+>    Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
 >
 > _Prática opcional._ Se quiser, observe durante alguns dias as pequenas decisões do cotidiano: quais você toma de imediato e quais deixa para depois. Não é preciso mudar nada, só notar.
 >
@@ -604,8 +663,9 @@ Céu: `K-contraponto` **[construída]** (Lua em Leão, Vênus em Capricórnio, M
 
 - Cap. 8 · Ritmo · chave `ritmo:cautela:A`: `linhas:head.start:joined_life`, `relacionamentos:body-sign:mars`
 - Cap. 8 · Expressão · chave `expressao:expansiva:AC`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`, `relacionamentos:body-sign:venus` (outro lado)
-- Cap. 9 · Ritmo · base `c8` · pergunta `ritmo:cautela`: `linhas:head.start:joined_life`, `relacionamentos:body-sign:mars`
-- Cap. 9 · Expressão · base `c8` · pergunta `expressao:two`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Ritmo: impulso e cautela · assunto `agir` · base `c8` · tradição ambas · pergunta `ritmo:cautela`: `linhas:head.start:joined_life`, `relacionamentos:body-sign:mars`
+- Cap. 9 · Expressão: abertura e reserva · assunto `afeto` · base `c8` · tradição ambas · pergunta `expressao:two`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Identidade · assunto `identidade` · base `assunto` · tradição céu · pergunta `identidade`: `identidade:body-sign:sun`, `identidade:angle-sign:asc`
 
 </details>
 
@@ -632,12 +692,14 @@ Céu: `C-demo2`. Mãos: `M-clara`.
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
 >
-> 1. **Expressão: abertura e reserva** — a partir dos capítulos 4 e 7.
+> 1. **Expressão: abertura e reserva** — a partir de: Vênus em Câncer (cap. 4); linha do coração longa; linha do coração curvada para cima (cap. 7).
 >    Com quem você mostra com facilidade o que sente, e com quem prefere guardar mais para si?
-> 2. **Vínculo: autonomia e proximidade** — a partir dos capítulos 2 e 4.
->    Com quem você gosta de dividir o dia a dia, e o que torna essa convivência boa?
+> 2. **Ritmo: impulso e cautela** — a partir de: linha da cabeça começando unida à da vida (cap. 7).
+>    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
+> 3. **Identidade** — a partir de: Sol em Câncer; Ascendente em Virgem (cap. 1).
+>    Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
 >
 > _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
 >
@@ -648,8 +710,9 @@ Céu: `C-demo2`. Mãos: `M-clara`.
 <details><summary>Rastreabilidade</summary>
 
 - Cap. 8 · Expressão · chave `expressao:expansiva:D`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `relacionamentos:body-sign:venus`
-- Cap. 9 · Expressão · base `c8` · pergunta `expressao:two`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `relacionamentos:body-sign:venus`
-- Cap. 9 · Vínculo · base `um-polo` · pergunta `vinculo:proximidade`: `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Expressão: abertura e reserva · assunto `afeto` · base `c8` · tradição ambas · pergunta `expressao:two`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Ritmo: impulso e cautela · assunto `agir` · base `um-polo` · tradição mãos · pergunta `ritmo:cautela`: `linhas:head.start:joined_life`
+- Cap. 9 · Identidade · assunto `identidade` · base `assunto` · tradição céu · pergunta `identidade`: `identidade:body-sign:sun`, `identidade:angle-sign:asc`
 
 </details>
 
@@ -681,12 +744,14 @@ Céu: `K-ritmo-diferença` **[construída]** (Lua em Câncer, Vênus em Touro, M
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
 >
-> 1. **Ritmo: impulso e cautela** — a partir dos capítulos 4 e 7.
+> 1. **Ritmo: impulso e cautela** — a partir de: Marte em Áries (cap. 4); linha da cabeça começando unida à da vida (cap. 7).
 >    Quando foi a última vez que esperar antes de decidir ajudou você — e quando agir logo teria sido melhor?
-> 2. **Expressão: abertura e reserva** — a partir dos capítulos 2 e 7.
+> 2. **Expressão: abertura e reserva** — a partir de: Lua em Câncer (cap. 2); linha do coração longa; linha do coração curvada para cima (cap. 7).
 >    Com quem você mostra com facilidade o que sente, e com quem prefere guardar mais para si?
+> 3. **Identidade** — a partir de: Sol em Touro; Ascendente em Leão (cap. 1).
+>    Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
 >
 > _Prática opcional._ Se quiser, observe durante alguns dias as pequenas decisões do cotidiano: quais você toma de imediato e quais deixa para depois. Não é preciso mudar nada, só notar.
 >
@@ -698,8 +763,9 @@ Céu: `K-ritmo-diferença` **[construída]** (Lua em Câncer, Vênus em Touro, M
 
 - Cap. 8 · Ritmo · chave `ritmo:cautela:D`: `linhas:head.start:joined_life`, `relacionamentos:body-sign:mars`
 - Cap. 8 · Expressão · chave `expressao:expansiva:D`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
-- Cap. 9 · Ritmo · base `c8` · pergunta `ritmo:two`: `linhas:head.start:joined_life`, `relacionamentos:body-sign:mars`
-- Cap. 9 · Expressão · base `c8` · pergunta `expressao:two`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
+- Cap. 9 · Ritmo: impulso e cautela · assunto `agir` · base `c8` · tradição ambas · pergunta `ritmo:two`: `linhas:head.start:joined_life`, `relacionamentos:body-sign:mars`
+- Cap. 9 · Expressão: abertura e reserva · assunto `afeto` · base `c8` · tradição ambas · pergunta `expressao:two`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
+- Cap. 9 · Identidade · assunto `identidade` · base `assunto` · tradição céu · pergunta `identidade`: `identidade:body-sign:sun`, `identidade:angle-sign:asc`
 
 </details>
 
@@ -726,12 +792,14 @@ Céu: `C-ref exato`. Mãos: `M-duas-imagens` **[construída]** (coração curto 
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
 >
-> 1. **Expressão: abertura e reserva** — a partir dos capítulos 2 e 7.
+> 1. **Expressão: abertura e reserva** — a partir de: Lua em Sagitário (cap. 2); linha do coração curta; linha do coração curvada para cima (cap. 7).
 >    Com quem você mostra com facilidade o que sente, e com quem prefere guardar mais para si?
-> 2. **Vínculo: autonomia e proximidade** — a partir dos capítulos 2 e 4.
->    Que espaços de independência são importantes para você hoje, e como você cuida deles?
+> 2. **Ritmo: impulso e cautela** — a partir de: linha da cabeça começando unida à da vida (cap. 7).
+>    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
+> 3. **Identidade** — a partir de: Sol em Touro; Ascendente em Virgem (cap. 1).
+>    Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
 >
 > _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
 >
@@ -742,8 +810,9 @@ Céu: `C-ref exato`. Mãos: `M-duas-imagens` **[construída]** (coração curto 
 <details><summary>Rastreabilidade</summary>
 
 - Cap. 8 · Expressão · chave `expressao:F`: `linhas:heart.length:short`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
-- Cap. 9 · Expressão · base `c8` · pergunta `expressao:two`: `linhas:heart.length:short`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
-- Cap. 9 · Vínculo · base `um-polo` · pergunta `vinculo:autonomia`: `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Expressão: abertura e reserva · assunto `afeto` · base `c8` · tradição ambas · pergunta `expressao:two`: `linhas:heart.length:short`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
+- Cap. 9 · Ritmo: impulso e cautela · assunto `agir` · base `um-polo` · tradição mãos · pergunta `ritmo:cautela`: `linhas:head.start:joined_life`
+- Cap. 9 · Identidade · assunto `identidade` · base `assunto` · tradição céu · pergunta `identidade`: `identidade:body-sign:sun`, `identidade:angle-sign:asc`
 
 </details>
 
@@ -777,12 +846,14 @@ Céu: `K-lua-incerta` **[construída]** (horário desconhecido: Lua incerta, Vê
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
 >
-> 1. **Ritmo: impulso e cautela** — a partir dos capítulos 4 e 7.
+> 1. **Ritmo: impulso e cautela** — a partir de: Marte em Touro (cap. 4); linha da cabeça começando unida à da vida (cap. 7).
 >    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
-> 2. **Expressão: abertura e reserva** — a partir dos capítulos 4 e 7.
+> 2. **Expressão: abertura e reserva** — a partir de: Vênus em Capricórnio (cap. 4); linha do coração longa (cap. 7).
 >    Com quem você mostra com facilidade o que sente, e com quem prefere guardar mais para si?
+> 3. **Identidade** — a partir de: Sol em Capricórnio (cap. 1).
+>    Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
 >
 > _Prática opcional._ Se quiser, observe durante alguns dias as pequenas decisões do cotidiano: quais você toma de imediato e quais deixa para depois. Não é preciso mudar nada, só notar.
 >
@@ -794,65 +865,13 @@ Céu: `K-lua-incerta` **[construída]** (horário desconhecido: Lua incerta, Vê
 
 - Cap. 8 · Ritmo · chave `ritmo:cautela:A`: `linhas:head.start:joined_life`, `relacionamentos:body-sign:mars`
 - Cap. 8 · Expressão · chave `expressao:expansiva:D`: `linhas:heart.length:long`, `relacionamentos:body-sign:venus`
-- Cap. 9 · Ritmo · base `c8` · pergunta `ritmo:cautela`: `linhas:head.start:joined_life`, `relacionamentos:body-sign:mars`
-- Cap. 9 · Expressão · base `c8` · pergunta `expressao:two`: `linhas:heart.length:long`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Ritmo: impulso e cautela · assunto `agir` · base `c8` · tradição ambas · pergunta `ritmo:cautela`: `linhas:head.start:joined_life`, `relacionamentos:body-sign:mars`
+- Cap. 9 · Expressão: abertura e reserva · assunto `afeto` · base `c8` · tradição ambas · pergunta `expressao:two`: `linhas:heart.length:long`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Identidade · assunto `identidade` · base `assunto` · tradição céu · pergunta `identidade`: `identidade:body-sign:sun`
 
 </details>
 
-### 6.7 Capítulo 9 com tensão fundamentada (Lua × Vênus no vínculo)
-
-Céu: `C-val1`. Mãos: `M-clara`.
-
-**Capítulo 8 — Conexões simbólicas entre céu e mãos**
-
-> Este capítulo coloca lado a lado as imagens que a astrologia e a quiromancia usaram nos capítulos anteriores. São tradições simbólicas independentes: quando usam imagens parecidas, trata-se de uma semelhança de linguagem, não de uma constatação sobre você; quando apontam para lados diferentes, a diferença fica à vista.
->
-> **Ritmo: impulso e cautela** · Aproximação
-> Nas mãos: linha da cabeça começando unida à da vida (cap. 7).
-> No céu: Marte em Capricórnio (cap. 4).
-> Aqui as duas leituras usam uma imagem parecida: um ritmo cuidadoso, de avaliar antes de seguir.
->
-> **Expressão: abertura e reserva** · Aproximação
-> Nas mãos: linha do coração longa; linha do coração curvada para cima (cap. 7).
-> No céu: Vênus em Sagitário (cap. 4).
-> As duas leituras usam a imagem de uma expressão afetiva mais aberta.
->
-> _Síntese._ As aproximações acima mostram onde as duas tradições usam palavras parecidas. Elas servem como ponto de partida para observar a sua experiência, não como conclusão.
->
-> _Limites._
->
-> - Semelhanças entre tradições simbólicas não comprovam traços de personalidade, e diferenças entre elas não indicam erro de nenhuma das leituras.
-> - O formato da palma, o comprimento dos dedos, o comprimento da linha da cabeça e o arco da linha da vida não entram nestas comparações: são características que ainda não podem ser classificadas com segurança a partir de uma foto.
-> - Os demais traços e posições tratam de outros temas e por isso não são comparados neste capítulo.
-
-**Capítulo 9 — Seu guia pessoal de reflexão**
-
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
->
-> 1. **Ritmo: impulso e cautela** — a partir dos capítulos 4 e 7.
->    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
-> 2. **Expressão: abertura e reserva** — a partir dos capítulos 4 e 7.
->    De que formas você costuma demonstrar afeto, e quais delas parecem mais naturais para você?
-> 3. **Vínculo: autonomia e proximidade** — a partir dos capítulos 2 e 4.
->    Em quais momentos da sua semana você procura companhia, e em quais prefere ficar por conta própria?
->
-> _Prática opcional._ Se quiser, observe durante alguns dias as pequenas decisões do cotidiano: quais você toma de imediato e quais deixa para depois. Não é preciso mudar nada, só notar.
->
-> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
->
-> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
-
-<details><summary>Rastreabilidade</summary>
-
-- Cap. 8 · Ritmo · chave `ritmo:cautela:A`: `linhas:head.start:joined_life`, `relacionamentos:body-sign:mars`
-- Cap. 8 · Expressão · chave `expressao:expansiva:A`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `relacionamentos:body-sign:venus`
-- Cap. 9 · Ritmo · base `c8` · pergunta `ritmo:cautela`: `linhas:head.start:joined_life`, `relacionamentos:body-sign:mars`
-- Cap. 9 · Expressão · base `c8` · pergunta `expressao:expansiva`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `relacionamentos:body-sign:venus`
-- Cap. 9 · Vínculo · base `tensao` · pergunta `vinculo:two`: `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
-
-</details>
-
-### 6.8 Capítulo 9 com tema de um polo compatível (Lua e Vênus no vínculo)
+### 6.7 Duas fontes: um tema do capítulo 8, um só das mãos e um só do céu
 
 Céu: `C-ref exato`. Mãos: `M-clara`.
 
@@ -875,12 +894,14 @@ Céu: `C-ref exato`. Mãos: `M-clara`.
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 2, 4 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2 e 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
 >
-> 1. **Expressão: abertura e reserva** — a partir dos capítulos 2 e 7.
+> 1. **Expressão: abertura e reserva** — a partir de: Lua em Sagitário (cap. 2); linha do coração longa; linha do coração curvada para cima (cap. 7).
 >    De que formas você costuma demonstrar afeto, e quais delas parecem mais naturais para você?
-> 2. **Vínculo: autonomia e proximidade** — a partir dos capítulos 2 e 4.
->    Que espaços de independência são importantes para você hoje, e como você cuida deles?
+> 2. **Ritmo: impulso e cautela** — a partir de: linha da cabeça começando unida à da vida (cap. 7).
+>    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
+> 3. **Identidade** — a partir de: Sol em Touro; Ascendente em Virgem (cap. 1).
+>    Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
 >
 > _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
 >
@@ -891,12 +912,46 @@ Céu: `C-ref exato`. Mãos: `M-clara`.
 <details><summary>Rastreabilidade</summary>
 
 - Cap. 8 · Expressão · chave `expressao:expansiva:A`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
-- Cap. 9 · Expressão · base `c8` · pergunta `expressao:expansiva`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
-- Cap. 9 · Vínculo · base `um-polo` · pergunta `vinculo:autonomia`: `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Expressão: abertura e reserva · assunto `afeto` · base `c8` · tradição ambas · pergunta `expressao:expansiva`: `linhas:heart.length:long`, `linhas:heart.shape:curved`, `emocional:body-sign:moon`
+- Cap. 9 · Ritmo: impulso e cautela · assunto `agir` · base `um-polo` · tradição mãos · pergunta `ritmo:cautela`: `linhas:head.start:joined_life`
+- Cap. 9 · Identidade · assunto `identidade` · base `assunto` · tradição céu · pergunta `identidade`: `identidade:body-sign:sun`, `identidade:angle-sign:asc`
 
 </details>
 
-### 6.9 Só astrologia: capítulo 9 com um tema só (V2)
+### 6.8 Duas fontes sem capítulo 8 (nova foto): capítulo 9 só com o céu
+
+Céu: `C-val1`. Mãos: `M-insuf.`.
+
+**Capítulo 8 — Conexões simbólicas entre céu e mãos**
+
+> [indisponível — U5] A leitura das mãos pediu uma nova foto. Sem uma observação nítida, nenhuma conexão foi criada.
+
+**Capítulo 9 — Seu guia pessoal de reflexão**
+
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2 e 4; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+>
+> 1. **Vínculo: autonomia e proximidade** — a partir de: Lua em Peixes (cap. 2); Vênus em Sagitário (cap. 4).
+>    Em quais momentos da sua semana você procura companhia, e em quais prefere ficar por conta própria?
+> 2. **Ritmo: impulso e cautela** — a partir de: Marte em Capricórnio (cap. 4).
+>    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
+> 3. **Identidade** — a partir de: Sol em Escorpião; Ascendente em Sagitário (cap. 1).
+>    Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
+>
+> _Prática opcional._ Se quiser, observe numa semana comum os momentos em que buscou companhia e os momentos em que preferiu ficar só, e como foi cada um.
+>
+> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
+>
+> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
+
+<details><summary>Rastreabilidade</summary>
+
+- Cap. 9 · Vínculo: autonomia e proximidade · assunto `afeto` · base `tensao` · tradição céu · pergunta `vinculo:two`: `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Ritmo: impulso e cautela · assunto `agir` · base `um-polo` · tradição céu · pergunta `ritmo:cautela`: `relacionamentos:body-sign:mars`
+- Cap. 9 · Identidade · assunto `identidade` · base `assunto` · tradição céu · pergunta `identidade`: `identidade:body-sign:sun`, `identidade:angle-sign:asc`
+
+</details>
+
+### 6.9 Só astrologia: tensão Lua × Vênus no vínculo
 
 Céu: `C-val1`. Mãos: sem mãos.
 
@@ -906,9 +961,59 @@ Céu: `C-val1`. Mãos: sem mãos.
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> [indisponível — V2] Os capítulos disponíveis sustentam só um tema com segurança, e o guia precisa de pelo menos dois. Para não preencher o espaço com temas inventados, ele não foi montado nesta jornada.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2 e 4; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+>
+> 1. **Vínculo: autonomia e proximidade** — a partir de: Lua em Peixes (cap. 2); Vênus em Sagitário (cap. 4).
+>    Em quais momentos da sua semana você procura companhia, e em quais prefere ficar por conta própria?
+> 2. **Ritmo: impulso e cautela** — a partir de: Marte em Capricórnio (cap. 4).
+>    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
+> 3. **Identidade** — a partir de: Sol em Escorpião; Ascendente em Sagitário (cap. 1).
+>    Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
+>
+> _Prática opcional._ Se quiser, observe numa semana comum os momentos em que buscou companhia e os momentos em que preferiu ficar só, e como foi cada um.
+>
+> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
+>
+> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
 
 <details><summary>Rastreabilidade</summary>
+
+- Cap. 9 · Vínculo: autonomia e proximidade · assunto `afeto` · base `tensao` · tradição céu · pergunta `vinculo:two`: `emocional:body-sign:moon`, `relacionamentos:body-sign:venus`
+- Cap. 9 · Ritmo: impulso e cautela · assunto `agir` · base `um-polo` · tradição céu · pergunta `ritmo:cautela`: `relacionamentos:body-sign:mars`
+- Cap. 9 · Identidade · assunto `identidade` · base `assunto` · tradição céu · pergunta `identidade`: `identidade:body-sign:sun`, `identidade:angle-sign:asc`
+
+</details>
+
+### 6.9b Só astrologia: temas de um polo e de assunto
+
+Céu: `C-demo2`. Mãos: sem mãos.
+
+**Capítulo 8 — Conexões simbólicas entre céu e mãos**
+
+> [indisponível — U1] As conexões dependem das duas leituras, e a leitura das mãos não está nesta jornada. Nenhuma conexão foi criada só a partir do mapa.
+
+**Capítulo 9 — Seu guia pessoal de reflexão**
+
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 3 e 4; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+>
+> 1. **Expressão: abertura e reserva** — a partir de: Vênus em Câncer (cap. 4).
+>    O que precisa acontecer para você contar a alguém o que está sentindo?
+> 2. **Identidade** — a partir de: Sol em Câncer; Ascendente em Virgem (cap. 1).
+>    Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
+> 3. **Pensamento** — a partir de: Mercúrio em Gêmeos (cap. 3).
+>    Como você costuma chegar a uma conclusão quando algo importante está em jogo?
+>
+> _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
+>
+> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
+>
+> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
+
+<details><summary>Rastreabilidade</summary>
+
+- Cap. 9 · Expressão: abertura e reserva · assunto `afeto` · base `um-polo` · tradição céu · pergunta `expressao:reservada`: `relacionamentos:body-sign:venus`
+- Cap. 9 · Identidade · assunto `identidade` · base `assunto` · tradição céu · pergunta `identidade`: `identidade:body-sign:sun`, `identidade:angle-sign:asc`
+- Cap. 9 · Pensamento · assunto `pensamento` · base `assunto` · tradição céu · pergunta `pensamento`: `mente:body-sign:mercury`
 
 </details>
 
@@ -922,9 +1027,26 @@ Céu: `C-ref exato`. Mãos: `M-sem-classificação` **[construída]** (coração
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> [indisponível — V2] Os capítulos disponíveis sustentam só um tema com segurança, e o guia precisa de pelo menos dois. Para não preencher o espaço com temas inventados, ele não foi montado nesta jornada.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2 e 3; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+>
+> 1. **Expressão: abertura e reserva** — a partir de: Lua em Sagitário (cap. 2).
+>    De que formas você costuma demonstrar afeto, e quais delas parecem mais naturais para você?
+> 2. **Identidade** — a partir de: Sol em Touro; Ascendente em Virgem (cap. 1).
+>    Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
+> 3. **Pensamento** — a partir de: Mercúrio em Touro (cap. 3).
+>    Como você costuma chegar a uma conclusão quando algo importante está em jogo?
+>
+> _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
+>
+> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
+>
+> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
 
 <details><summary>Rastreabilidade</summary>
+
+- Cap. 9 · Expressão: abertura e reserva · assunto `afeto` · base `um-polo` · tradição céu · pergunta `expressao:expansiva`: `emocional:body-sign:moon`
+- Cap. 9 · Identidade · assunto `identidade` · base `assunto` · tradição céu · pergunta `identidade`: `identidade:body-sign:sun`, `identidade:angle-sign:asc`
+- Cap. 9 · Pensamento · assunto `pensamento` · base `assunto` · tradição céu · pergunta `pensamento`: `mente:body-sign:mercury`
 
 </details>
 
@@ -938,15 +1060,95 @@ Céu: `C-ref exato`. Mãos: `M-sem-elegível` **[construída]** (coração médi
 
 **Capítulo 9 — Seu guia pessoal de reflexão**
 
-> [indisponível — V2] Os capítulos disponíveis sustentam só um tema com segurança, e o guia precisa de pelo menos dois. Para não preencher o espaço com temas inventados, ele não foi montado nesta jornada.
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm dos capítulos 1, 2 e 3; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+>
+> 1. **Expressão: abertura e reserva** — a partir de: Lua em Sagitário (cap. 2).
+>    De que formas você costuma demonstrar afeto, e quais delas parecem mais naturais para você?
+> 2. **Identidade** — a partir de: Sol em Touro; Ascendente em Virgem (cap. 1).
+>    Que atividade ou escolha do seu dia a dia parece mais com você, e por quê?
+> 3. **Pensamento** — a partir de: Mercúrio em Touro (cap. 3).
+>    Como você costuma chegar a uma conclusão quando algo importante está em jogo?
+>
+> _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
+>
+> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
+>
+> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
 
 <details><summary>Rastreabilidade</summary>
 
+- Cap. 9 · Expressão: abertura e reserva · assunto `afeto` · base `um-polo` · tradição céu · pergunta `expressao:expansiva`: `emocional:body-sign:moon`
+- Cap. 9 · Identidade · assunto `identidade` · base `assunto` · tradição céu · pergunta `identidade`: `identidade:body-sign:sun`, `identidade:angle-sign:asc`
+- Cap. 9 · Pensamento · assunto `pensamento` · base `assunto` · tradição céu · pergunta `pensamento`: `mente:body-sign:mercury`
+
 </details>
 
-### 6.12 Só mãos: capítulo 9 com um tema só (V2)
+### 6.12 Só mãos, com conteúdo suficiente
 
 Céu: sem céu. Mãos: `M-clara`.
+
+**Capítulo 8 — Conexões simbólicas entre céu e mãos**
+
+> [indisponível — U2] As conexões dependem das duas leituras, e os capítulos do mapa natal não estão nesta jornada. Nenhuma conexão foi criada só a partir das mãos.
+
+**Capítulo 9 — Seu guia pessoal de reflexão**
+
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm do capítulo 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+>
+> 1. **Expressão: abertura e reserva** — a partir de: linha do coração longa; linha do coração curvada para cima (cap. 7).
+>    De que formas você costuma demonstrar afeto, e quais delas parecem mais naturais para você?
+> 2. **Ritmo: impulso e cautela** — a partir de: linha da cabeça começando unida à da vida (cap. 7).
+>    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
+> 3. **Pensamento** — a partir de: linha da cabeça descendo em direção ao pulso (cap. 7).
+>    Como você costuma chegar a uma conclusão quando algo importante está em jogo?
+>
+> _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
+>
+> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
+>
+> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
+
+<details><summary>Rastreabilidade</summary>
+
+- Cap. 9 · Expressão: abertura e reserva · assunto `afeto` · base `um-polo` · tradição mãos · pergunta `expressao:expansiva`: `linhas:heart.length:long`, `linhas:heart.shape:curved`
+- Cap. 9 · Ritmo: impulso e cautela · assunto `agir` · base `um-polo` · tradição mãos · pergunta `ritmo:cautela`: `linhas:head.start:joined_life`
+- Cap. 9 · Pensamento · assunto `pensamento` · base `assunto` · tradição mãos · pergunta `pensamento`: `linhas:head.slope:sloping`
+
+</details>
+
+### 6.13 Só mãos com leitura parcial
+
+Céu: sem céu. Mãos: `M-parcial`.
+
+**Capítulo 8 — Conexões simbólicas entre céu e mãos**
+
+> [indisponível — U2] As conexões dependem das duas leituras, e os capítulos do mapa natal não estão nesta jornada. Nenhuma conexão foi criada só a partir das mãos.
+
+**Capítulo 9 — Seu guia pessoal de reflexão**
+
+> Este guia transforma alguns temas da sua leitura em perguntas para pensar com calma. Os temas vêm do capítulo 7; as respostas, e a decisão sobre o que faz sentido para você, são suas.
+>
+> 1. **Expressão: abertura e reserva** — a partir de: linha do coração longa (cap. 7).
+>    De que formas você costuma demonstrar afeto, e quais delas parecem mais naturais para você?
+> 2. **Ritmo: impulso e cautela** — a partir de: linha da cabeça começando unida à da vida (cap. 7).
+>    Que decisões você costuma tomar com calma, e quais gostaria de tomar com menos espera?
+>
+> _Prática opcional._ Se quiser, repare ao longo de uma semana em quando você fala do que sente e quando prefere guardar. Anotar uma ou duas situações já basta.
+>
+> _Para fechar._ Pensando na leitura como um todo: com o que você concorda, com o que discorda — e o que prefere deixar em aberto por enquanto?
+>
+> _Nota._ Este guia é um convite à reflexão a partir de tradições simbólicas. Ele não prevê acontecimentos nem substitui orientação profissional, e nenhuma pergunta aqui tem resposta certa.
+
+<details><summary>Rastreabilidade</summary>
+
+- Cap. 9 · Expressão: abertura e reserva · assunto `afeto` · base `um-polo` · tradição mãos · pergunta `expressao:expansiva`: `linhas:heart.length:long`
+- Cap. 9 · Ritmo: impulso e cautela · assunto `agir` · base `um-polo` · tradição mãos · pergunta `ritmo:cautela`: `linhas:head.start:joined_life`
+
+</details>
+
+### 6.14 Só mãos com um tema só (V2)
+
+Céu: sem céu. Mãos: `M-sem-elegível` **[construída]** (coração médio, traçado indeterminado, cabeça separada).
 
 **Capítulo 8 — Conexões simbólicas entre céu e mãos**
 
@@ -960,9 +1162,9 @@ Céu: sem céu. Mãos: `M-clara`.
 
 </details>
 
-### 6.13 Sem conteúdo suficiente (V1)
+### 6.15 Sem conteúdo suficiente (V1)
 
-Céu: sem céu. Mãos: `M-parcial`.
+Céu: sem céu. Mãos: `M-insuf.`.
 
 **Capítulo 8 — Conexões simbólicas entre céu e mãos**
 
@@ -1020,44 +1222,45 @@ validador da 03C como qualquer observação.
 
 **Resultado: 0 falhas em 165 combinações e nos 6 casos adversariais.**
 
-| Verificação                         | O que é conferido em cada combinação                                                                                                                                                             |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Capítulo 8: variantes               | Toda variante usada tem texto na biblioteca; aproximação, contraponto, diferença e duas imagens ocorrem (7.5)                                                                                    |
-| Capítulo 9: tema único e tensão     | Toda pergunta existe; "dois lados" só com os dois polos entre as fontes; tensão só dentro do mesmo assunto; um polo com pelo menos 2 referências                                                 |
-| Elegibilidade temática (capítulo 9) | **Toda** referência de **todo** tema do capítulo 9 (do capítulo 8, de tensão ou de um polo) é de um assunto que o eixo trata (tabela 2.5)                                                        |
-| Causa real da indisponibilidade     | U4 só quando nenhum traço comparável foi classificado; U4-misto só quando algum foi observado sem correspondência; nenhum texto afirma variação entre análises da foto da pessoa                 |
-| Sem contraponto artificial          | No capítulo 8, toda referência do céu (inclusive o outro lado) é do mesmo assunto do traço e tem o polo esperado                                                                                 |
-| Uma fonte só                        | O capítulo 8 fica sempre indisponível (U1, U2 ou U3); o capítulo 9 não usa vocabulário de conexão                                                                                                |
-| Indisponibilidade                   | Capítulo 9 com 2 ou 3 temas, sem eixo repetido; abaixo disso, V1 ou V2                                                                                                                           |
-| Rastreabilidade                     | Toda referência citada existe na ponte entregue, com o `ref` do item original                                                                                                                    |
-| Segurança editorial                 | Todo texto renderizado passa nos padrões do projeto (02F e 03C), sem gênero presumido; no capítulo 8, sem "confirma", "reforça", elementos e similares; no capítulo 9, sem "conexão" e similares |
-| Privacidade                         | Nenhum texto renderizado contém data, hora, local, identificador de lugar ou graus                                                                                                               |
-| Repetição                           | Nenhuma frase repetida dentro do mesmo capítulo; perguntas sem semelhança com as 12 perguntas dos capítulos 1–7                                                                                  |
-| Determinismo                        | A mesma entrada gera a mesma saída                                                                                                                                                               |
-| Fidelidade da biblioteca            | Todo texto literal é **exatamente igual** a um texto citado no registro (`96353c1` com `e6c291d`), salvo os 4 alterados de propósito em 5.1; qualquer outra diferença falha a verificação        |
+| Verificação                         | O que é conferido em cada combinação                                                                                                                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Capítulo 8: variantes               | Toda variante usada tem texto na biblioteca; aproximação, contraponto, diferença e duas imagens ocorrem (7.5)                                                                                                           |
+| Capítulo 9: tema único e tensão     | Toda pergunta existe; "dois lados" só com os dois polos entre as fontes; tensão só dentro do mesmo assunto; um polo com pelo menos 2 referências                                                                        |
+| Elegibilidade temática (capítulo 9) | **Toda** referência de **todo** tema é do **assunto do tema** (2.6); nos temas de eixo, tem polo naquele eixo; fora do capítulo 8, um tema nunca junta as duas tradições; mãos com pedido de nova foto nunca são usadas |
+| Causa real da indisponibilidade     | U4 só quando nenhum traço comparável foi classificado; U4-misto só quando algum foi observado sem correspondência; nenhum texto afirma variação entre análises da foto da pessoa                                        |
+| Sem contraponto artificial          | No capítulo 8, toda referência do céu (inclusive o outro lado) é do mesmo assunto do traço e tem o polo esperado                                                                                                        |
+| Uma fonte só                        | O capítulo 8 fica sempre indisponível (U1, U2 ou U3); o capítulo 9 não usa vocabulário de conexão                                                                                                                       |
+| Indisponibilidade e repetição       | Capítulo 9 com 2 ou 3 temas, sem assunto nem pergunta repetidos; abaixo disso, V1 ou V2                                                                                                                                 |
+| Rastreabilidade                     | Toda referência citada existe na ponte entregue, com o `ref` do item original                                                                                                                                           |
+| Segurança editorial                 | Todo texto renderizado passa nos padrões do projeto (02F e 03C), sem gênero presumido; no capítulo 8, sem "confirma", "reforça", elementos e similares; no capítulo 9, sem "conexão" e similares                        |
+| Privacidade                         | Nenhum texto renderizado contém data, hora, local, identificador de lugar ou graus                                                                                                                                      |
+| Repetição                           | Nenhuma frase repetida dentro do mesmo capítulo; perguntas sem semelhança com as 12 perguntas dos capítulos 1–7                                                                                                         |
+| Determinismo                        | A mesma entrada gera a mesma saída                                                                                                                                                                                      |
+| Fidelidade da biblioteca            | Todo texto literal é **exatamente igual** a um texto citado no registro (`96353c1` com `e6c291d`), salvo os alterados de propósito (5.0 e 5.1); qualquer outra diferença falha a verificação                            |
 
-Textos da biblioteca: 53, sendo 43 literais e 10 modelos com lista. Literais divergentes do registro: **4**.
+Textos da biblioteca: 55, sendo 45 literais e 10 modelos com lista. Literais divergentes do registro: **6**.
 
 ### 7.3 Casos adversariais (referências de assuntos incompatíveis)
 
-| Caso | Tentativa                                                                                      | Resultado                                     | Esperado |
-| ---- | ---------------------------------------------------------------------------------------------- | --------------------------------------------- | -------- |
-| X1   | Vínculo só com Sol, Mercúrio e Júpiter (exemplo da revisão), sem mãos                          | cap. 8: U1 · cap. 9: V1                       | ✔        |
-| X2   | Expressão das mãos contra Marte em Leão (assunto agir), sem Lua nem Vênus                      | cap. 8: U6 · cap. 9: V2                       | ✔        |
-| X3   | Ritmo das mãos contra Vênus em Áries (assunto afeto) e Ascendente/Saturno com cautela          | cap. 8: U6 · cap. 9: V1                       | ✔        |
-| X4   | Reserva só em Sol, Mercúrio, Júpiter e Saturno; expressão sem Lua/Vênus                        | cap. 8: U1 · cap. 9: V1                       | ✔        |
-| X5   | Controle: Lua em Leão × Vênus em Capricórnio, sem mãos (tensão no mesmo assunto)               | cap. 8: U1 · cap. 9: V2                       | ✔        |
-| X6   | Controle: coração aberto × Lua em Leão, com Marte em Leão presente (Marte não pode ser citado) | cap. 8: expressao/A[Lua em Leão] · cap. 9: V2 | ✔        |
+| Caso | Tentativa                                                                                      | Resultado                                                                                                                                                  | Esperado |
+| ---- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| X1   | Vínculo só com Sol, Mercúrio e Júpiter (exemplo da revisão), sem mãos                          | cap. 8: U1 · cap. 9: identidade/identidade[Sol em Câncer]; pensamento/pensamento[Mercúrio em Câncer]                                                       | ✔        |
+| X2   | Expressão das mãos contra Marte em Leão (assunto agir), sem Lua nem Vênus                      | cap. 8: U6 · cap. 9: V2                                                                                                                                    | ✔        |
+| X3   | Ritmo das mãos contra Vênus em Áries (assunto afeto) e Ascendente/Saturno com cautela          | cap. 8: U6 · cap. 9: afeto/autonomia[Vênus em Áries]; agir/cautela[linha da cabeça começando unida à da vida]; identidade/identidade[Ascendente em Virgem] | ✔        |
+| X4   | Reserva só em Sol, Mercúrio, Júpiter e Saturno; expressão sem Lua/Vênus                        | cap. 8: U1 · cap. 9: identidade/identidade[Sol em Câncer]; pensamento/pensamento[Mercúrio em Câncer]                                                       | ✔        |
+| X5   | Controle: Lua em Leão × Vênus em Capricórnio, sem mãos (tensão no mesmo assunto)               | cap. 8: U1 · cap. 9: afeto/two[Lua em Leão, Vênus em Capricórnio]; identidade/identidade[Sol em Câncer]; pensamento/pensamento[Mercúrio em Câncer]         | ✔        |
+| X6   | Controle: coração aberto × Lua em Leão, com Marte em Leão presente (Marte não pode ser citado) | cap. 8: expressao/A[Lua em Leão] · cap. 9: V2                                                                                                              | ✔        |
 
 ### 7.4 Conjunto anterior (84 combinações de fixtures do projeto)
 
 - **Capítulo 8:** 29 disponíveis; entre os 66 casos com as duas fontes, **29**.
   - Temas: Expressão · aproximação: 18; Expressão · diferença: 9; Ritmo · aproximação: 4.
   - Indisponíveis: U1: 11; U2: 6; U3: 1; U5: 33; U6: 4.
-- **Capítulo 9:** 22 disponíveis.
-  - Temas: dois lados / do cap. 8: 6; dois lados / tensão fundamentada: 6; um polo / do cap. 8: 18; um polo / um polo: 16.
-  - Indisponíveis: V1: 18; V2: 44.
-  - Eixos descartados por falta de referências compatíveis (1.3, item 3): 213.
+- **Capítulo 9:** 80 disponíveis.
+  - Temas: afeto (cap. 8, ambas): 27; afeto (tensão, céu): 8; afeto (um polo, céu): 42; afeto (um polo, mãos): 3; agir (cap. 8, ambas): 4; agir (um polo, céu): 10; agir (um polo, mãos): 20; identidade (assunto, céu): 77; pensamento (assunto, céu): 45; pensamento (assunto, mãos): 2.
+  - Indisponíveis: V1: 4.
+  - Exclusões registradas: sem polo nos eixos que o assunto trata: 63; a outra tradição não foi juntada (sem conexão do cap. 8): 46; fora do limite de 3 temas: 32.
+  - Temas por capítulo 9 disponível: 2 temas: 2; 3 temas: 78.
 
 ### 7.5 Fixtures construídas (81 combinações)
 
@@ -1066,62 +1269,95 @@ Textos da biblioteca: 53, sendo 43 literais e 10 modelos com lista. Literais div
 - **Capítulo 8:** 35 disponíveis; entre os 74 casos com as duas fontes, **35**.
   - Temas: Expressão · aproximação: 5; Expressão · aproximação com contraponto: 4; Expressão · diferença: 12; Expressão · duas imagens nas mãos: 12; Ritmo · aproximação: 12; Ritmo · diferença: 4.
   - Indisponíveis: U1: 3; U2: 4; U4: 14; U4misto: 14; U5: 9; U6: 2.
-- **Capítulo 9:** 28 disponíveis.
-  - Temas: dois lados / do cap. 8: 26; dois lados / tensão fundamentada: 5; um polo / do cap. 8: 16; um polo / um polo: 11.
-  - Indisponíveis: V1: 20; V2: 33.
-  - Eixos descartados por falta de referências compatíveis (1.3, item 3): 217.
+- **Capítulo 9:** 79 disponíveis.
+  - Temas: afeto (cap. 8, ambas): 33; afeto (tensão, céu): 10; afeto (tensão, mãos): 1; afeto (um polo, céu): 34; afeto (um polo, mãos): 1; agir (cap. 8, ambas): 16; agir (um polo, céu): 25; agir (um polo, mãos): 20; identidade (assunto, céu): 77; pensamento (assunto, céu): 18; pensamento (assunto, mãos): 2.
+  - Indisponíveis: V2: 2.
+  - Exclusões registradas: a outra tradição não foi juntada (sem conexão do cap. 8): 84; fora do limite de 3 temas: 59; sem polo nos eixos que o assunto trata: 36.
+  - Temas por capítulo 9 disponível: 3 temas: 79.
 
-### 7.6 Leitura dos resultados
+### 7.6 Comparação no conjunto anterior (84 combinações)
+
+| Categoria  | Casos | Cap. 8 | Cap. 9 — `1b4c7ea` (polo de signo em qualquer posição) | Cap. 9 — `6879415` (compatibilidade estrita) | **Cap. 9 — proposta** |
+| ---------- | ----- | ------ | ------------------------------------------------------ | -------------------------------------------- | --------------------- |
+| Céu e mãos | 66    | 29     | 66                                                     | 22                                           | **66**                |
+| Só céu     | 11    | 0      | 11                                                     | 0                                            | **11**                |
+| Só mãos    | 6     | 0      | 0                                                      | 0                                            | **3**                 |
+| Nenhuma    | 1     | 0      | 0                                                      | 0                                            | **0**                 |
+| **Total**  | 84    | 29     | 77                                                     | 22                                           | **80**                |
+
+Subconjunto de leitura das mãos parcial (36 combinações, distribuídas nas categorias acima): capítulo 9 disponível em 35.
+
+**Procedência dos temas do capítulo 9 (conjunto anterior):**
+
+| Assunto · base · tradição               | Temas |
+| --------------------------------------- | ----- |
+| identidade · pergunta do assunto · céu  | 77    |
+| pensamento · pergunta do assunto · céu  | 45    |
+| afeto · um polo · céu                   | 42    |
+| afeto · capítulo 8 (céu e mãos)         | 27    |
+| agir · um polo · mãos                   | 20    |
+| agir · um polo · céu                    | 10    |
+| afeto · tensão · céu                    | 8     |
+| agir · capítulo 8 (céu e mãos)          | 4     |
+| afeto · um polo · mãos                  | 3     |
+| pensamento · pergunta do assunto · mãos | 2     |
+
+### 7.7 Leitura dos resultados
 
 - **Capítulo 8: sem mudança.** São 29 disponíveis entre os 66 casos com as
-  duas fontes do conjunto anterior, e nenhum contraponto. As correspondências
-  e as regras do capítulo 8 não mudaram, só três frases ficaram mais curtas.
-- **Capítulo 9: queda real, de 77 para 22 dos 84.** Com a compatibilidade
-  temática aplicada também aos temas de um polo, sobram como referências
-  possíveis:
-  - para expressão e vínculo: Lua, Vênus e a linha do coração;
-  - para ritmo: Marte e o início da linha da cabeça;
-  - para foco: nenhuma.
+  duas fontes.
+- **Capítulo 9: 80 de 84, sem meta de cobertura e sem mudar o mínimo.** A
+  melhora vem de usar as interpretações que o relatório já apresenta,
+  cada uma pelo seu próprio assunto.
+  - Os 4 indisponíveis são os casos só com mãos que pedem nova foto (3) e o
+    caso sem nenhuma fonte (V1).
+  - Com só as mãos, o capítulo 9 aparece quando a leitura sustenta dois
+    assuntos, por exemplo afeto (linha do coração) e agir (início da
+    cabeça). Isso inclui a leitura parcial.
+- **Fidelidade.**
+  - Nenhum tema usa uma posição fora do seu assunto: vínculo nunca vem de
+    Sol, Mercúrio ou Júpiter, e ritmo nunca vem de Vênus.
+  - Fora do capítulo 8, nenhum tema junta céu e mãos: 22 casos de pensamento
+    e 18 de agir tinham as duas tradições, e só uma foi usada.
+  - Os casos adversariais confirmam isso (7.3).
+- **Exclusões registradas:**
+  - assuntos sem polo nos eixos que tratam, por exemplo Marte em Peixes no
+    ritmo;
+  - assuntos acima do limite de 3 temas;
+  - a outra tradição não juntada.
 
-  O tema de um polo exige 2 referências compatíveis, então:
-  - **só céu: 0 de 11 disponíveis.** Em 8 deles há exatamente um tema
-    sustentado, quase sempre de vínculo com Lua e Vênus, e em 3, nenhum;
-  - **duas fontes:** 22 de 66 disponíveis, todos casos em que o capítulo 8
-    também está disponível;
-  - **só mãos:** 0, como antes (E2).
+  As contagens estão em 7.4 e 7.5.
 
-  **Os mínimos não foram alterados** para compensar. Ver a decisão 1 da
-  seção 8.
-
-- **Variantes exercitadas:** todas as 9 frases-ponte, U4 e U4-misto (com
-  causas distintas), R-hora, duas imagens nas mãos, contraponto Lua × Vênus,
-  e as perguntas de expressão, vínculo e ritmo que continuam alcançáveis.
-- **Prática de vínculo.** É alcançável, quando só há céu, com tensão de
-  vínculo e um segundo tema, mas não ocorreu nas fixtures.
-- **Casos adversariais:** nenhuma referência de assunto incompatível foi
-  usada, nem no capítulo 8 nem no capítulo 9.
+- **Diferenciação.** Há 12 combinações distintas de perguntas nas 80. A
+  pergunta de identidade aparece em quase todo relatório com céu, porque o
+  Sol está sempre presente; ela fica por último, depois das perguntas que
+  dependem da leitura. Pensamento entra quando sobra vaga.
 - **Não se extrapola para usuários reais.** As fixtures são poucas e não
-  aleatórias: 4 dos 11 mapas são o mesmo nascimento, e as mãos são variações
-  de uma mesma fixture.
+  aleatórias: 4 dos 11 mapas são o mesmo nascimento.
 
 ---
 
-## 8. Decisões realmente necessárias
+## 8. Decisões para a aprovação
 
-1. **Cobertura do capítulo 9.** Com a correção, o capítulo 9 só aparece,
-   na prática, junto do capítulo 8: 22 de 84 casos, e nunca só com o céu.
-   Para referência, **sem adotar**: com o mínimo de 1 tema, seriam 66 de 84. **Recomendação: manter o mínimo de 2 temas**, conforme sua
-   instrução, e aceitar a cobertura menor como consequência da fidelidade
-   temática. Qualquer ampliação exigiria aprovar novos assuntos por eixo
-   (tabela 2.5) com base editorial própria. Nenhum foi proposto aqui, para
-   não inventar correspondências.
-2. **Textos inativos** (5.4): as 3 perguntas e a prática de foco, e a
-   pergunta de ritmo com impulso.
-   - **Recomendação: mantê-los na biblioteca como inativos**, já que a
-     instrução foi preservar perguntas e práticas, com um teste que garante
-     que não são usados.
-   - A alternativa é retirá-los, como foi feito com a prática genérica.
+1. **Mínimo por tema.** A regra "2 referências por tema de um polo" fica
+   retirada, e cada tema passa a precisar de pelo menos uma interpretação
+   apresentada do seu assunto. O mínimo de **2 temas distintos** continua.
+   - Por quê: aquela regra protegia contra temas montados com polos de signo
+     espalhados entre assuntos, e a seleção por assunto já elimina esse
+     risco.
+   - Se a regra fosse mantida, o capítulo 9 ficaria praticamente restrito
+     aos casos com o capítulo 8.
+2. **Duas perguntas novas** (4.2), para identidade e pensamento. São as
+   únicas necessárias para cobrir os capítulos 1 e 3, que não têm pergunta
+   de eixo compatível.
+3. **Tabela 2.6** (assuntos do capítulo 9). O ponto a conferir é o
+   agrupamento de Sol e Ascendente em "identidade".
+4. **Capítulo 5 sem tema próprio.** Saturno e Júpiter não geram tema: as
+   perguntas propostas nunca seriam usadas e foram retiradas. Se você
+   quiser o capítulo 5 representado, a alternativa é reservar uma vaga para
+   ele, o que tiraria pensamento ou identidade. **Recomendação: não
+   reservar.**
 
-Com essas duas respostas, a biblioteca está pronta para a implementação dos
-capítulos 8 e 9, com os testes da seção 7 incorporados ao repositório como
-testes de regressão.
+Com essas aprovações, a biblioteca está pronta para a implementação dos
+capítulos 8 e 9, com estes testes incorporados ao repositório como
+regressão.
