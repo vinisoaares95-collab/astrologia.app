@@ -152,10 +152,47 @@ credenciais de teste e `ICU_TIMEZONE_FILES_DIR` absoluto.
 | Leitura das mãos                                    | API 404 (desligada)                                                                                                                                                                                                                                                   |
 | Demonstração com dados de exemplo                   | Desligada                                                                                                                                                                                                                                                             |
 
-## 5. Pendências
+## 5. Implantação real (24/11/2026)
 
-- **Implantação e verificação na URL real:** depende das ações da seção
-  3.1.
+### 5.1 Ajustes exigidos pela Vercel
+
+Os dois primeiros builds falharam. Os ajustes não mudam o motor nem as
+interpretações:
+
+| Falha                                                      | Causa                                                                                            | Ajuste                                                                                                             |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| SHA-256 divergente para `sepl_18.se1`                      | Em 21/11/2026, o `master` de `aloistr/swisseph` trocou o arquivo ("compressed ephemeris update") | Origem fixada no commit `cae9ecd4`, que tem **exatamente** os arquivos validados (mesmos hashes). Motor inalterado |
+| Build em Node 26                                           | `engines: ">=20.19"` prevaleceu sobre a configuração do projeto                                  | `engines: "22.x"`, a versão testada                                                                                |
+| "Base de fusos ausente em /var/task/tzdata/2026f" no build | A variável aponta para o caminho da **função**, que não existe durante o build                   | `vercel-build` usa `tzdata/2026f` do repositório no build. O runtime continua com a variável                       |
+
+### 5.2 Situação
+
+- **Projeto:** `sidera-homologacao`, Node 22.x, região `iad1`.
+- **Implantação de produção do projeto:** `dpl_YMMdyHy9BVC6dxEUYSsTKNLAxoqw`,
+  commit `9750d18`, **READY**.
+- **Endereços:**
+  - `https://sidera-homologacao-vinicius-55d9.vercel.app`;
+  - `https://sidera-homologacao.vercel.app`;
+  - o alias do ramo.
+- **Duas camadas de proteção:**
+  1. **Vercel Authentication**, em todas as URLs `*.vercel.app`. Sem login na
+     conta Vercel autorizada, a resposta é 302 para o SSO da Vercel
+     (verificado no alias da equipe).
+  2. **Gate da aplicação.** Sem `SIDERA_ACCESS_USER` e
+     `SIDERA_ACCESS_PASSWORD`, a resposta é **503 "Ambiente indisponível."**,
+     com `X-Robots-Tag: noindex, nofollow, noarchive` (verificado nos dois
+     aliases com a conta Vercel).
+- **Para a verificação**, a ferramenta da Vercel criou um link temporário
+  de compartilhamento (expira em 23 h). Ele leva apenas ao gate da
+  aplicação, ou seja, ao 503 e, depois, ao pedido de senha.
+- **Ainda não verificado na URL real:** 401/200 com credenciais, cálculo
+  (base de fusos na função), mandala e relatório. Tudo isso depende do
+  cadastro das credenciais.
+
+## 6. Pendências
+
+- **Credenciais de acesso:** cadastro pelo titular da conta na Vercel e
+  nova implantação. Depois, a verificação completa na URL real.
 - **Uso do Hobby para projeto comercial:** decisão de plano.
 - **Leitura das mãos e IA em homologação:** continuam bloqueadas.
   - Para testar a interface das mãos com o **simulador**, seria preciso
