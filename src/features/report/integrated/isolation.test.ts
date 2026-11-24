@@ -90,10 +90,20 @@ describe("demonstração interna", () => {
     );
   });
 
-  it("o proxy só cobre a leitura (a página comercial /relatorio fica fora)", () => {
+  it("o 404 da leitura só vale para /relatorio/leitura (a página comercial /relatorio segue)", () => {
+    vi.stubEnv("SIDERA_REPORT_DEMO", "");
+    vi.stubEnv("SIDERA_REPORT_READING", "");
+    for (const p of ["/relatorio/leitura", "/relatorio/leitura/x"])
+      expect(proxy(new NextRequest(`http://localhost${p}`)).status).toBe(404);
+    for (const p of ["/relatorio", "/relatorio/leituras"])
+      expect(
+        proxy(new NextRequest(`http://localhost${p}`)).headers.get(
+          "x-middleware-next",
+        ),
+      ).toBe("1");
+    // O proxy cobre todas as rotas (acesso restrito da homologação, 03G.1).
     expect(config.matcher).toEqual([
-      "/relatorio/leitura",
-      "/relatorio/leitura/:path*",
+      "/((?!_next/static|_next/image|favicon.ico).*)",
     ]);
   });
 });
