@@ -1,170 +1,200 @@
-# Fase 04E.1 — Auditoria do relatório integrado
+# Fase 04E.1 — Auditoria do relatório integrado (relatório final)
 
-Estado: **concluída, só interna.** Não houve deploy, chamada paga,
-experimento de repetibilidade nem mudança no consentimento da 03G. As
-funcionalidades comerciais (checkout, PDF) também ficaram fora.
+Estado: **concluída, só interna.** Todas as regressões de navegador pedidas
+foram executadas **depois** das correções desta etapa, sem nenhuma falha.
 
-As medições foram feitas no **servidor de desenvolvimento** (`next dev`),
-neste contêiner (4 vCPU, 16 GB, Node 22.23, Chromium do Playwright), com a
-leitura das mãos simulada e imagem sintética. **Não representam produção.**
+Não houve:
 
-## 1. O que foi validado
+- deploy;
+- chamada paga ou foto real;
+- experimento de repetibilidade;
+- mudança nos motores de cálculo astrológico e visual das mãos;
+- mudança no consentimento da 03G;
+- funcionalidade nova (checkout, PDF).
 
-| Área                                                               | Como                                                                                                           | Resultado                                                                                   |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Jornada completa (mãos → prévia → nascimento → oferta → relatório) | `04d-jornada.mjs` (4 execuções) e `04e1-auditoria.mjs`, em desktop 1440×900, iPhone 13 e iPhone SE             | Aprovada                                                                                    |
-| Nove capítulos                                                     | Recife (exato) + mão clara                                                                                     | 9 de 9; capítulo 8 com diferença; capítulo 9 com 3 temas                                    |
-| Capítulos 1–5 sem mãos                                             | Direto aos dados de nascimento                                                                                 | Capítulo 8 com U1; capítulo 9 só com o céu; 6 de 9                                          |
-| Mãos sem mapa                                                      | Motor desligado                                                                                                | Capítulo 8 com U2; capítulo 9 só com o capítulo 7; 3 de 9                                   |
-| Leitura das mãos parcial                                           | Cenário simulado `partial`                                                                                     | Traço parcial fora das conexões, com a ressalva; capítulo 9 disponível                      |
-| Capítulo 8 indisponível e 9 disponível                             | São Paulo, horário desconhecido                                                                                | U6 com a causa real; capítulo 9 disponível                                                  |
-| Horário aproximado e desconhecido                                  | Bom Jesus e São Paulo (`04c-relatorio.mjs`)                                                                    | Limites do motor nos capítulos 1–5; posição incerta fora das comparações (R-hora, em teste) |
-| Falta de conteúdo                                                  | Foto insuficiente + motor desligado                                                                            | A foto não chega à prévia; capítulos 8 (U3) e 9 (V1) indisponíveis; 0 de 9                  |
-| Indicadores e navegação                                            | Sumário, contador "N de 9", âncoras, Voltar                                                                    | Corretos em todos os cenários                                                               |
-| Bloqueios internos                                                 | `?cenario=` sem a demonstração habilitada                                                                      | 404; nenhum exemplo na leitura real                                                         |
-| Editorial                                                          | Relatórios completos (1–9) de 5 cenários lidos na íntegra, montados só com os motores e bibliotecas do produto | Ver seções 2 e 4                                                                            |
+Convenção: **[comprovado]** é um problema reproduzido e medido;
+**[hipótese]** e **[oportunidade]** ainda precisam de avaliação com pessoas
+ou de decisão.
 
-## 2. Problemas encontrados, por impacto
+## 1. Funcionalidades verificadas
 
-### Alto
+| Funcionalidade                                          | Como                                                                        | Resultado                                                             |
+| ------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Jornada mãos → prévia → nascimento → oferta → relatório | `04d-jornada.mjs`, `04e1-auditoria.mjs`                                     | Aprovada (desktop, iPhone 13, iPhone SE)                              |
+| Nove capítulos                                          | Recife (exato) + mão clara                                                  | 9 de 9                                                                |
+| Capítulos 1–5 sem mãos                                  | Direto ao nascimento                                                        | Capítulo 8 com U1; capítulo 9 só com o céu; 6 de 9                    |
+| Mãos sem mapa                                           | Motor desligado                                                             | Capítulo 8 com U2; capítulo 9 só com o capítulo 7; 3 de 9             |
+| Mãos parciais                                           | Cenário `partial`                                                           | Traço parcial fora das conexões, com R-parcial; capítulo 9 disponível |
+| Capítulo 8 indisponível e 9 disponível                  | São Paulo, horário desconhecido                                             | U6 com a causa real                                                   |
+| Horário aproximado e desconhecido                       | `04c-relatorio.mjs`; testes de unidade (R-hora)                             | Limites preservados; posição incerta fora das comparações             |
+| Falta de conteúdo                                       | Foto insuficiente + motor desligado                                         | Capítulos 8 (U3) e 9 (V1) indisponíveis; 0 de 9                       |
+| Indicadores, sumário, âncoras, Voltar e teclado         | `04e1-auditoria.mjs`                                                        | Corretos                                                              |
+| Demonstração isolada                                    | `04a-leitura.mjs`; `?cenario=` na leitura real                              | Demonstração aprovada; `?cenario=` sem a flag responde 404            |
+| Privacidade da jornada                                  | Unidade e navegador                                                         | Seção 6                                                               |
+| Leitura editorial dos nove capítulos                    | 5 relatórios completos montados com os motores do produto, lidos na íntegra | Seções 2 e 7                                                          |
 
-Nenhum.
+## 2. Problemas encontrados e causas
 
-### Médio
+| #   | Problema                                                                                                                                                                                                        | Causa                                                                                                                               | Classe                                                        | Estado                                                                 |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| P1  | Frases de diferença do capítulo 8 sempre no plural ("estes traços", "as posições citadas… são associadas"), mesmo com uma só referência; contraponto com "imagens", sendo o outro lado sempre uma única posição | Textos da biblioteca 04D escritos para o caso geral; com F1 e F2, o céu tem 1 posição comparável quase sempre (Marte; Lua ou Vênus) | [comprovado]                                                  | Corrigido                                                              |
+| P2  | "associa … às viagens, os estudos e a busca de sentido" (capítulos 1–5)                                                                                                                                         | `toPrep` contraía só o primeiro artigo da área da casa                                                                              | [comprovado]                                                  | Corrigido                                                              |
+| P3  | "o afeto, o prazer e a forma de se vincular … ganha peso"                                                                                                                                                       | Verbo fixo no singular para sujeitos compostos                                                                                      | [comprovado]                                                  | Corrigido (Mercúrio mantém "ganha", porque sua função é um só sujeito) |
+| P4  | Aviso de leitura simulada três vezes (Parte II, limites do capítulo 8, Parte III)                                                                                                                               | Aviso de interface da Parte III, acrescentado na 04D, sobreposto à ressalva R-simulada                                              | [comprovado]                                                  | Corrigido                                                              |
+| P5  | Limites do capítulo 8 maiores que o texto personalizado                                                                                                                                                         | 4 a 5 ressalvas aprovadas para 1 tema                                                                                               | [comprovado] (85 × 105 palavras; quase uma tela no iPhone SE) | Pendente (decisão)                                                     |
+| P6  | Repetições no texto composto dos capítulos 1–5                                                                                                                                                                  | Modelos 02E somam função + área ou qualidades do signo                                                                              | [comprovado]                                                  | Pendente (decisão)                                                     |
+| P7  | Capítulo 9 pouco diferenciado                                                                                                                                                                                   | A pergunta de identidade quase sempre presente                                                                                      | [comprovado] (12 combinações de perguntas em 84)              | Pendente (decisão)                                                     |
+| P8  | "Construir com as próprias mãos" pode soar como alusão à leitura das mãos                                                                                                                                       | Texto autoral do elemento Terra (02E)                                                                                               | [hipótese]                                                    | Pendente (decisão)                                                     |
+| P9  | Roteiro D5 falhava antes de clicar                                                                                                                                                                              | Clique antes da hidratação                                                                                                          | [comprovado], só no roteiro                                   | Corrigido                                                              |
+| P10 | Roteiro 04E.1 travava                                                                                                                                                                                           | Esperava o fim de uma resposta em fluxo                                                                                             | [comprovado], só no roteiro                                   | Corrigido                                                              |
 
-Todos corrigidos nesta etapa.
+Não são defeitos:
 
-- **M1. Concordância das frases-ponte do capítulo 8.**
-  - Nas frases de diferença, o texto dizia sempre "estes traços" e "as
-    posições citadas do mapa (são associadas)". Mas o céu tem **uma** posição
-    comparável em quase todos os casos (só Marte no ritmo; Lua ou Vênus na
-    expressão), e a leitura parcial deixa **um** traço.
-  - Nas frases de contraponto, o texto dizia "imagens de reserva/abertura",
-    embora o outro lado seja sempre **uma** posição.
-- **M2. Preposição nas casas (capítulos 1–5, texto composto pelo motor
-  02E).** Saía "associa … às viagens, os estudos e a busca de sentido": só
-  o primeiro artigo era contraído.
-- **M3. Concordância do regente (capítulo 1).** "o afeto, o prazer e a forma
-  de se vincular … ganha peso". As funções dos corpos são sujeitos
-  compostos, exceto a de Mercúrio.
-
-### Baixo
-
-- **B1. Aviso de leitura simulada repetido três vezes** (Parte II, limites do
-  capítulo 8 e Parte III). Corrigido.
-- **B2. Ressalvas maiores que o texto personalizado no capítulo 8.** Num
-  tema só, o texto tem 85 palavras e os limites, 105; no iPhone SE os
-  limites ocupam quase uma tela. É decisão editorial (4.1).
-- **B3. Repetições no texto composto dos capítulos 1–5.** Por exemplo,
-  "Júpiter na casa 9 … a busca de sentido às viagens, aos estudos e à busca
-  de sentido", e Marte em Escorpião seguido da cúspide 7 em Escorpião com as
-  mesmas qualidades. É decisão editorial (4.4).
-- **B4. Capítulo 9 pouco diferenciado.** A pergunta de identidade aparece em
-  quase todo relatório com céu; há 12 combinações de perguntas nas 84
-  combinações. É decisão editorial (4.2).
-- **B5. "Construir com as próprias mãos"** (texto autoral do elemento Terra,
-  capítulo 1) num relatório que tem uma leitura das mãos pode soar como
-  referência às mãos. É decisão editorial (4.4).
-- **B6. Roteiros de navegador.** O da D5 clicava antes da hidratação, e o da
-  04E.1 esperava uma resposta em fluxo que não termina. Corrigidos.
-
-### Não são defeitos
-
-- **Capítulos 5 e 6 sem temas no capítulo 9** (seção 3).
+- **Capítulos 5 e 6 sem temas no capítulo 9:** Saturno e Júpiter não têm
+  assunto aprovado (`d71f524`), e os itens do capítulo 6 estão todos
+  excluídos por D3 e D4. É consequência legítima das regras, não defeito
+  de integração.
 - **O selo "N"** nas capturas é do servidor de desenvolvimento.
 
-## 3. Capítulos 5, 6, 8 e 9
+## 3. Correções pontuais realizadas
 
-| Ponto                                 | Diagnóstico                                                                                                                                                                                                        | Classe                                                    |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
-| Capítulo 5 não contribui              | Seus itens elegíveis são Saturno e Júpiter (signo), que **não têm assunto** aprovado (decisão de `d71f524`: sem vaga para o capítulo 5; as perguntas de estrutura e expansão foram retiradas por não serem usadas) | Consequência legítima das regras e oportunidade editorial |
-| Capítulo 6 não contribui              | Todos os itens são palma, dedos ou tipo de mão, excluídos por D3 e D4 (proporção ou instabilidade)                                                                                                                 | Falta de conteúdo elegível, por decisão aprovada          |
-| Capítulo 8: diferenças e aproximações | Legíveis: selo, "Nas mãos"/"No céu" e uma frase que nomeia os lados; a síntese explica que diferença não é erro                                                                                                    | Adequado; corrigida a concordância (M1)                   |
-| Capítulo 8 indisponível               | Mensagem com a causa real (U1–U6, U4-misto), dentro do próprio capítulo; contador e sumário coerentes                                                                                                              | Adequado                                                  |
-| Capítulo 9: diversidade e relevância  | Perguntas de eixo dependem da leitura (polo e tensão); a de identidade é geral e aparece quase sempre                                                                                                              | Risco de parecer genérico (B4); decisão editorial         |
-| Integração                            | Nenhum defeito: as pontes chegam completas; a seleção bate com a regra em 165 combinações                                                                                                                          | —                                                         |
+| #       | Correção                                                                                                                                                                                                          | Arquivos                                                                              | Teste novo                       |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------------------------------- |
+| P1      | Marcadores `{traço}`, `{posição}` e `{associada}` concordando com o número real de referências; contraponto no singular; biblioteca `04d.2`; documento consolidado atualizado (tabela de concordância e exemplos) | `journey-chapters/library.ts`, `render.ts`, `docs/fase-04d-biblioteca-consolidada.md` | Concordância nas 165 combinações |
+| P2      | `toPrep` contrai o artigo de cada item da área                                                                                                                                                                    | `interpretation/engine.ts` (só português)                                             | 24 mapas                         |
+| P3      | "ganham" para sujeitos compostos; "ganha" para Mercúrio                                                                                                                                                           | `interpretation/engine.ts` (só português)                                             | 24 mapas                         |
+| P4      | Aviso da Parte III só quando o capítulo 9 usa as mãos e o capítulo 8 não está disponível                                                                                                                          | `integrated/build.ts`, `journey/journey-reading.tsx`                                  | 2 casos                          |
+| P9, P10 | Esperas corretas nos roteiros                                                                                                                                                                                     | `scripts/e2e/d5-saida-do-fluxo.mjs`, `04e1-auditoria.mjs` (novo)                      | —                                |
 
-## 4. Decisões editoriais ou de produto
+Não mudaram:
 
-1. **Proporção de ressalvas no capítulo 8 (B2).** Opções:
-   - agrupar R-conf, R-escopo e R-simulada numa ressalva só;
-   - mostrar os limites recolhidos ("ver limites").
+- cálculos, seleção de itens, associações, regras aprovadas ou consentimento;
+- os instantâneos de referência do motor de interpretação (nas fixtures, o
+  regente é Mercúrio).
 
-   As duas alteram textos ou o design aprovados, por isso não as implementei.
+## 4. Resultados dos testes e do build
 
-2. **Diversidade do capítulo 9 (B4).** Opções:
-   - deixar a pergunta de identidade só quando faltar um tema de eixo;
-   - aprovar perguntas de identidade variadas pelo signo do Sol (biblioteca
-     nova).
-3. **Capítulo 5 no guia (seção 3):** manter a decisão de `d71f524` ou
-   aprovar perguntas de estrutura e expansão, com uma regra de uso.
-4. **Repetições e "próprias mãos" nos capítulos 1–5 (B3, B5):** revisão da
-   biblioteca astrológica 02E, que está fora do escopo desta etapa.
+Todos executados depois das correções.
 
-## 5. Correções executadas
+| Verificação                                                                                | Resultado                                                                       |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| `npm run check` (typegen, tsc, eslint, Vitest)                                             | **1271 aprovados**, 42 ignorados (pagos e de avaliação, desligados por projeto) |
+| `npm run build`                                                                            | Aprovado                                                                        |
+| **04A** `04a-leitura.mjs` (`next start` com a demonstração; desktop, iPhone 13, iPhone SE) | **45/45**: rolagem, axe WCAG A/AA, teclado e foco                               |
+| **04B** `04b-jornada.mjs`                                                                  | **28/28**                                                                       |
+| **04C** `04c-relatorio.mjs` com motor                                                      | **34/34**: inclui resposta atrasada e horário aproximado ou desconhecido        |
+| **04C** sem motor                                                                          | **18/18**                                                                       |
+| **04D** `04d-jornada.mjs`, motor ligado e mão clara                                        | **36/36**: inclui axe sem violações                                             |
+| **04D** motor ligado e mão parcial                                                         | **12/12**                                                                       |
+| **04D** motor desligado e mão clara                                                        | **12/12**                                                                       |
+| **04D** motor desligado e foto insuficiente                                                | **16/16**                                                                       |
+| **D5** `d5-saida-do-fluxo.mjs`                                                             | **17/17**                                                                       |
+| **04E.1** `04e1-auditoria.mjs` (novo; desktop, iPhone 13, iPhone SE)                       | **36/36**                                                                       |
 
-| #   | Correção                                                                                                                                                                                    | Onde                                                                                                                  | Testes                                                                               |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| M1  | Frases de diferença com `{traço}`, `{posição}` e `{associada}` concordando com o número real de referências; contraponto no singular ("uma imagem de reserva/abertura"); biblioteca `04d.2` | `journey-chapters/library.ts`, `render.ts`; documento consolidado (3.3 e tabela de concordância; exemplos corrigidos) | Novo teste de concordância nas 165 combinações; fidelidade ao documento              |
-| M2  | `toPrep` contrai o artigo de cada item da área ("às viagens, aos estudos e à busca de sentido")                                                                                             | `interpretation/engine.ts`                                                                                            | Novo teste em 24 mapas                                                               |
-| M3  | Regente: "ganham" para sujeitos compostos, "ganha" para Mercúrio                                                                                                                            | `interpretation/engine.ts`                                                                                            | Novo teste em 24 mapas; instantâneos sem mudança (o regente das fixtures é Mercúrio) |
-| B1  | Aviso da Parte III só quando o capítulo 9 usa as mãos e o capítulo 8 (que já tem R-simulada) não está disponível                                                                            | `integrated/build.ts`, `journey/journey-reading.tsx`                                                                  | `journey-reading.test.tsx` (2 casos)                                                 |
-| B6  | Espera pela hidratação no roteiro da D5; medição sem esperar o fim da resposta em fluxo                                                                                                     | `scripts/e2e/`                                                                                                        | —                                                                                    |
+**Total de navegador: 254 verificações, 0 falhas.**
 
-Nenhuma correção alterou cálculos, seleção de itens, associações ou regras
-aprovadas.
+**Não executados, com justificativa:**
 
-## 6. Testes e medições
+- **Jornada em build de produção:** a leitura das mãos responde 503 por
+  projeto (03G.3). Por isso os roteiros de jornada usam `next dev`; a 04A
+  usa `next start`.
+- **Firefox, Safari e aparelhos reais:** só o Chromium do ambiente está
+  disponível. O mobile é emulação.
+- **Fotos reais, IA e repetibilidade:** exigem autorização e custo.
 
-### Testes
+## 5. Medições de desempenho
 
-| Conjunto                                                                                  | Resultado                                                                                                                                                                                                                                                                                                                                |
-| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run check`                                                                           | **1271 aprovados**, 42 ignorados (pagos e de avaliação)                                                                                                                                                                                                                                                                                  |
-| `npm run build`                                                                           | Aprovado                                                                                                                                                                                                                                                                                                                                 |
-| `04d-jornada.mjs` (4 execuções, desktop e iPhone 13)                                      | Aprovado; axe WCAG A/AA sem violações nos nove capítulos                                                                                                                                                                                                                                                                                 |
-| `04e1-auditoria.mjs` (novo; desktop, iPhone 13, iPhone SE)                                | Aprovado. Cobre: sumário → capítulos 8 e 9 com o título abaixo do cabeçalho fixo (topo a cerca de 280 px; cabeçalho até 77 px); foco visível no teclado e Enter abrindo o capítulo; sem rolagem horizontal; maior parágrafo dos capítulos 8–9 com 48 palavras; memória estável; `?cenario=` isolado; sem armazenamento; sem outros hosts |
-| `04c-relatorio.mjs` (com e sem motor), `04b-jornada.mjs`, `d5-saida-do-fluxo.mjs` (17/17) | Aprovados. Incluem: resposta atrasada não restaura dados; sair e recarregar apagam; nenhuma foto (`blob:`) no DOM                                                                                                                                                                                                                        |
+Condições: servidor de **desenvolvimento** neste contêiner (4 vCPU, 16 GB,
+Node 22.23), Chromium do Playwright, mobile **emulado**, leitura das mãos
+simulada.
 
-### Privacidade
+| Medida                                                    | Valor                         |
+| --------------------------------------------------------- | ----------------------------- |
+| Mapa + interpretação no servidor (Node, 30 mapas)         | ~1,2 ms por mapa              |
+| Ação de servidor do céu, medida no navegador (rede local) | 77–127 ms                     |
+| Da confirmação até a leitura pronta (oferta → leitura)    | 0,8–1,2 s                     |
+| Montagem dos capítulos 8 e 9 (Node; 165 combinações × 20) | ~0,024 ms por chamada         |
+| Pontes na memória (céu + mãos)                            | média ~1,6 KB; máximo ~2,2 KB |
+| Heap JS: início → leitura → depois de sair                | ~11 → 24–28 → 27–29 MB        |
+| Heap JS após 3 jornadas seguidas                          | 17–23 MB, sem crescimento     |
 
-- **Unidade:** as pontes só levam ids, rótulos já exibidos e polos. Os testes
-  de cópia campo a campo recusam data, cidade, graus, evidência e mão.
-- **Navegador:** a leitura visível não tem data, hora, cidade nem ids
-  internos.
+Limitações:
 
-### Medições (desenvolvimento; não extrapolar)
+- **Ambiente:** `next dev` compila sob demanda e não otimiza, então os
+  tempos não valem para produção.
+- **Heap ao sair:** depois de sair, ele não volta ao valor inicial porque o
+  `<Activity>` do Next mantém até 3 rotas ocultas. Os dados da jornada são
+  apagados (verificado), mas a estrutura das telas fica em memória.
+- **Aparelhos:** sem medição em aparelho real nem em rede móvel.
 
-| Medida                                                                                 | Valor                                                             |
-| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| Mapa + interpretação no servidor (Node, 30 mapas)                                      | ~1,2 ms por mapa                                                  |
-| Ação de servidor do céu, ponta a ponta no navegador (inclui normalização e rede local) | 94–125 ms                                                         |
-| Da confirmação até a leitura pronta (navegação + oferta + leitura)                     | 0,84–1,2 s                                                        |
-| Montagem dos capítulos 8 e 9 (Node, 165 combinações × 20)                              | ~0,024 ms por chamada                                             |
-| Tamanho das pontes (céu + mãos)                                                        | média ~1,6 KB; máximo ~2,2 KB                                     |
-| Heap JS: início → leitura → depois de sair                                             | ~11 → 21–28 → 25–32 MB (rotas ocultas mantidas pelo `<Activity>`) |
-| Heap JS após 3 jornadas seguidas                                                       | 17–22 MB, sem crescimento                                         |
+## 6. Privacidade e segurança
 
-## 7. Capturas
+Verificado:
+
+- **Pontes dos capítulos 8 e 9:** levam só ids de itens, rótulos já exibidos
+  e polos. Nenhuma data, hora, local, graus, evidência, mão ou imagem
+  (testes de cópia campo a campo e de ausência).
+- **Foto:** nenhum `blob:` no DOM depois da prévia; a D5 está intacta (17/17).
+- **Respostas atrasadas** depois de sair não restauram dados (04C).
+- **Sair (X), recarregar ou fechar** apagam a jornada (04B, 04C, 04D, 04E.1).
+- **Armazenamento do navegador:** nada em `localStorage`, `sessionStorage`,
+  cookies ou IndexedDB; nenhuma requisição a outros hosts.
+- **Demonstração isolada:** `?cenario=` sem a flag responde 404.
+
+Pendências (não resolvidas nesta etapa):
+
+1. **Revisão das pontes:** antes de qualquer ambiente fora do interno,
+   revisar se rótulos como "Sol em Touro" na memória da aba exigem menção
+   na política de privacidade (já constam no inventário D3 e D9).
+2. **Registro de consentimento em produção** e licença do motor (AGPL):
+   bloqueios já registrados.
+3. **Heap com rotas ocultas:** confirmar em produção que a estrutura mantida
+   pelo `<Activity>` não guarda texto da leitura após sair [hipótese; os
+   testes atuais não encontram texto].
+
+## 7. Problemas editoriais e de UX
+
+| Item                                                             | Situação                                                                                                                                             | Classe                                                         |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **Excesso de texto nos limites do capítulo 8 em telas pequenas** | Num tema, 85 palavras de texto contra 105 de limites; no iPhone SE os limites ocupam quase uma tela (captura `04e1-iphoneSE-cap8-viewport`)          | [comprovado]                                                   |
+| **Ressalvas técnicas numa seção expansível**                     | Mantém R0 visível e recolhe R-conf, R-escopo e R-simulada em "Ver limites desta comparação"                                                          | [oportunidade]; muda o design aprovado, exige aprovação        |
+| **Repetição de avisos**                                          | Aviso de simulação reduzido a onde acrescenta (P4). Persistem: o aviso da Parte II e a R-simulada no capítulo 8 (2 menções)                          | Corrigido em parte; o restante é aceitável no ambiente interno |
+| **Concordância singular e plural**                               | Corrigida no capítulo 8 (P1) e nos capítulos 1–5 (P2, P3); coberta por testes                                                                        | [comprovado], corrigido                                        |
+| **Âncoras com cabeçalho fixo**                                   | Ao navegar pelo sumário, o título fica a ~280 px do topo, abaixo do cabeçalho (até 77 px), nas 3 telas; teclado com foco visível e Enter funcionando | Sem defeito                                                    |
+| **Participação dos capítulos 5 e 6 na conclusão**                | 0 temas nas 84 combinações; consequência legítima das regras                                                                                         | [oportunidade] editorial                                       |
+| **Diversidade das perguntas do capítulo 9**                      | Identidade quase sempre presente; 12 combinações de perguntas em 84                                                                                  | [comprovado]; decisão editorial                                |
+| Repetições nos capítulos 1–5 (P6) e "próprias mãos" (P8)         | Biblioteca 02E                                                                                                                                       | [comprovado] / [hipótese]                                      |
+| Legibilidade                                                     | Maior parágrafo dos capítulos 8–9: 48 palavras; sem rolagem horizontal; axe sem violações                                                            | Sem defeito                                                    |
+
+## 8. Recomendações priorizadas para a 04E.2
+
+1. **Limites do capítulo 8 em telas pequenas (alta).** Decidir entre
+   agrupar as ressalvas técnicas numa só frase ou recolhê-las numa seção
+   expansível, mantendo R0 sempre visível. Exige aprovação de texto ou de
+   design.
+2. **Diversidade do capítulo 9 (alta).** Decidir se a pergunta de identidade
+   só entra quando falta um tema de eixo, ou se haverá perguntas de
+   identidade variadas pelo signo do Sol (biblioteca nova, com aprovação).
+3. **Participação dos capítulos 5 e 6 (média).** Decidir se Saturno e Júpiter
+   ganham assunto e pergunta, com uma regra de uso. O capítulo 6 depende da
+   revalidação visual (D4), que é paga e só com autorização.
+4. **Revisão da biblioteca 02E (média).** Repetições e "próprias mãos" (P6,
+   P8), sem mudar cálculos nem associações.
+5. **Revisão visual em aparelho real e outros navegadores (média),** quando
+   houver ambiente.
+6. **Privacidade fora do interno (pré-requisito de lançamento):** pontes na
+   política, consentimento em produção e licença do motor.
+
+## Capturas
 
 Em `docs/capturas/fase-04e1/`:
 
 - `desktop-nove-capitulos`;
-- `desktop-cap8-diferenca`, já com a concordância corrigida;
+- `desktop-cap8-diferenca`;
 - `mobile-cap9-completo`;
 - `mobile-cap8-indisponivel`;
-- `mobile-cap8-parcial` ("este traço … a posição citada do mapa");
+- `mobile-cap8-parcial`;
 - `desktop-so-astrologia`;
 - `mobile-cap9-so-maos`;
 - `mobile-sem-conteudo`;
 - `iphoneSE-cap8-viewport`.
-
-## 8. Pendências para a próxima etapa
-
-1. Decisões editoriais da seção 4.
-2. Experimento de repetibilidade visual (pago; exige autorização) antes de
-   rever D4.
-3. Licença do motor (AGPL) e registro de consentimento em produção.
-4. Medições em build de produção e em aparelho real, quando houver ambiente.
-5. Fixtures da demonstração (`?cenario=`) com pontes, se a demonstração
-   precisar mostrar os capítulos 8 e 9.
