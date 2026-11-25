@@ -132,14 +132,23 @@ for (const [vp, options] of [
     .click();
   await p.getByRole("button", { name: /Verificar dados/ }).click();
   await p.waitForTimeout(3000);
-  const gapText = await p.locator("main").innerText();
+  const gapText = await p.locator("main:visible").first().innerText();
   check(
     /não existiu|inexistente|horário de verão|adiantad/i.test(gapText),
     tag("fuso: horário inexistente explicado"),
   );
 
-  // Mapa natal e mandala interativa (caso fictício Recife 1986).
-  await p.goto(base + "/dados-de-nascimento");
+  // Mapa natal e mandala interativa (caso fictício Recife 1986). Chega ao
+  // formulário pela interface, sem foto: início → O relatório → atalho da
+  // versão interna.
+  await p.goto(base + "/");
+  await p.getByRole("link", { name: "Explorar o relatório" }).first().click();
+  await p.waitForURL(/\/relatorio$/);
+  await p
+    .getByRole("link", { name: "informar os dados de nascimento" })
+    .click();
+  await p.waitForURL(/\/dados-de-nascimento$/);
+  check(true, tag("formulário alcançado pela interface, sem foto"));
   await p.waitForLoadState("networkidle");
   await p.locator("summary", { hasText: "Casos de verificação" }).click();
   await p
@@ -187,7 +196,7 @@ for (const [vp, options] of [
     null,
     { timeout: 120000 },
   );
-  const text = await p.locator("main").innerText();
+  const text = await p.locator("main:visible").first().innerText();
   const counter = text.match(/(\d) de 9 capítulos/)?.[1];
   check(
     counter === "6",
